@@ -50,7 +50,6 @@ namespace Multiple_Linear_Regression {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void OpenFileMenu_Click(object sender, EventArgs e) {
-            ClearControlsStep1();
             allTabs.SelectTab(loadDataTab);
 
             if (dialogService.OpenFileDialog() == true) {
@@ -89,6 +88,11 @@ namespace Multiple_Linear_Regression {
             else {
                 List<List<string>> allRows = fileService.Open(dialogService.FilePath);
                 if (allRows.Count > 0) {
+
+                    // Clear Step1
+                    Action clear = () => ClearControlsStep1();
+                    factorsData.Invoke(clear);
+
                     // Add headers to data grid view
                     factorsData.Invoke(new Action<List<string>>((s) => SetDataGVColumnHeaders(s, factorsData, false)), allRows[0]);
 
