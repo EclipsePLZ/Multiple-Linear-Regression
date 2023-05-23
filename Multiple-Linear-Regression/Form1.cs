@@ -18,6 +18,11 @@ namespace Multiple_Linear_Regression {
 
         private BackgroundWorker resizeWorker = new BackgroundWorker();
         private bool isResizeNeeded = false;
+
+        private List<string> Headers { get; set; } = new List<string>();
+        private List<string> RegressantsHeaders { get; set; } = new List<string>();
+        private List<string> RegressorsHeaders { get; set; } = new List<string>();
+
         public MainForm() {
             InitializeComponent();
 
@@ -30,6 +35,7 @@ namespace Multiple_Linear_Regression {
 
             helpAllStepsMenu.ToolTipText = StepsInfo.Step1;
 
+            // Run background worker for resizing components on form
             resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
             resizeWorker.WorkerSupportsCancellation = true;
             resizeWorker.RunWorkerAsync();
@@ -93,6 +99,12 @@ namespace Multiple_Linear_Regression {
                     Action clear = () => ClearControlsStep1();
                     factorsData.Invoke(clear);
 
+                    // Add headers to properties
+                    Headers.AddRange(allRows[0]);
+
+                    RegressantsHeaders.Clear();
+                    RegressorsHeaders.Clear();
+
                     // Add headers to data grid view
                     factorsData.Invoke(new Action<List<string>>((s) => SetDataGVColumnHeaders(s, factorsData, false)), allRows[0]);
 
@@ -133,6 +145,43 @@ namespace Multiple_Linear_Regression {
                     bgWorker.CancelAsync();
                 }
             }
+        }
+
+        private void selectRegressantsButton_Click(object sender, EventArgs e) {
+            SelectParametersForm form = new SelectParametersForm("Выбор управляемых факторов", 
+                Headers.Except(RegressorsHeaders).Except(RegressantsHeaders).ToList(), RegressantsHeaders);
+            form.ShowDialog();
+
+            // Get selected factors
+            RegressantsHeaders = form.SelectedFactors;
+
+            // Print factors to listbox
+            regressantsList.Items.Clear();
+            regressantsList.Items.AddRange(RegressantsHeaders.ToArray());
+        }
+
+        private void selectRegressorsButton_Click(object sender, EventArgs e) {
+            SelectParametersForm form = new SelectParametersForm("Выбор управляющих факторов",
+                Headers.Except(RegressantsHeaders).Except(RegressorsHeaders).ToList(), RegressorsHeaders);
+            form.ShowDialog();
+
+            // Get selected factors
+            RegressorsHeaders = form.SelectedFactors;
+
+            // Print factors to listbox
+            regressorsList.Items.Clear();
+            regressorsList.Items.AddRange(RegressorsHeaders.ToArray());
+        }
+
+        private void clearSelectedFactorsButton_Click(object sender, EventArgs e) {
+            regressorsList.Items.Clear();
+            regressantsList.Items.Clear();
+            RegressantsHeaders.Clear();
+            RegressorsHeaders.Clear();
+        }
+
+        private void acceptFactorsButton_Click(object sender, EventArgs e) {
+
         }
 
         /// <summary>

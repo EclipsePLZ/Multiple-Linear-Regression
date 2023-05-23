@@ -59,6 +59,12 @@
     <Compile Include="ExitForm.Designer.cs">
       <DependentUpon>ExitForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SelectParametersForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SelectParametersForm.Designer.cs">
+      <DependentUpon>SelectParametersForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Work-With-Files\DefaultDialogService.cs" />
     <Compile Include="Work-With-Files\ExcelFileService.cs" />
     <Compile Include="Form1.cs">
@@ -88,6 +94,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="SelectParametersForm.resx">
+      <DependentUpon>SelectParametersForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
