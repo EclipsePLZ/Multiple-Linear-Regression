@@ -30,6 +30,8 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, List<double>> Regressants { get; set; } = new Dictionary<string, List<double>>();
         private Dictionary<string, List<double>> Regressors { get; set; } = new Dictionary<string, List<double>>();
 
+        private Dictionary<string, List<string>> RegressorsProcessFunc { get; set; } = new Dictionary<string, List<string>>();
+
         private double[,] X { get; set; }
         private double[] Y { get; set; }
 
@@ -215,6 +217,10 @@ namespace Multiple_Linear_Regression {
                 if (checkPairwiseCombinations.Checked) {
                     CreatePairwiseCombinationsOfFactors();
                 }
+
+                ClearControlsStep2();
+                processingStatDataTab.Enabled = true;
+                doFunctionalProcessButton.Enabled = true;
             }
             else {
                 if (RegressantsHeaders.Count == 0 && RegressorsHeaders.Count == 0) {
@@ -277,6 +283,46 @@ namespace Multiple_Linear_Regression {
             }
         }
 
+        private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
+            if (Regressors.Count > 0) {
+                RunBackgroundFunctionalProcessData();
+            }
+            else {
+                MessageBox.Show("Вы не выбрали ни одного управляющего фактора");
+            }
+        }
+
+        /// <summary>
+        /// Run background worker for functional process data
+        /// </summary>
+        private void RunBackgroundFunctionalProcessData() {
+            BackgroundWorker bgWorker = new BackgroundWorker();
+            bgWorker.ProgressChanged += new ProgressChangedEventHandler((sender, e) => ProgressBarChanged(sender, e, progressBarFunctionProcess));
+            bgWorker.DoWork += new DoWorkEventHandler((sender, e) => FunctionalProcessing(sender, e, bgWorker));
+            bgWorker.WorkerReportsProgress = true;
+            bgWorker.WorkerSupportsCancellation = true;
+            functionsForProcessingDataGrid.Size = new Size(functionsForProcessingDataGrid.Width, functionsForProcessingDataGrid.Height - 19);
+            progressBarFunctionProcess.Value = 0;
+            progressBarFunctionProcess.Visible = true;
+            bgWorker.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Find the functions that maximize the Pearson coefficient between controlling and controlling factors
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <param name="bgWorker">Background worker</param>
+        private void FunctionalProcessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+            // Check if bgWorker has been stopped
+            if (bgWorker.CancellationPending == true) {
+                e.Cancel = true;
+            }
+            else {
+                // Доделать функциональную обработку данных
+            }
+        }
+
         /// <summary>
         /// Function for clear controls start with step1
         /// </summary>
@@ -288,6 +334,16 @@ namespace Multiple_Linear_Regression {
             clearSelectedFactorsButton.Enabled = false;
             regressantsList.Items.Clear();
             regressorsList.Items.Clear();
+
+            ClearControlsStep2();
+        }
+
+        /// <summary>
+        /// Function for clear controls start with step2
+        /// </summary>
+        private void ClearControlsStep2() {
+            ClearDataGV(functionsForProcessingDataGrid);
+            doFunctionalProcessButton.Enabled = false;
         }
 
         /// <summary>
@@ -367,6 +423,22 @@ namespace Multiple_Linear_Regression {
             exitForm.Show();
         }
 
+        /// <summary>
+        /// Change information text about step
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void allTabs_Selected(object sender, TabControlEventArgs e) {
+            switch (allTabs.SelectedIndex) {
+                case 0:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.Step1;
+                    break;
+                case 1:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.Step2;
+                    break;
+            }
+        }
+
         private void MainForm_ResizeBegin(object sender, EventArgs e) {
             isResizeNeeded = true;
         }
@@ -383,38 +455,46 @@ namespace Multiple_Linear_Regression {
         /// Resize all main from components
         /// </summary>
         private void DoResizeComponents(object sender, DoWorkEventArgs e) {
-            while (true) {
-                if (isResizeNeeded) {
-                    int newWidth = this.Width - 196;
-                    int newHeight = this.Height - 67;
-                    int widthDiff = newWidth - allTabs.Width;
-                    int heightDiff = newHeight - allTabs.Height;
-                    allTabs.Invoke(new Action<Size>((size) => allTabs.Size = size), new Size(newWidth, newHeight));
+            // Check if resizeWorker has been stopped
+            if (resizeWorker.CancellationPending == true) {
+                e.Cancel = true;
+            }
+            else {
+                while (true) {
+                    if (isResizeNeeded) {
+                        int newWidth = this.Width - 196;
+                        int newHeight = this.Height - 67;
+                        int widthDiff = newWidth - allTabs.Width;
+                        int heightDiff = newHeight - allTabs.Height;
+                        allTabs.Invoke(new Action<Size>((size) => allTabs.Size = size), new Size(newWidth, newHeight));
 
 
-                    // Tab 1
-                    selectRegressantsButton.Invoke(new Action<Point>((loc) => selectRegressantsButton.Location = loc),
-                        new Point(selectRegressantsButton.Location.X + widthDiff, selectRegressantsButton.Location.Y));
+                        // Tab 1
+                        selectRegressantsButton.Invoke(new Action<Point>((loc) => selectRegressantsButton.Location = loc),
+                            new Point(selectRegressantsButton.Location.X + widthDiff, selectRegressantsButton.Location.Y));
 
-                    selectRegressorsButton.Invoke(new Action<Point>((loc) => selectRegressorsButton.Location = loc),
-                        new Point(selectRegressorsButton.Location.X + widthDiff, selectRegressorsButton.Location.Y));
+                        selectRegressorsButton.Invoke(new Action<Point>((loc) => selectRegressorsButton.Location = loc),
+                            new Point(selectRegressorsButton.Location.X + widthDiff, selectRegressorsButton.Location.Y));
 
-                    clearSelectedFactorsButton.Invoke(new Action<Point>((loc) => clearSelectedFactorsButton.Location = loc),
-                        new Point(clearSelectedFactorsButton.Location.X + widthDiff, clearSelectedFactorsButton.Location.Y));
+                        clearSelectedFactorsButton.Invoke(new Action<Point>((loc) => clearSelectedFactorsButton.Location = loc),
+                            new Point(clearSelectedFactorsButton.Location.X + widthDiff, clearSelectedFactorsButton.Location.Y));
 
-                    acceptFactorsButton.Invoke(new Action<Point>((loc) => acceptFactorsButton.Location = loc),
-                        new Point(acceptFactorsButton.Location.X + widthDiff, acceptFactorsButton.Location.Y));
+                        acceptFactorsButton.Invoke(new Action<Point>((loc) => acceptFactorsButton.Location = loc),
+                            new Point(acceptFactorsButton.Location.X + widthDiff, acceptFactorsButton.Location.Y));
 
-                    factorsData.Invoke(new Action<Size>((size) => factorsData.Size = size),
-                        new Size(factorsData.Width + widthDiff, factorsData.Height + heightDiff));
+                        factorsData.Invoke(new Action<Size>((size) => factorsData.Size = size),
+                            new Size(factorsData.Width + widthDiff, factorsData.Height + heightDiff));
 
-                    progressBarDataLoad.Invoke(new Action<Point>((loc) => progressBarDataLoad.Location = loc),
-                        new Point(progressBarDataLoad.Location.X, progressBarDataLoad.Location.Y + heightDiff));
+                        progressBarDataLoad.Invoke(new Action<Point>((loc) => progressBarDataLoad.Location = loc),
+                            new Point(progressBarDataLoad.Location.X, progressBarDataLoad.Location.Y + heightDiff));
 
-                    progressBarDataLoad.Invoke(new Action<Size>((size) => progressBarDataLoad.Size = size),
-                        new Size(progressBarDataLoad.Width + widthDiff, progressBarDataLoad.Height));
+                        progressBarDataLoad.Invoke(new Action<Size>((size) => progressBarDataLoad.Size = size),
+                            new Size(progressBarDataLoad.Width + widthDiff, progressBarDataLoad.Height));
+                    }
                 }
             }
         }
+
+        
     }
 }

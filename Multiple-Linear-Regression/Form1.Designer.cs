@@ -47,10 +47,15 @@
             this.regressorsList = new System.Windows.Forms.ListBox();
             this.labelRegressorsList = new System.Windows.Forms.Label();
             this.checkPairwiseCombinations = new System.Windows.Forms.CheckBox();
+            this.functionsForProcessingDataGrid = new System.Windows.Forms.DataGridView();
+            this.progressBarFunctionProcess = new System.Windows.Forms.ProgressBar();
+            this.doFunctionalProcessButton = new System.Windows.Forms.Button();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).BeginInit();
+            this.processingStatDataTab.SuspendLayout();
             this.menuStrip.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.functionsForProcessingDataGrid)).BeginInit();
             this.SuspendLayout();
             // 
             // WorkFileMenuItem
@@ -86,6 +91,7 @@
             this.allTabs.SelectedIndex = 0;
             this.allTabs.Size = new System.Drawing.Size(824, 416);
             this.allTabs.TabIndex = 3;
+            this.allTabs.Selected += new System.Windows.Forms.TabControlEventHandler(this.allTabs_Selected);
             // 
             // loadDataTab
             // 
@@ -176,6 +182,9 @@
             // 
             // processingStatDataTab
             // 
+            this.processingStatDataTab.Controls.Add(this.doFunctionalProcessButton);
+            this.processingStatDataTab.Controls.Add(this.progressBarFunctionProcess);
+            this.processingStatDataTab.Controls.Add(this.functionsForProcessingDataGrid);
             this.processingStatDataTab.Location = new System.Drawing.Point(4, 22);
             this.processingStatDataTab.Name = "processingStatDataTab";
             this.processingStatDataTab.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
@@ -273,6 +282,40 @@
             this.checkPairwiseCombinations.Text = "Использовать попарные \r\nсочетания факторов";
             this.checkPairwiseCombinations.UseVisualStyleBackColor = true;
             // 
+            // functionsForProcessingDataGrid
+            // 
+            this.functionsForProcessingDataGrid.AllowUserToAddRows = false;
+            this.functionsForProcessingDataGrid.AllowUserToDeleteRows = false;
+            this.functionsForProcessingDataGrid.AllowUserToResizeRows = false;
+            this.functionsForProcessingDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.functionsForProcessingDataGrid.Location = new System.Drawing.Point(3, 3);
+            this.functionsForProcessingDataGrid.Name = "functionsForProcessingDataGrid";
+            this.functionsForProcessingDataGrid.ReadOnly = true;
+            this.functionsForProcessingDataGrid.RowHeadersWidth = 51;
+            this.functionsForProcessingDataGrid.Size = new System.Drawing.Size(632, 381);
+            this.functionsForProcessingDataGrid.TabIndex = 10;
+            // 
+            // progressBarFunctionProcess
+            // 
+            this.progressBarFunctionProcess.Location = new System.Drawing.Point(3, 369);
+            this.progressBarFunctionProcess.Margin = new System.Windows.Forms.Padding(2);
+            this.progressBarFunctionProcess.Name = "progressBarFunctionProcess";
+            this.progressBarFunctionProcess.Size = new System.Drawing.Size(632, 15);
+            this.progressBarFunctionProcess.TabIndex = 11;
+            this.progressBarFunctionProcess.Visible = false;
+            // 
+            // doFunctionalProcessButton
+            // 
+            this.doFunctionalProcessButton.Enabled = false;
+            this.doFunctionalProcessButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.doFunctionalProcessButton.Location = new System.Drawing.Point(669, 55);
+            this.doFunctionalProcessButton.Name = "doFunctionalProcessButton";
+            this.doFunctionalProcessButton.Size = new System.Drawing.Size(126, 66);
+            this.doFunctionalProcessButton.TabIndex = 14;
+            this.doFunctionalProcessButton.Text = "Выполнить функциональную предобработку";
+            this.doFunctionalProcessButton.UseVisualStyleBackColor = true;
+            this.doFunctionalProcessButton.Click += new System.EventHandler(this.doFunctionalProcessButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -295,8 +338,10 @@
             this.loadDataTab.ResumeLayout(false);
             this.loadDataTab.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).EndInit();
+            this.processingStatDataTab.ResumeLayout(false);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.functionsForProcessingDataGrid)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -326,6 +371,9 @@
         private System.Windows.Forms.Button selectRegressantsButton;
         private System.Windows.Forms.Button clearSelectedFactorsButton;
         private System.Windows.Forms.CheckBox checkPairwiseCombinations;
+        private System.Windows.Forms.Button doFunctionalProcessButton;
+        private System.Windows.Forms.ProgressBar progressBarFunctionProcess;
+        private System.Windows.Forms.DataGridView functionsForProcessingDataGrid;
     }
 }
 
