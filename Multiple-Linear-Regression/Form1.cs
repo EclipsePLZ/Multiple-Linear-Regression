@@ -18,6 +18,22 @@ namespace Multiple_Linear_Regression {
 
         private BackgroundWorker resizeWorker = new BackgroundWorker();
         private bool isResizeNeeded = false;
+
+        //private List<string> Headers { get; set; } = new List<string>();
+        //private List<string> RegressantsHeaders { get; set; } = new List<string>();
+        //private List<string> RegressorsHeaders { get; set; } = new List<string>();
+
+        private Dictionary<string, int> RegressantsHeaders { get; set; } = new Dictionary<string, int>();
+        private Dictionary<string, int> RegressorsHeaders { get; set; } = new Dictionary<string, int>();
+        private Dictionary<string, int> Headers { get; set; } = new Dictionary<string, int>();
+
+        private Dictionary<string, List<double>> Regressants { get; set; } = new Dictionary<string, List<double>>();
+        private Dictionary<string, List<double>> Regressors { get; set; } = new Dictionary<string, List<double>>();
+
+        private double[,] X { get; set; }
+        private double[] Y { get; set; }
+
+
         public MainForm() {
             InitializeComponent();
 
@@ -30,6 +46,7 @@ namespace Multiple_Linear_Regression {
 
             helpAllStepsMenu.ToolTipText = StepsInfo.Step1;
 
+            // Run background worker for resizing components on form
             resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
             resizeWorker.WorkerSupportsCancellation = true;
             resizeWorker.RunWorkerAsync();
@@ -93,6 +110,17 @@ namespace Multiple_Linear_Regression {
                     Action clear = () => ClearControlsStep1();
                     factorsData.Invoke(clear);
 
+                    // Add headers to properties
+                    Headers.Clear();
+                    int headerCounter = 0;
+                    foreach (string header in allRows[0]) {
+                        Headers[header] = headerCounter;
+                        headerCounter++;
+                    }
+
+                    RegressantsHeaders.Clear();
+                    RegressorsHeaders.Clear();
+
                     // Add headers to data grid view
                     factorsData.Invoke(new Action<List<string>>((s) => SetDataGVColumnHeaders(s, factorsData, false)), allRows[0]);
 
@@ -112,8 +140,11 @@ namespace Multiple_Linear_Regression {
                             bgWorker.ReportProgress(progress);
                         }
 
-                        // Add row to dataGridView
-                        factorsData.Invoke(new Action<List<string>>((s) => factorsData.Rows.Add(s.ToArray())), allRows[i]);
+                        // Check empty elements in row
+                        if (allRows[i].All(elem => elem.ToString() != "")) {
+                            // Add row to dataGridView
+                            factorsData.Invoke(new Action<List<string>>((s) => factorsData.Rows.Add(s.ToArray())), allRows[i]);
+                        }
                     }
 
                     // Enable button to select regressors and regressants
@@ -122,6 +153,9 @@ namespace Multiple_Linear_Regression {
 
                     // Enable accept selected factors button
                     acceptFactorsButton.Invoke(new Action<bool>((b) => acceptFactorsButton.Enabled = b), true);
+
+                    // Enable clear selected factors button
+                    clearSelectedFactorsButton.Invoke(new Action<bool>((b) => clearSelectedFactorsButton.Enabled = b), true);
 
                     // Hide progress bar
                     progressBarDataLoad.Invoke(new Action<bool>((b) => progressBarDataLoad.Visible = b), false);
@@ -135,6 +169,114 @@ namespace Multiple_Linear_Regression {
             }
         }
 
+        private void selectRegressantsButton_Click(object sender, EventArgs e) {
+            SelectParametersForm form = new SelectParametersForm("Выбор управляемых факторов", 
+                Headers.Keys.Except(RegressorsHeaders.Keys).Except(RegressantsHeaders.Keys).ToList(), RegressantsHeaders.Keys.ToList());
+            form.ShowDialog();
+
+            // Get selected factors
+            RegressantsHeaders.Clear();
+            foreach (string header in form.SelectedFactors) {
+                RegressantsHeaders[header] = Headers[header];
+            }
+
+            // Print factors to listbox
+            regressantsList.Items.Clear();
+            regressantsList.Items.AddRange(RegressantsHeaders.Keys.ToArray());
+        }
+
+        private void selectRegressorsButton_Click(object sender, EventArgs e) {
+            SelectParametersForm form = new SelectParametersForm("Выбор управляющих факторов",
+                Headers.Keys.Except(RegressantsHeaders.Keys).Except(RegressorsHeaders.Keys).ToList(), RegressorsHeaders.Keys.ToList());
+            form.ShowDialog();
+
+            // Get selected factors
+            RegressorsHeaders.Clear();
+            foreach (string header in form.SelectedFactors) {
+                RegressorsHeaders[header] = Headers[header];
+            }
+
+            // Print factors to listbox
+            regressorsList.Items.Clear();
+            regressorsList.Items.AddRange(RegressorsHeaders.Keys.ToArray());
+        }
+
+        private void clearSelectedFactorsButton_Click(object sender, EventArgs e) {
+            regressorsList.Items.Clear();
+            regressantsList.Items.Clear();
+            RegressantsHeaders.Clear();
+            RegressorsHeaders.Clear();
+        }
+
+        private void acceptFactorsButton_Click(object sender, EventArgs e) {
+            if (RegressorsHeaders.Count > 0 && RegressantsHeaders.Count > 0) {
+                LoadValuesForFactors();
+
+                if (checkPairwiseCombinations.Checked) {
+                    CreatePairwiseCombinationsOfFactors();
+                }
+            }
+            else {
+                if (RegressantsHeaders.Count == 0 && RegressorsHeaders.Count == 0) {
+                    MessageBox.Show("Вы не выбрали показатели для исследования");
+                }
+                else if (RegressantsHeaders.Count == 0) {
+                    MessageBox.Show("Вы не выбрали управляемые факторы для исследования");
+                }
+                else {
+                    MessageBox.Show("Вы не выбрали управляющие факторы для исследования");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Load values for selected factors from data grid view
+        /// </summary>
+        private void LoadValuesForFactors() {
+            Regressants.Clear();
+            Regressors.Clear();
+            
+            // Load regressants
+            foreach (string factor in RegressantsHeaders.Keys) {
+                List<double> regressantValues = new List<double>();
+
+                for (int row = 0; row < factorsData.Rows.Count; row++) {
+                    regressantValues.Add(Convert.ToDouble(factorsData[RegressantsHeaders[factor], row].Value));
+                }
+                Regressants[factor] = regressantValues;
+            }
+
+            // Load regressors
+            foreach (string factor in RegressorsHeaders.Keys) {
+                List<double> regressorsValues = new List<double>();
+
+                for (int row = 0; row < factorsData.Rows.Count; row++) {
+                    regressorsValues.Add(Convert.ToDouble(factorsData[RegressorsHeaders[factor], row].Value));
+                }
+                Regressors[factor] = regressorsValues;
+            }
+        }
+
+        /// <summary>
+        /// Create pairwise combinations of factors as new factors
+        /// </summary>
+        private void CreatePairwiseCombinationsOfFactors() {
+            List<string> RegressorsKeys = Regressors.Keys.ToList();
+
+            // Create new factor as pairwise combination of factors
+            for (int i = 0; i < RegressorsKeys.Count - 1; i++) {
+                for (int j = i + 1; j < RegressorsKeys.Count; j++) {
+                    List<double> newRegressorFactorValues = new List<double>();
+
+                    // The value of the new factor is obtained by multiplying the values of the two factors
+                    for (int elemNum = 0; elemNum < Regressors[RegressorsKeys[i]].Count; elemNum++) {
+                        newRegressorFactorValues.Add(Regressors[RegressorsKeys[i]][elemNum] * Regressors[RegressorsKeys[j]][elemNum]);
+                    }
+                    Regressors[RegressorsKeys[i] + " & " + RegressorsKeys[j]] = newRegressorFactorValues;
+                }
+            }
+        }
+
         /// <summary>
         /// Function for clear controls start with step1
         /// </summary>
@@ -143,6 +285,7 @@ namespace Multiple_Linear_Regression {
             selectRegressantsButton.Enabled = false;
             selectRegressorsButton.Enabled = false;
             acceptFactorsButton.Enabled = false;
+            clearSelectedFactorsButton.Enabled = false;
             regressantsList.Items.Clear();
             regressorsList.Items.Clear();
         }
@@ -224,6 +367,18 @@ namespace Multiple_Linear_Regression {
             exitForm.Show();
         }
 
+        private void MainForm_ResizeBegin(object sender, EventArgs e) {
+            isResizeNeeded = true;
+        }
+
+        private void MainForm_ResizeEnd(object sender, EventArgs e) {
+            isResizeNeeded = false;
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
+            resizeWorker.CancelAsync();
+        }
+
         /// <summary>
         /// Resize all main from components
         /// </summary>
@@ -235,6 +390,29 @@ namespace Multiple_Linear_Regression {
                     int widthDiff = newWidth - allTabs.Width;
                     int heightDiff = newHeight - allTabs.Height;
                     allTabs.Invoke(new Action<Size>((size) => allTabs.Size = size), new Size(newWidth, newHeight));
+
+
+                    // Tab 1
+                    selectRegressantsButton.Invoke(new Action<Point>((loc) => selectRegressantsButton.Location = loc),
+                        new Point(selectRegressantsButton.Location.X + widthDiff, selectRegressantsButton.Location.Y));
+
+                    selectRegressorsButton.Invoke(new Action<Point>((loc) => selectRegressorsButton.Location = loc),
+                        new Point(selectRegressorsButton.Location.X + widthDiff, selectRegressorsButton.Location.Y));
+
+                    clearSelectedFactorsButton.Invoke(new Action<Point>((loc) => clearSelectedFactorsButton.Location = loc),
+                        new Point(clearSelectedFactorsButton.Location.X + widthDiff, clearSelectedFactorsButton.Location.Y));
+
+                    acceptFactorsButton.Invoke(new Action<Point>((loc) => acceptFactorsButton.Location = loc),
+                        new Point(acceptFactorsButton.Location.X + widthDiff, acceptFactorsButton.Location.Y));
+
+                    factorsData.Invoke(new Action<Size>((size) => factorsData.Size = size),
+                        new Size(factorsData.Width + widthDiff, factorsData.Height + heightDiff));
+
+                    progressBarDataLoad.Invoke(new Action<Point>((loc) => progressBarDataLoad.Location = loc),
+                        new Point(progressBarDataLoad.Location.X, progressBarDataLoad.Location.Y + heightDiff));
+
+                    progressBarDataLoad.Invoke(new Action<Size>((size) => progressBarDataLoad.Size = size),
+                        new Size(progressBarDataLoad.Width + widthDiff, progressBarDataLoad.Height));
                 }
             }
         }
