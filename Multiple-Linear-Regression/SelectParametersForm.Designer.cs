@@ -38,47 +38,48 @@
             // listAvailabelFactors
             // 
             this.listAvailabelFactors.FormattingEnabled = true;
-            this.listAvailabelFactors.ItemHeight = 16;
-            this.listAvailabelFactors.Location = new System.Drawing.Point(324, 50);
+            this.listAvailabelFactors.Location = new System.Drawing.Point(287, 41);
+            this.listAvailabelFactors.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.listAvailabelFactors.Name = "listAvailabelFactors";
-            this.listAvailabelFactors.Size = new System.Drawing.Size(180, 244);
+            this.listAvailabelFactors.Size = new System.Drawing.Size(136, 238);
             this.listAvailabelFactors.TabIndex = 0;
             this.listAvailabelFactors.DoubleClick += new System.EventHandler(this.listAvailabelFactors_DoubleClick);
             // 
             // listSelectedFactors
             // 
             this.listSelectedFactors.FormattingEnabled = true;
-            this.listSelectedFactors.ItemHeight = 16;
-            this.listSelectedFactors.Location = new System.Drawing.Point(42, 50);
+            this.listSelectedFactors.Location = new System.Drawing.Point(32, 41);
+            this.listSelectedFactors.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.listSelectedFactors.Name = "listSelectedFactors";
-            this.listSelectedFactors.Size = new System.Drawing.Size(180, 244);
+            this.listSelectedFactors.Size = new System.Drawing.Size(136, 238);
             this.listSelectedFactors.TabIndex = 1;
             this.listSelectedFactors.DoubleClick += new System.EventHandler(this.listSelectedFactors_DoubleClick);
             // 
             // labelAvailableFactors
             // 
             this.labelAvailableFactors.AutoSize = true;
-            this.labelAvailableFactors.Location = new System.Drawing.Point(321, 31);
+            this.labelAvailableFactors.Location = new System.Drawing.Point(284, 25);
+            this.labelAvailableFactors.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelAvailableFactors.Name = "labelAvailableFactors";
-            this.labelAvailableFactors.Size = new System.Drawing.Size(163, 16);
+            this.labelAvailableFactors.Size = new System.Drawing.Size(129, 13);
             this.labelAvailableFactors.TabIndex = 2;
             this.labelAvailableFactors.Text = "Доступные показатели:";
             // 
             // labelSelectedFactors
             // 
             this.labelSelectedFactors.AutoSize = true;
-            this.labelSelectedFactors.Location = new System.Drawing.Point(39, 31);
+            this.labelSelectedFactors.Location = new System.Drawing.Point(29, 25);
+            this.labelSelectedFactors.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelSelectedFactors.Name = "labelSelectedFactors";
-            this.labelSelectedFactors.Size = new System.Drawing.Size(166, 16);
+            this.labelSelectedFactors.Size = new System.Drawing.Size(131, 13);
             this.labelSelectedFactors.TabIndex = 3;
             this.labelSelectedFactors.Text = "Выбранные показатели:";
             // 
             // allToAvailableList
             // 
-            this.allToAvailableList.Location = new System.Drawing.Point(253, 227);
-            this.allToAvailableList.Margin = new System.Windows.Forms.Padding(4);
+            this.allToAvailableList.Location = new System.Drawing.Point(213, 169);
             this.allToAvailableList.Name = "allToAvailableList";
-            this.allToAvailableList.Size = new System.Drawing.Size(39, 30);
+            this.allToAvailableList.Size = new System.Drawing.Size(29, 24);
             this.allToAvailableList.TabIndex = 11;
             this.allToAvailableList.Text = ">>";
             this.allToAvailableList.UseVisualStyleBackColor = true;
@@ -86,10 +87,9 @@
             // 
             // allToSelectList
             // 
-            this.allToSelectList.Location = new System.Drawing.Point(253, 190);
-            this.allToSelectList.Margin = new System.Windows.Forms.Padding(4);
+            this.allToSelectList.Location = new System.Drawing.Point(213, 139);
             this.allToSelectList.Name = "allToSelectList";
-            this.allToSelectList.Size = new System.Drawing.Size(39, 30);
+            this.allToSelectList.Size = new System.Drawing.Size(29, 24);
             this.allToSelectList.TabIndex = 10;
             this.allToSelectList.Text = "<<";
             this.allToSelectList.UseVisualStyleBackColor = true;
@@ -97,10 +97,9 @@
             // 
             // toAvailableList
             // 
-            this.toAvailableList.Location = new System.Drawing.Point(253, 123);
-            this.toAvailableList.Margin = new System.Windows.Forms.Padding(4);
+            this.toAvailableList.Location = new System.Drawing.Point(213, 85);
             this.toAvailableList.Name = "toAvailableList";
-            this.toAvailableList.Size = new System.Drawing.Size(39, 30);
+            this.toAvailableList.Size = new System.Drawing.Size(29, 24);
             this.toAvailableList.TabIndex = 9;
             this.toAvailableList.Text = ">";
             this.toAvailableList.UseVisualStyleBackColor = true;
@@ -108,10 +107,9 @@
             // 
             // toSelectList
             // 
-            this.toSelectList.Location = new System.Drawing.Point(253, 86);
-            this.toSelectList.Margin = new System.Windows.Forms.Padding(4);
+            this.toSelectList.Location = new System.Drawing.Point(213, 55);
             this.toSelectList.Name = "toSelectList";
-            this.toSelectList.Size = new System.Drawing.Size(39, 30);
+            this.toSelectList.Size = new System.Drawing.Size(29, 24);
             this.toSelectList.TabIndex = 8;
             this.toSelectList.Text = "<";
             this.toSelectList.UseVisualStyleBackColor = true;
@@ -120,9 +118,10 @@
             // acceptSelectedFactorsButton
             // 
             this.acceptSelectedFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.acceptSelectedFactorsButton.Location = new System.Drawing.Point(213, 313);
+            this.acceptSelectedFactorsButton.Location = new System.Drawing.Point(180, 246);
+            this.acceptSelectedFactorsButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.acceptSelectedFactorsButton.Name = "acceptSelectedFactorsButton";
-            this.acceptSelectedFactorsButton.Size = new System.Drawing.Size(123, 43);
+            this.acceptSelectedFactorsButton.Size = new System.Drawing.Size(94, 34);
             this.acceptSelectedFactorsButton.TabIndex = 12;
             this.acceptSelectedFactorsButton.Text = "Принять";
             this.acceptSelectedFactorsButton.UseVisualStyleBackColor = true;
@@ -130,9 +129,9 @@
             // 
             // SelectParametersForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(562, 368);
+            this.ClientSize = new System.Drawing.Size(469, 306);
             this.Controls.Add(this.acceptSelectedFactorsButton);
             this.Controls.Add(this.allToAvailableList);
             this.Controls.Add(this.allToSelectList);
@@ -143,10 +142,13 @@
             this.Controls.Add(this.listSelectedFactors);
             this.Controls.Add(this.listAvailabelFactors);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximumSize = new System.Drawing.Size(580, 415);
-            this.MinimumSize = new System.Drawing.Size(580, 415);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.MinimumSize = new System.Drawing.Size(485, 345);
             this.Name = "SelectParametersForm";
             this.Text = "SelectParametersForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SelectParametersForm_FormClosing);
+            this.ResizeBegin += new System.EventHandler(this.SelectParametersForm_ResizeBegin);
+            this.ResizeEnd += new System.EventHandler(this.SelectParametersForm_ResizeEnd);
             this.ResumeLayout(false);
             this.PerformLayout();
 
