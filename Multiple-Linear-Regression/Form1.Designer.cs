@@ -36,7 +36,7 @@
             this.selectRegressantsButton = new System.Windows.Forms.Button();
             this.progressBarDataLoad = new System.Windows.Forms.ProgressBar();
             this.factorsData = new System.Windows.Forms.DataGridView();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.processingStatDataTab = new System.Windows.Forms.TabPage();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.WorkFileMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenFileMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,6 +46,7 @@
             this.labelregressantsList = new System.Windows.Forms.Label();
             this.regressorsList = new System.Windows.Forms.ListBox();
             this.labelRegressorsList = new System.Windows.Forms.Label();
+            this.checkPairwiseCombinations = new System.Windows.Forms.CheckBox();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).BeginInit();
@@ -79,7 +80,7 @@
             // allTabs
             // 
             this.allTabs.Controls.Add(this.loadDataTab);
-            this.allTabs.Controls.Add(this.tabPage2);
+            this.allTabs.Controls.Add(this.processingStatDataTab);
             this.allTabs.Location = new System.Drawing.Point(177, 27);
             this.allTabs.Name = "allTabs";
             this.allTabs.SelectedIndex = 0;
@@ -88,6 +89,7 @@
             // 
             // loadDataTab
             // 
+            this.loadDataTab.Controls.Add(this.checkPairwiseCombinations);
             this.loadDataTab.Controls.Add(this.clearSelectedFactorsButton);
             this.loadDataTab.Controls.Add(this.acceptFactorsButton);
             this.loadDataTab.Controls.Add(this.selectRegressorsButton);
@@ -118,7 +120,7 @@
             // 
             this.acceptFactorsButton.Enabled = false;
             this.acceptFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.acceptFactorsButton.Location = new System.Drawing.Point(678, 305);
+            this.acceptFactorsButton.Location = new System.Drawing.Point(682, 318);
             this.acceptFactorsButton.Name = "acceptFactorsButton";
             this.acceptFactorsButton.Size = new System.Drawing.Size(110, 48);
             this.acceptFactorsButton.TabIndex = 13;
@@ -172,15 +174,15 @@
             this.factorsData.Size = new System.Drawing.Size(632, 381);
             this.factorsData.TabIndex = 9;
             // 
-            // tabPage2
+            // processingStatDataTab
             // 
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPage2.Size = new System.Drawing.Size(816, 390);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "tabPage2";
-            this.tabPage2.UseVisualStyleBackColor = true;
+            this.processingStatDataTab.Location = new System.Drawing.Point(4, 22);
+            this.processingStatDataTab.Name = "processingStatDataTab";
+            this.processingStatDataTab.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.processingStatDataTab.Size = new System.Drawing.Size(816, 390);
+            this.processingStatDataTab.TabIndex = 1;
+            this.processingStatDataTab.Text = "Обработка статистических данных";
+            this.processingStatDataTab.UseVisualStyleBackColor = true;
             // 
             // menuStrip
             // 
@@ -259,6 +261,18 @@
             this.labelRegressorsList.TabIndex = 8;
             this.labelRegressorsList.Text = "Управляющие факторы:";
             // 
+            // checkPairwiseCombinations
+            // 
+            this.checkPairwiseCombinations.AutoSize = true;
+            this.checkPairwiseCombinations.Checked = true;
+            this.checkPairwiseCombinations.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkPairwiseCombinations.Location = new System.Drawing.Point(656, 282);
+            this.checkPairwiseCombinations.Name = "checkPairwiseCombinations";
+            this.checkPairwiseCombinations.Size = new System.Drawing.Size(155, 30);
+            this.checkPairwiseCombinations.TabIndex = 15;
+            this.checkPairwiseCombinations.Text = "Использовать попарные \r\nсочетания факторов";
+            this.checkPairwiseCombinations.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -279,6 +293,7 @@
             this.ResizeEnd += new System.EventHandler(this.MainForm_ResizeEnd);
             this.allTabs.ResumeLayout(false);
             this.loadDataTab.ResumeLayout(false);
+            this.loadDataTab.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).EndInit();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
@@ -294,7 +309,7 @@
         private System.Windows.Forms.ToolStripMenuItem helpAllSteps;
         private System.Windows.Forms.TabControl allTabs;
         private System.Windows.Forms.TabPage loadDataTab;
-        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage processingStatDataTab;
         private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem WorkFileMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem OpenFileMenu;
@@ -310,6 +325,7 @@
         private System.Windows.Forms.Button selectRegressorsButton;
         private System.Windows.Forms.Button selectRegressantsButton;
         private System.Windows.Forms.Button clearSelectedFactorsButton;
+        private System.Windows.Forms.CheckBox checkPairwiseCombinations;
     }
 }
 

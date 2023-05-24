@@ -27,6 +27,13 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, int> RegressorsHeaders { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> Headers { get; set; } = new Dictionary<string, int>();
 
+        private Dictionary<string, List<double>> Regressants { get; set; } = new Dictionary<string, List<double>>();
+        private Dictionary<string, List<double>> Regressors { get; set; } = new Dictionary<string, List<double>>();
+
+        private double[,] X { get; set; }
+        private double[] Y { get; set; }
+
+
         public MainForm() {
             InitializeComponent();
 
@@ -133,8 +140,11 @@ namespace Multiple_Linear_Regression {
                             bgWorker.ReportProgress(progress);
                         }
 
-                        // Add row to dataGridView
-                        factorsData.Invoke(new Action<List<string>>((s) => factorsData.Rows.Add(s.ToArray())), allRows[i]);
+                        // Check empty elements in row
+                        if (allRows[i].All(elem => elem.ToString() != "")) {
+                            // Add row to dataGridView
+                            factorsData.Invoke(new Action<List<string>>((s) => factorsData.Rows.Add(s.ToArray())), allRows[i]);
+                        }
                     }
 
                     // Enable button to select regressors and regressants
@@ -200,7 +210,11 @@ namespace Multiple_Linear_Regression {
 
         private void acceptFactorsButton_Click(object sender, EventArgs e) {
             if (RegressorsHeaders.Count > 0 && RegressantsHeaders.Count > 0) {
+                LoadValuesForFactors();
 
+                if (checkPairwiseCombinations.Checked) {
+                    CreatePairwiseCombinationsOfFactors();
+                }
             }
             else {
                 if (RegressantsHeaders.Count == 0 && RegressorsHeaders.Count == 0) {
@@ -211,6 +225,54 @@ namespace Multiple_Linear_Regression {
                 }
                 else {
                     MessageBox.Show("Вы не выбрали управляющие факторы для исследования");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Load values for selected factors from data grid view
+        /// </summary>
+        private void LoadValuesForFactors() {
+            Regressants.Clear();
+            Regressors.Clear();
+            
+            // Load regressants
+            foreach (string factor in RegressantsHeaders.Keys) {
+                List<double> regressantValues = new List<double>();
+
+                for (int row = 0; row < factorsData.Rows.Count; row++) {
+                    regressantValues.Add(Convert.ToDouble(factorsData[RegressantsHeaders[factor], row].Value));
+                }
+                Regressants[factor] = regressantValues;
+            }
+
+            // Load regressors
+            foreach (string factor in RegressorsHeaders.Keys) {
+                List<double> regressorsValues = new List<double>();
+
+                for (int row = 0; row < factorsData.Rows.Count; row++) {
+                    regressorsValues.Add(Convert.ToDouble(factorsData[RegressorsHeaders[factor], row].Value));
+                }
+                Regressors[factor] = regressorsValues;
+            }
+        }
+
+        /// <summary>
+        /// Create pairwise combinations of factors as new factors
+        /// </summary>
+        private void CreatePairwiseCombinationsOfFactors() {
+            List<string> RegressorsKeys = Regressors.Keys.ToList();
+
+            // Create new factor as pairwise combination of factors
+            for (int i = 0; i < RegressorsKeys.Count - 1; i++) {
+                for (int j = i + 1; j < RegressorsKeys.Count; j++) {
+                    List<double> newRegressorFactorValues = new List<double>();
+
+                    // The value of the new factor is obtained by multiplying the values of the two factors
+                    for (int elemNum = 0; elemNum < Regressors[RegressorsKeys[i]].Count; elemNum++) {
+                        newRegressorFactorValues.Add(Regressors[RegressorsKeys[i]][elemNum] * Regressors[RegressorsKeys[j]][elemNum]);
+                    }
+                    Regressors[RegressorsKeys[i] + " & " + RegressorsKeys[j]] = newRegressorFactorValues;
                 }
             }
         }
