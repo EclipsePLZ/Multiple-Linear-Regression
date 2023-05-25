@@ -59,6 +59,7 @@
     <Compile Include="ExitForm.Designer.cs">
       <DependentUpon>ExitForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model.cs" />
     <Compile Include="SelectParametersForm.cs">
       <SubType>Form</SubType>
     </Compile>

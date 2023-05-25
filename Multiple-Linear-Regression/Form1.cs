@@ -26,11 +26,9 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, int> RegressantsHeaders { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> RegressorsHeaders { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> Headers { get; set; } = new Dictionary<string, int>();
+        private Dictionary<string, List<double>> BaseRegressors { get; set; } = new Dictionary<string, List<double>>();
 
-        private Dictionary<string, List<double>> Regressants { get; set; } = new Dictionary<string, List<double>>();
-        private Dictionary<string, List<double>> Regressors { get; set; } = new Dictionary<string, List<double>>();
-
-        private Dictionary<string, List<string>> RegressorsProcessFunc { get; set; } = new Dictionary<string, List<string>>();
+        private List<Model> Models { get; set; } = new List<Model>();
 
         private double[,] X { get; set; }
         private double[] Y { get; set; }
@@ -218,6 +216,8 @@ namespace Multiple_Linear_Regression {
                     CreatePairwiseCombinationsOfFactors();
                 }
 
+                FillRegressorsForModels();
+
                 ClearControlsStep2();
                 processingStatDataTab.Enabled = true;
                 doFunctionalProcessButton.Enabled = true;
@@ -239,8 +239,7 @@ namespace Multiple_Linear_Regression {
         /// Load values for selected factors from data grid view
         /// </summary>
         private void LoadValuesForFactors() {
-            Regressants.Clear();
-            Regressors.Clear();
+            Models.Clear();
             
             // Load regressants
             foreach (string factor in RegressantsHeaders.Keys) {
@@ -249,17 +248,17 @@ namespace Multiple_Linear_Regression {
                 for (int row = 0; row < factorsData.Rows.Count; row++) {
                     regressantValues.Add(Convert.ToDouble(factorsData[RegressantsHeaders[factor], row].Value));
                 }
-                Regressants[factor] = regressantValues;
+                Models.Add(new Model(factor, regressantValues));
             }
 
             // Load regressors
             foreach (string factor in RegressorsHeaders.Keys) {
                 List<double> regressorsValues = new List<double>();
-
+                
                 for (int row = 0; row < factorsData.Rows.Count; row++) {
                     regressorsValues.Add(Convert.ToDouble(factorsData[RegressorsHeaders[factor], row].Value));
                 }
-                Regressors[factor] = regressorsValues;
+                BaseRegressors[factor] = regressorsValues;
             }
         }
 
@@ -267,7 +266,7 @@ namespace Multiple_Linear_Regression {
         /// Create pairwise combinations of factors as new factors
         /// </summary>
         private void CreatePairwiseCombinationsOfFactors() {
-            List<string> RegressorsKeys = Regressors.Keys.ToList();
+            List<string> RegressorsKeys = BaseRegressors.Keys.ToList();
 
             // Create new factor as pairwise combination of factors
             for (int i = 0; i < RegressorsKeys.Count - 1; i++) {
@@ -275,16 +274,24 @@ namespace Multiple_Linear_Regression {
                     List<double> newRegressorFactorValues = new List<double>();
 
                     // The value of the new factor is obtained by multiplying the values of the two factors
-                    for (int elemNum = 0; elemNum < Regressors[RegressorsKeys[i]].Count; elemNum++) {
-                        newRegressorFactorValues.Add(Regressors[RegressorsKeys[i]][elemNum] * Regressors[RegressorsKeys[j]][elemNum]);
+                    for (int elemNum = 0; elemNum < BaseRegressors[RegressorsKeys[i]].Count; elemNum++) {
+                        newRegressorFactorValues.Add(BaseRegressors[RegressorsKeys[i]][elemNum] * BaseRegressors[RegressorsKeys[j]][elemNum]);
                     }
-                    Regressors[RegressorsKeys[i] + " & " + RegressorsKeys[j]] = newRegressorFactorValues;
+                    BaseRegressors[RegressorsKeys[i] + " & " + RegressorsKeys[j]] = newRegressorFactorValues;
                 }
             }
         }
 
+        /// <summary>
+        /// Set regressors and regressors names for each model
+        /// </summary>
+        private void FillRegressorsForModels() {
+            Models.ForEach(model => model.SetNewRegressors(BaseRegressors));
+            Models.ForEach(model => model.SetRegressorsNames(BaseRegressors.Keys.ToList()));
+        }
+
         private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
-            if (Regressors.Count > 0) {
+            if (BaseRegressors.Count > 0) {
                 RunBackgroundFunctionalProcessData();
             }
             else {
@@ -296,9 +303,12 @@ namespace Multiple_Linear_Regression {
         /// Run background worker for functional process data
         /// </summary>
         private void RunBackgroundFunctionalProcessData() {
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
+                functionsForProcessingDataGrid, true, new List<int>() { 3 });
+
             BackgroundWorker bgWorker = new BackgroundWorker();
             bgWorker.ProgressChanged += new ProgressChangedEventHandler((sender, e) => ProgressBarChanged(sender, e, progressBarFunctionProcess));
-            bgWorker.DoWork += new DoWorkEventHandler((sender, e) => FunctionalProcessing(sender, e, bgWorker));
+            bgWorker.DoWork += new DoWorkEventHandler((sender, e) => FunctionProcessing(sender, e, bgWorker));
             bgWorker.WorkerReportsProgress = true;
             bgWorker.WorkerSupportsCancellation = true;
             functionsForProcessingDataGrid.Size = new Size(functionsForProcessingDataGrid.Width, functionsForProcessingDataGrid.Height - 19);
@@ -308,18 +318,30 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
-        /// Find the functions that maximize the Pearson coefficient between controlling and controlling factors
+        /// Find the functions that maximize the Pearson coefficient between regressors and regressants factors
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <param name="bgWorker">Background worker</param>
-        private void FunctionalProcessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+        private void FunctionProcessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
             // Check if bgWorker has been stopped
             if (bgWorker.CancellationPending == true) {
                 e.Cancel = true;
             }
             else {
-                // Доделать функциональную обработку данных
+                // Create start paramters for progress bar
+                int totalNumberOfRegressors = Models.Count * BaseRegressors.Count;
+                int progress = 0;
+                int step = totalNumberOfRegressors / 100;
+                int oneBarInProgress = 1;
+                if (totalNumberOfRegressors < 100) {
+                    step = 1;
+                    oneBarInProgress = (100 / totalNumberOfRegressors) + 1;
+                }
+
+                int counter = 0;
+
+                // Find best functions for each regressors for each model             
             }
         }
 
