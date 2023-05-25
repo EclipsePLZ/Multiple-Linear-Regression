@@ -88,6 +88,25 @@ namespace DeepParameters {
             return sum1 / Math.Sqrt(sumSqr1 * sumSqr2);
         }
 
+        /// <summary>
+        /// Convert list of values to interval [a, b]
+        /// </summary>
+        /// <param name="a">Min value of the interval</param>
+        /// <param name="b">Max value of the interval</param>
+        /// <param name="values">List of values</param>
+        /// <returns>List of values in interval [a, b]</returns>
+        public static List<double> ConvertValuesToInterval(double a, double b, IEnumerable<double> values) {
+            List<double> result = new List<double>();
+            double minValue = values.Min();
+            double maxValue = values.Max();
+
+            foreach(var value in values) {
+                result.Add(((value - minValue) / (maxValue - minValue)) * (b - a) + a);
+            }
+
+            return result;
+        }
+
         public static Dictionary<string, Func<List<double>, double>> Functions { get; } = 
             new Dictionary<string, Func<List<double>, double>>() {
                 { "Начальный момент 1-го порядка",  FirstOrderStartMoment},

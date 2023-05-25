@@ -113,7 +113,7 @@ namespace Multiple_Linear_Regression {
                     // Add headers to properties
                     Headers.Clear();
                     int headerCounter = 0;
-                    foreach (string header in allRows[0]) {
+                    foreach (var header in allRows[0]) {
                         Headers[header] = headerCounter;
                         headerCounter++;
                     }
@@ -176,7 +176,7 @@ namespace Multiple_Linear_Regression {
 
             // Get selected factors
             RegressantsHeaders.Clear();
-            foreach (string header in form.SelectedFactors) {
+            foreach (var header in form.SelectedFactors) {
                 RegressantsHeaders[header] = Headers[header];
             }
 
@@ -192,7 +192,7 @@ namespace Multiple_Linear_Regression {
 
             // Get selected factors
             RegressorsHeaders.Clear();
-            foreach (string header in form.SelectedFactors) {
+            foreach (var header in form.SelectedFactors) {
                 RegressorsHeaders[header] = Headers[header];
             }
 
@@ -242,7 +242,7 @@ namespace Multiple_Linear_Regression {
             Models.Clear();
             
             // Load regressants
-            foreach (string factor in RegressantsHeaders.Keys) {
+            foreach (var factor in RegressantsHeaders.Keys) {
                 List<double> regressantValues = new List<double>();
 
                 for (int row = 0; row < factorsData.Rows.Count; row++) {
@@ -252,7 +252,7 @@ namespace Multiple_Linear_Regression {
             }
 
             // Load regressors
-            foreach (string factor in RegressorsHeaders.Keys) {
+            foreach (var factor in RegressorsHeaders.Keys) {
                 List<double> regressorsValues = new List<double>();
                 
                 for (int row = 0; row < factorsData.Rows.Count; row++) {
@@ -330,18 +330,46 @@ namespace Multiple_Linear_Regression {
             }
             else {
                 // Create start paramters for progress bar
-                int totalNumberOfRegressors = Models.Count * BaseRegressors.Count;
                 int progress = 0;
-                int step = totalNumberOfRegressors / 100;
+                int totalNumberCount = Models.Count * BaseRegressors.Count;
+                int step = totalNumberCount / 100;
                 int oneBarInProgress = 1;
-                if (totalNumberOfRegressors < 100) {
+                if (totalNumberCount < 100) {
                     step = 1;
-                    oneBarInProgress = (100 / totalNumberOfRegressors) + 1;
+                    oneBarInProgress = (100 / totalNumberCount) + 1;
                 }
 
                 int counter = 0;
 
-                // Find best functions for each regressors for each model             
+                // Find best functions for each regressors for each model
+                foreach(var model in Models) {
+                    model.StartFunctionalPreprocessing();
+
+                    // Add functions and correlation coefficients to data grid view
+                    foreach (var regressor in model.ProcessFunctions.Keys) {
+                        // Find progress
+                        if (counter % step == 0) {
+                            progress += oneBarInProgress;
+                            bgWorker.ReportProgress(progress);
+                        }
+                        counter++;
+
+                        // Add row of preprocess functions to data grid
+                        functionsForProcessingDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingDataGrid.Rows.Add(row.ToArray())),
+                            new List<string>() { model.RegressantName, regressor,
+                                String.Join(", ", model.ProcessFunctions[regressor].ToArray()),
+                                Math.Abs(model.CorrelationCoefficient[regressor]).ToString() });
+                    }
+                }
+
+                // Hide progress bar
+                progressBarFunctionProcess.Invoke(new Action<bool>((b) => progressBarFunctionProcess.Visible = b), false);
+
+                // Resize dataGrid
+                functionsForProcessingDataGrid.Invoke(new Action<Size>((size) => functionsForProcessingDataGrid.Size = size),
+                    new Size(functionsForProcessingDataGrid.Width, functionsForProcessingDataGrid.Height + 19));
+
+                bgWorker.CancelAsync();
             }
         }
 
@@ -395,7 +423,7 @@ namespace Multiple_Linear_Regression {
                 }
             }
             if (indexOfSortableColumns != null) {
-                foreach (int index in indexOfSortableColumns) {
+                foreach (var index in indexOfSortableColumns) {
                     dataGV.Columns[index].SortMode = DataGridViewColumnSortMode.Automatic;
                 }
             }
