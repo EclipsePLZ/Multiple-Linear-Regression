@@ -1,6 +1,7 @@
 ﻿using DeepParameters;
 using DeepParameters.Work_WIth_Files;
 using DeepParameters.Work_WIth_Files.Interfaces;
+using Multiple_Linear_Regression.Forms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -206,6 +207,7 @@ namespace Multiple_Linear_Regression {
             regressantsList.Items.Clear();
             RegressantsHeaders.Clear();
             RegressorsHeaders.Clear();
+            labelResultDataLoad.Visible = false;
         }
 
         private void acceptFactorsButton_Click(object sender, EventArgs e) {
@@ -218,6 +220,7 @@ namespace Multiple_Linear_Regression {
 
                 FillRegressorsForModels();
 
+                labelResultDataLoad.Visible = true;
                 ClearControlsStep2();
                 processingStatDataTab.Enabled = true;
                 doFunctionalProcessButton.Enabled = true;
@@ -242,23 +245,23 @@ namespace Multiple_Linear_Regression {
             Models.Clear();
             
             // Load regressants
-            foreach (var factor in RegressantsHeaders.Keys) {
+            foreach (var factor in RegressantsHeaders) {
                 List<double> regressantValues = new List<double>();
 
                 for (int row = 0; row < factorsData.Rows.Count; row++) {
-                    regressantValues.Add(Convert.ToDouble(factorsData[RegressantsHeaders[factor], row].Value));
+                    regressantValues.Add(Convert.ToDouble(factorsData[factor.Value, row].Value));
                 }
-                Models.Add(new Model(factor, regressantValues));
+                Models.Add(new Model(factor.Key, regressantValues));
             }
 
             // Load regressors
-            foreach (var factor in RegressorsHeaders.Keys) {
+            foreach (var factor in RegressorsHeaders) {
                 List<double> regressorsValues = new List<double>();
                 
                 for (int row = 0; row < factorsData.Rows.Count; row++) {
-                    regressorsValues.Add(Convert.ToDouble(factorsData[RegressorsHeaders[factor], row].Value));
+                    regressorsValues.Add(Convert.ToDouble(factorsData[factor.Value, row].Value));
                 }
-                BaseRegressors[factor] = regressorsValues;
+                BaseRegressors[factor.Key] = regressorsValues;
             }
         }
 
@@ -292,7 +295,13 @@ namespace Multiple_Linear_Regression {
 
         private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
             if (BaseRegressors.Count > 0) {
-                RunBackgroundFunctionalProcessData();
+                UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
+                warningForm.ShowDialog();
+                if (warningForm.AcceptAction) {
+                    RunBackgroundFunctionalProcessData();
+
+                    doFunctionalProcessButton.Enabled = false;
+                }
             }
             else {
                 MessageBox.Show("Вы не выбрали ни одного управляющего фактора");
@@ -306,15 +315,18 @@ namespace Multiple_Linear_Regression {
             SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
                 functionsForProcessingDataGrid, true, new List<int>() { 3 });
 
-            BackgroundWorker bgWorker = new BackgroundWorker();
-            bgWorker.ProgressChanged += new ProgressChangedEventHandler((sender, e) => ProgressBarChanged(sender, e, progressBarFunctionProcess));
-            bgWorker.DoWork += new DoWorkEventHandler((sender, e) => FunctionProcessing(sender, e, bgWorker));
-            bgWorker.WorkerReportsProgress = true;
-            bgWorker.WorkerSupportsCancellation = true;
-            functionsForProcessingDataGrid.Size = new Size(functionsForProcessingDataGrid.Width, functionsForProcessingDataGrid.Height - 19);
-            progressBarFunctionProcess.Value = 0;
-            progressBarFunctionProcess.Visible = true;
-            bgWorker.RunWorkerAsync();
+            // Background worker for function preprocessing
+            BackgroundWorker bgWorkerFunc = new BackgroundWorker();
+            bgWorkerFunc.DoWork += new DoWorkEventHandler((sender, e) => FunctionProcessing(sender, e, bgWorkerFunc));
+            bgWorkerFunc.WorkerSupportsCancellation = true;
+            bgWorkerFunc.RunWorkerAsync();
+
+            // Backgound worker for loading label
+            BackgroundWorker bgWorkerLabel = new BackgroundWorker();
+            bgWorkerLabel.DoWork += new DoWorkEventHandler((sender, e) =>
+                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLabel, bgWorkerFunc));
+            bgWorkerLabel.WorkerSupportsCancellation = true;
+            bgWorkerLabel.RunWorkerAsync();
         }
 
         /// <summary>
@@ -324,53 +336,54 @@ namespace Multiple_Linear_Regression {
         /// <param name="e"></param>
         /// <param name="bgWorker">Background worker</param>
         private void FunctionProcessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
-            // Check if bgWorker has been stopped
+            // Check if bgWorkerFunc has been stopped
             if (bgWorker.CancellationPending == true) {
                 e.Cancel = true;
             }
             else {
-                // Create start paramters for progress bar
-                int progress = 0;
-                int totalNumberCount = Models.Count * BaseRegressors.Count;
-                int step = totalNumberCount / 100;
-                int oneBarInProgress = 1;
-                if (totalNumberCount < 100) {
-                    step = 1;
-                    oneBarInProgress = (100 / totalNumberCount) + 1;
-                }
-
-                int counter = 0;
-
                 // Find best functions for each regressors for each model
                 foreach(var model in Models) {
                     model.StartFunctionalPreprocessing();
 
                     // Add functions and correlation coefficients to data grid view
-                    foreach (var regressor in model.ProcessFunctions.Keys) {
-                        // Find progress
-                        if (counter % step == 0) {
-                            progress += oneBarInProgress;
-                            bgWorker.ReportProgress(progress);
-                        }
-                        counter++;
-
+                    foreach (var regressor in model.ProcessFunctions) {
                         // Add row of preprocess functions to data grid
                         functionsForProcessingDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingDataGrid.Rows.Add(row.ToArray())),
-                            new List<string>() { model.RegressantName, regressor,
-                                String.Join(", ", model.ProcessFunctions[regressor].ToArray()),
-                                Math.Abs(model.CorrelationCoefficient[regressor]).ToString() });
+                            new List<string>() { model.RegressantName, regressor.Key,
+                                String.Join(", ", regressor.Value.ToArray()),
+                                Math.Abs(model.CorrelationCoefficient[regressor.Key]).ToString() });
                     }
                 }
 
-                // Hide progress bar
-                progressBarFunctionProcess.Invoke(new Action<bool>((b) => progressBarFunctionProcess.Visible = b), false);
-
-                // Resize dataGrid
-                functionsForProcessingDataGrid.Invoke(new Action<Size>((size) => functionsForProcessingDataGrid.Size = size),
-                    new Size(functionsForProcessingDataGrid.Width, functionsForProcessingDataGrid.Height + 19));
-
                 bgWorker.CancelAsync();
             }
+        }
+
+        /// <summary>
+        /// Function for showing logo of the loading
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <param name="bgWorker">Background worker</param>
+        private void ShowLoadingFunctionPreprocessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker, BackgroundWorker bgWorkerFunc) {
+            labelFuncPreprocess.Invoke(new Action<bool>((vis) => labelFuncPreprocess.Visible = vis), true);
+
+            // While bgWorkerFunc is busy, we will update the load indicator
+            while (bgWorkerFunc.IsBusy == true) {
+                if (labelFuncPreprocess.Text.Count(symb => symb == '.') < 3) {
+                    labelFuncPreprocess.Invoke(new Action<string>((load) => labelFuncPreprocess.Text = load),
+                        labelFuncPreprocess.Text + ".");
+                }
+                else {
+                    labelFuncPreprocess.Invoke(new Action<string>((load) => labelFuncPreprocess.Text = load),
+                        "Загрузка");
+                }
+                System.Threading.Thread.Sleep(500);
+            }
+
+            labelFuncPreprocess.Invoke(new Action<bool>((vis) => labelFuncPreprocess.Visible = vis), false);
+            labelPreprocessingFinish.Invoke(new Action<bool>((vis) => labelPreprocessingFinish.Visible = vis), true);
+            bgWorker.CancelAsync();
         }
 
         /// <summary>
@@ -384,6 +397,7 @@ namespace Multiple_Linear_Regression {
             clearSelectedFactorsButton.Enabled = false;
             regressantsList.Items.Clear();
             regressorsList.Items.Clear();
+            labelResultDataLoad.Visible = false;
 
             ClearControlsStep2();
         }
@@ -394,6 +408,7 @@ namespace Multiple_Linear_Regression {
         private void ClearControlsStep2() {
             ClearDataGV(functionsForProcessingDataGrid);
             doFunctionalProcessButton.Enabled = false;
+            labelFuncPreprocess.Visible = false;
         }
 
         /// <summary>
@@ -489,12 +504,8 @@ namespace Multiple_Linear_Regression {
             }
         }
 
-        private void MainForm_ResizeBegin(object sender, EventArgs e) {
+        private void MainForm_Resize(object sender, EventArgs e) {
             isResizeNeeded = true;
-        }
-
-        private void MainForm_ResizeEnd(object sender, EventArgs e) {
-            isResizeNeeded = false;
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
@@ -540,11 +551,18 @@ namespace Multiple_Linear_Regression {
 
                         progressBarDataLoad.Invoke(new Action<Size>((size) => progressBarDataLoad.Size = size),
                             new Size(progressBarDataLoad.Width + widthDiff, progressBarDataLoad.Height));
+
+                        checkPairwiseCombinations.Invoke(new Action<Point>((loc) => checkPairwiseCombinations.Location = loc),
+                            new Point(checkPairwiseCombinations.Location.X + widthDiff, checkPairwiseCombinations.Location.Y));
+
+                        labelResultDataLoad.Invoke(new Action<Point>((loc) => labelResultDataLoad.Location = loc),
+                            new Point(labelResultDataLoad.Location.X + widthDiff, labelResultDataLoad.Location.Y));
+
+
+                        isResizeNeeded = false;
                     }
                 }
             }
         }
-
-        
     }
 }

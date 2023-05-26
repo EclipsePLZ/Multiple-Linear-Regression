@@ -44,6 +44,7 @@ namespace Multiple_Linear_Regression {
             RegressorsNames = regressorsNames;
             Regressors = regressors;
             ProcessFunctions = new Dictionary<string, List<string>>();
+            CorrelationCoefficient = new Dictionary<string, double>();
         }
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace Multiple_Linear_Regression {
         /// Functional data preprocessing
         /// </summary>
         public void StartFunctionalPreprocessing() {
-            foreach(var regressor in Regressors.Keys) {
+            foreach(var regressor in RegressorsNames) {
                 List<string> functions = new List<string>();
                 double startCorrCoef = Statistics.PearsonCorrelationCoefficient(RegressantValues,
                     Statistics.ConvertValuesToInterval(2.0, 102.0, Regressors[regressor]));
@@ -79,14 +80,13 @@ namespace Multiple_Linear_Regression {
                     Regressors[regressor] = Statistics.ConvertValuesToInterval(2.0, 102.0, Regressors[regressor]);
 
                     // For each function we find the correlation coefficient with the regressant
-                    foreach (var func in Statistics.PreprocessingFunctions.Keys) {
-                        double funcCorr = Statistics.PearsonCorrelationCoefficient(RegressantValues,
-                            Statistics.PreprocessingFunctions[func](Regressors[regressor]));
+                    foreach (var func in Statistics.PreprocessingFunctions) {
+                        double funcCorr = Statistics.PearsonCorrelationCoefficient(RegressantValues, func.Value(Regressors[regressor]));
 
                         // Find the function with the maximum correlation coefficient
                         if (Math.Abs(funcCorr) > Math.Abs(maxFuncCorrCoeff)) {
                             maxFuncCorrCoeff = funcCorr;
-                            maxFuncName = func;
+                            maxFuncName = func.Key;
                         }
                     }
                     // Check if the application of this function makes sense
@@ -96,8 +96,8 @@ namespace Multiple_Linear_Regression {
                         Regressors[regressor] = Statistics.PreprocessingFunctions[maxFuncName](Regressors[regressor]);
                     }
                     else {
-                        ProcessFunctions[regressor] = functions;
-                        CorrelationCoefficient[regressor] = startCorrCoef;
+                        ProcessFunctions.Add(regressor, functions);
+                        CorrelationCoefficient.Add(regressor, startCorrCoef);
                         break;
                     }
                 }

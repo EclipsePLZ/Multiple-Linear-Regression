@@ -663,7 +663,7 @@ namespace DeepParameters {
         /// <param name="n">Value of power</param>
         /// <returns>List of values in the N degree</returns>
         public static List<double> Pow_XN(IEnumerable<double> values, double n) {
-            List<double> result = new List<double>(values);
+            List<double> result = new List<double>();
 
             // Expand each element of the list to a power
             foreach(var elem in values) {
@@ -679,7 +679,7 @@ namespace DeepParameters {
         /// <param name="values">List of values</param>
         /// <returns> List of natural logaritm from values</returns>
         public static List<double> Log(IEnumerable<double> values) {
-            List<double> result = new List<double>(values);
+            List<double> result = new List<double>();
 
             foreach(var elem in values) {
                 result.Add(Math.Log(elem));
@@ -694,7 +694,7 @@ namespace DeepParameters {
         /// <param name="values">List of values</param>
         /// <returns> List of root of values</returns>
         public static List<double> Sqrt(IEnumerable<double> values) {
-            List<double> result = new List<double>(values);
+            List<double> result = new List<double>();
 
             foreach (var elem in values) {
                 result.Add(Math.Sqrt(elem));

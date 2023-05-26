@@ -121,12 +121,8 @@ namespace Multiple_Linear_Regression {
             this.Close();
         }
 
-        private void SelectParametersForm_ResizeBegin(object sender, EventArgs e) {
+        private void SelectParametersForm_Resize(object sender, EventArgs e) {
             isResizeNeeded = true;
-        }
-
-        private void SelectParametersForm_ResizeEnd(object sender, EventArgs e) {
-            isResizeNeeded = false;
         }
 
         private void SelectParametersForm_FormClosing(object sender, FormClosingEventArgs e) {
@@ -178,6 +174,8 @@ namespace Multiple_Linear_Regression {
 
                         acceptSelectedFactorsButton.Invoke(new Action<Point>((loc) => acceptSelectedFactorsButton.Location = loc),
                             new Point(toSelectList.Location.X - 33, acceptSelectedFactorsButton.Location.Y));
+
+                        isResizeNeeded = false;
                     }
                 }
             }

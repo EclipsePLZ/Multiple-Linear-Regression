@@ -53,25 +53,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExitForm.cs">
+    <Compile Include="Forms\ExitForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExitForm.Designer.cs">
+    <Compile Include="Forms\ExitForm.Designer.cs">
       <DependentUpon>ExitForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Model.cs" />
-    <Compile Include="SelectParametersForm.cs">
+    <Compile Include="Forms\UserWarning.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SelectParametersForm.Designer.cs">
+    <Compile Include="Forms\UserWarning.Designer.cs">
+      <DependentUpon>UserWarning.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Model.cs" />
+    <Compile Include="Forms\SelectParametersForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\SelectParametersForm.Designer.cs">
       <DependentUpon>SelectParametersForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Work-With-Files\DefaultDialogService.cs" />
     <Compile Include="Work-With-Files\ExcelFileService.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="Forms\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
+    <Compile Include="Forms\Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Work-With-Files\Interfaces\IDialogService.cs" />
@@ -80,11 +86,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="StepsInfo.cs" />
-    <EmbeddedResource Include="ExitForm.resx">
+    <EmbeddedResource Include="Forms\ExitForm.resx">
       <DependentUpon>ExitForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
+    <EmbeddedResource Include="Forms\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\UserWarning.resx">
+      <DependentUpon>UserWarning.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -95,7 +104,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="SelectParametersForm.resx">
+    <EmbeddedResource Include="Forms\SelectParametersForm.resx">
       <DependentUpon>SelectParametersForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
