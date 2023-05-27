@@ -127,6 +127,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="thresholdCorrCoeff">Threshold value of the correlation coefficient</param>
         public void EmpiricalWayFilterRegressors(double thresholdCorrCoeff) {
             CheckNonFilterRegressors();
+
             foreach (var corrCoeff in CorrelationCoefficient) {
                 if (Math.Abs(corrCoeff.Value) < thresholdCorrCoeff) {
                     RemoveRegressor(corrCoeff.Key);
@@ -134,11 +135,15 @@ namespace Multiple_Linear_Regression {
             }
         }
 
+        /// <summary>
+        /// Check for significance at the significance level a = 0.05
+        /// </summary>
         public void ClassicWayFilterRegressors() {
             CheckNonFilterRegressors();
             int k = RegressantValues.Count;
             double alpha = 0.05;
 
+            // For each regressor we find the probability of the t-statistic falling into the critical region
             foreach (var corrCoeff in CorrelationCoefficient) {
                 // Find the critical area
                 double p = 2.0 * (1.0 - alglib.studenttdistribution(k - 2, Statistics.T_Statistics(k - 2, corrCoeff.Value)));
@@ -149,6 +154,9 @@ namespace Multiple_Linear_Regression {
             }
         }
 
+        /// <summary>
+        /// Check if a non-filter regressor was created
+        /// </summary>
         private void CheckNonFilterRegressors() {
             if (NonFilterRegressors is null) {
                 NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);

@@ -62,6 +62,11 @@
             this.labelFilterLoad = new System.Windows.Forms.Label();
             this.labelFilterFinish = new System.Windows.Forms.Label();
             this.progressBarFillFilteredData = new System.Windows.Forms.ProgressBar();
+            this.BuildRegrEquationsTab = new System.Windows.Forms.TabPage();
+            this.equationsDataGrid = new System.Windows.Forms.DataGridView();
+            this.labelBuildingLoad = new System.Windows.Forms.Label();
+            this.buildEquationsButton = new System.Windows.Forms.Button();
+            this.labelBuildingFinish = new System.Windows.Forms.Label();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).BeginInit();
@@ -71,6 +76,8 @@
             this.removeUnimportantFactorsTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.onlyImportantFactorsDataGrid)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.valueEmpWayCorr)).BeginInit();
+            this.BuildRegrEquationsTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.equationsDataGrid)).BeginInit();
             this.SuspendLayout();
             // 
             // WorkFileMenuItem
@@ -102,6 +109,7 @@
             this.allTabs.Controls.Add(this.loadDataTab);
             this.allTabs.Controls.Add(this.processingStatDataTab);
             this.allTabs.Controls.Add(this.removeUnimportantFactorsTab);
+            this.allTabs.Controls.Add(this.BuildRegrEquationsTab);
             this.allTabs.Location = new System.Drawing.Point(177, 27);
             this.allTabs.Name = "allTabs";
             this.allTabs.SelectedIndex = 0;
@@ -491,6 +499,63 @@
             this.progressBarFillFilteredData.TabIndex = 37;
             this.progressBarFillFilteredData.Visible = false;
             // 
+            // BuildRegrEquationsTab
+            // 
+            this.BuildRegrEquationsTab.Controls.Add(this.labelBuildingFinish);
+            this.BuildRegrEquationsTab.Controls.Add(this.buildEquationsButton);
+            this.BuildRegrEquationsTab.Controls.Add(this.labelBuildingLoad);
+            this.BuildRegrEquationsTab.Controls.Add(this.equationsDataGrid);
+            this.BuildRegrEquationsTab.Location = new System.Drawing.Point(4, 22);
+            this.BuildRegrEquationsTab.Name = "BuildRegrEquationsTab";
+            this.BuildRegrEquationsTab.Size = new System.Drawing.Size(816, 390);
+            this.BuildRegrEquationsTab.TabIndex = 3;
+            this.BuildRegrEquationsTab.Text = "Построение регрессионных уравнений";
+            this.BuildRegrEquationsTab.UseVisualStyleBackColor = true;
+            // 
+            // equationsDataGrid
+            // 
+            this.equationsDataGrid.AllowUserToAddRows = false;
+            this.equationsDataGrid.AllowUserToDeleteRows = false;
+            this.equationsDataGrid.AllowUserToResizeRows = false;
+            this.equationsDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.equationsDataGrid.Location = new System.Drawing.Point(3, 3);
+            this.equationsDataGrid.Name = "equationsDataGrid";
+            this.equationsDataGrid.ReadOnly = true;
+            this.equationsDataGrid.RowHeadersWidth = 51;
+            this.equationsDataGrid.Size = new System.Drawing.Size(632, 381);
+            this.equationsDataGrid.TabIndex = 12;
+            // 
+            // labelBuildingLoad
+            // 
+            this.labelBuildingLoad.AutoSize = true;
+            this.labelBuildingLoad.Location = new System.Drawing.Point(652, 371);
+            this.labelBuildingLoad.Name = "labelBuildingLoad";
+            this.labelBuildingLoad.Size = new System.Drawing.Size(115, 13);
+            this.labelBuildingLoad.TabIndex = 37;
+            this.labelBuildingLoad.Text = "Построение моделей";
+            this.labelBuildingLoad.Visible = false;
+            // 
+            // buildEquationsButton
+            // 
+            this.buildEquationsButton.Enabled = false;
+            this.buildEquationsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.buildEquationsButton.Location = new System.Drawing.Point(669, 55);
+            this.buildEquationsButton.Name = "buildEquationsButton";
+            this.buildEquationsButton.Size = new System.Drawing.Size(126, 66);
+            this.buildEquationsButton.TabIndex = 38;
+            this.buildEquationsButton.Text = "Построить регрессионные модели";
+            this.buildEquationsButton.UseVisualStyleBackColor = true;
+            // 
+            // labelBuildingFinish
+            // 
+            this.labelBuildingFinish.AutoSize = true;
+            this.labelBuildingFinish.Location = new System.Drawing.Point(652, 371);
+            this.labelBuildingFinish.Name = "labelBuildingFinish";
+            this.labelBuildingFinish.Size = new System.Drawing.Size(104, 13);
+            this.labelBuildingFinish.TabIndex = 39;
+            this.labelBuildingFinish.Text = "Модели построены";
+            this.labelBuildingFinish.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -521,6 +586,9 @@
             this.removeUnimportantFactorsTab.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.onlyImportantFactorsDataGrid)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.valueEmpWayCorr)).EndInit();
+            this.BuildRegrEquationsTab.ResumeLayout(false);
+            this.BuildRegrEquationsTab.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.equationsDataGrid)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -565,6 +633,11 @@
         private System.Windows.Forms.Label labelFilterLoad;
         private System.Windows.Forms.Label labelFilterFinish;
         private System.Windows.Forms.ProgressBar progressBarFillFilteredData;
+        private System.Windows.Forms.TabPage BuildRegrEquationsTab;
+        private System.Windows.Forms.Label labelBuildingFinish;
+        private System.Windows.Forms.Button buildEquationsButton;
+        private System.Windows.Forms.Label labelBuildingLoad;
+        private System.Windows.Forms.DataGridView equationsDataGrid;
     }
 }
 

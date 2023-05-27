@@ -211,6 +211,7 @@ namespace Multiple_Linear_Regression {
             if (RegressorsHeaders.Count > 0 && RegressantsHeaders.Count > 0) {
                 LoadValuesForFactors();
 
+                // Create pairwise combinations of factors if it's needed
                 if (checkPairwiseCombinations.Checked) {
                     CreatePairwiseCombinationsOfFactors();
                 }
@@ -301,6 +302,7 @@ namespace Multiple_Linear_Regression {
 
         private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
             if (BaseRegressors.Count > 0) {
+                // Show warinig form
                 UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
                 warningForm.ShowDialog();
                 if (warningForm.AcceptAction) {
@@ -396,7 +398,10 @@ namespace Multiple_Linear_Regression {
                     System.Threading.Thread.Sleep(500);
                 }
 
+                // Hide loadLabel
                 loadLabel.Invoke(new Action<bool>((vis) => loadLabel.Visible = vis), false);
+
+                // Showing finish label
                 finishLabel.Invoke(new Action<bool>((vis) => finishLabel.Visible = vis), true);
                 bgWorker.CancelAsync();
             }
@@ -470,8 +475,11 @@ namespace Multiple_Linear_Regression {
         }
 
         private void cancelFilterFactorsButton_Click(object sender, EventArgs e) {
+            // Restore non-filter regressors for each model
             Models.ForEach(model => model.RestoreNonFilterRegressors());
             cancelFilterFactorsButton.Enabled = false;
+
+            // Fill filtered data grid
             RunBackgroundFillFilteredFactors();
         }
 
@@ -530,6 +538,7 @@ namespace Multiple_Linear_Regression {
                         }
                         counter++;
 
+                        // Add information about regressor in data grid row
                         string regressant = model.RegressantName;
                         string regressorName = regressor.Key;
                         string functions = "";
@@ -617,6 +626,16 @@ namespace Multiple_Linear_Regression {
             cancelFilterFactorsButton.Enabled = false;
             labelFilterLoad.Visible = false;
             labelFilterFinish.Visible = false;
+        }
+
+        /// <summary>
+        /// Function for clear controls on step 4
+        /// </summary>
+        private void ClearControlsStep4() {
+            ClearDataGV(equationsDataGrid);
+            buildEquationsButton.Enabled = false;
+            labelBuildingLoad.Visible = false;
+            labelBuildingFinish.Visible = false;
         }
 
         /// <summary>
@@ -711,6 +730,9 @@ namespace Multiple_Linear_Regression {
                     break;
                 case 2:
                     helpAllStepsMenu.ToolTipText = StepsInfo.Step3;
+                    break;
+                case 3:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.Step4;
                     break;
             }
         }
