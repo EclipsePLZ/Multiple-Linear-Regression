@@ -39,7 +39,7 @@
             // 
             this.listAvailabelFactors.FormattingEnabled = true;
             this.listAvailabelFactors.Location = new System.Drawing.Point(287, 41);
-            this.listAvailabelFactors.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.listAvailabelFactors.Margin = new System.Windows.Forms.Padding(2);
             this.listAvailabelFactors.Name = "listAvailabelFactors";
             this.listAvailabelFactors.Size = new System.Drawing.Size(136, 238);
             this.listAvailabelFactors.TabIndex = 0;
@@ -49,7 +49,7 @@
             // 
             this.listSelectedFactors.FormattingEnabled = true;
             this.listSelectedFactors.Location = new System.Drawing.Point(32, 41);
-            this.listSelectedFactors.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.listSelectedFactors.Margin = new System.Windows.Forms.Padding(2);
             this.listSelectedFactors.Name = "listSelectedFactors";
             this.listSelectedFactors.Size = new System.Drawing.Size(136, 238);
             this.listSelectedFactors.TabIndex = 1;
@@ -119,7 +119,7 @@
             // 
             this.acceptSelectedFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.acceptSelectedFactorsButton.Location = new System.Drawing.Point(180, 246);
-            this.acceptSelectedFactorsButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.acceptSelectedFactorsButton.Margin = new System.Windows.Forms.Padding(2);
             this.acceptSelectedFactorsButton.Name = "acceptSelectedFactorsButton";
             this.acceptSelectedFactorsButton.Size = new System.Drawing.Size(94, 34);
             this.acceptSelectedFactorsButton.TabIndex = 12;
@@ -142,13 +142,12 @@
             this.Controls.Add(this.listSelectedFactors);
             this.Controls.Add(this.listAvailabelFactors);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MinimumSize = new System.Drawing.Size(485, 345);
             this.Name = "SelectParametersForm";
             this.Text = "SelectParametersForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SelectParametersForm_FormClosing);
-            this.ResizeBegin += new System.EventHandler(this.SelectParametersForm_ResizeBegin);
-            this.ResizeEnd += new System.EventHandler(this.SelectParametersForm_ResizeEnd);
+            this.Resize += new System.EventHandler(this.SelectParametersForm_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
 

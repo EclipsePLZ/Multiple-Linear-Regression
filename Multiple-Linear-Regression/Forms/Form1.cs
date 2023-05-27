@@ -1,6 +1,7 @@
 ﻿using DeepParameters;
 using DeepParameters.Work_WIth_Files;
 using DeepParameters.Work_WIth_Files.Interfaces;
+using Multiple_Linear_Regression.Forms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -26,9 +27,9 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, int> RegressantsHeaders { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> RegressorsHeaders { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> Headers { get; set; } = new Dictionary<string, int>();
+        private Dictionary<string, List<double>> BaseRegressors { get; set; } = new Dictionary<string, List<double>>();
 
-        private Dictionary<string, List<double>> Regressants { get; set; } = new Dictionary<string, List<double>>();
-        private Dictionary<string, List<double>> Regressors { get; set; } = new Dictionary<string, List<double>>();
+        private List<Model> Models { get; set; } = new List<Model>();
 
         private double[,] X { get; set; }
         private double[] Y { get; set; }
@@ -113,7 +114,7 @@ namespace Multiple_Linear_Regression {
                     // Add headers to properties
                     Headers.Clear();
                     int headerCounter = 0;
-                    foreach (string header in allRows[0]) {
+                    foreach (var header in allRows[0]) {
                         Headers[header] = headerCounter;
                         headerCounter++;
                     }
@@ -176,7 +177,7 @@ namespace Multiple_Linear_Regression {
 
             // Get selected factors
             RegressantsHeaders.Clear();
-            foreach (string header in form.SelectedFactors) {
+            foreach (var header in form.SelectedFactors) {
                 RegressantsHeaders[header] = Headers[header];
             }
 
@@ -192,7 +193,7 @@ namespace Multiple_Linear_Regression {
 
             // Get selected factors
             RegressorsHeaders.Clear();
-            foreach (string header in form.SelectedFactors) {
+            foreach (var header in form.SelectedFactors) {
                 RegressorsHeaders[header] = Headers[header];
             }
 
@@ -206,6 +207,7 @@ namespace Multiple_Linear_Regression {
             regressantsList.Items.Clear();
             RegressantsHeaders.Clear();
             RegressorsHeaders.Clear();
+            labelResultDataLoad.Visible = false;
         }
 
         private void acceptFactorsButton_Click(object sender, EventArgs e) {
@@ -215,6 +217,13 @@ namespace Multiple_Linear_Regression {
                 if (checkPairwiseCombinations.Checked) {
                     CreatePairwiseCombinationsOfFactors();
                 }
+
+                FillRegressorsForModels();
+
+                labelResultDataLoad.Visible = true;
+                ClearControlsStep2();
+                processingStatDataTab.Enabled = true;
+                doFunctionalProcessButton.Enabled = true;
             }
             else {
                 if (RegressantsHeaders.Count == 0 && RegressorsHeaders.Count == 0) {
@@ -233,27 +242,26 @@ namespace Multiple_Linear_Regression {
         /// Load values for selected factors from data grid view
         /// </summary>
         private void LoadValuesForFactors() {
-            Regressants.Clear();
-            Regressors.Clear();
+            Models.Clear();
             
             // Load regressants
-            foreach (string factor in RegressantsHeaders.Keys) {
+            foreach (var factor in RegressantsHeaders) {
                 List<double> regressantValues = new List<double>();
 
                 for (int row = 0; row < factorsData.Rows.Count; row++) {
-                    regressantValues.Add(Convert.ToDouble(factorsData[RegressantsHeaders[factor], row].Value));
+                    regressantValues.Add(Convert.ToDouble(factorsData[factor.Value, row].Value));
                 }
-                Regressants[factor] = regressantValues;
+                Models.Add(new Model(factor.Key, regressantValues));
             }
 
             // Load regressors
-            foreach (string factor in RegressorsHeaders.Keys) {
+            foreach (var factor in RegressorsHeaders) {
                 List<double> regressorsValues = new List<double>();
-
+                
                 for (int row = 0; row < factorsData.Rows.Count; row++) {
-                    regressorsValues.Add(Convert.ToDouble(factorsData[RegressorsHeaders[factor], row].Value));
+                    regressorsValues.Add(Convert.ToDouble(factorsData[factor.Value, row].Value));
                 }
-                Regressors[factor] = regressorsValues;
+                BaseRegressors[factor.Key] = regressorsValues;
             }
         }
 
@@ -261,7 +269,7 @@ namespace Multiple_Linear_Regression {
         /// Create pairwise combinations of factors as new factors
         /// </summary>
         private void CreatePairwiseCombinationsOfFactors() {
-            List<string> RegressorsKeys = Regressors.Keys.ToList();
+            List<string> RegressorsKeys = BaseRegressors.Keys.ToList();
 
             // Create new factor as pairwise combination of factors
             for (int i = 0; i < RegressorsKeys.Count - 1; i++) {
@@ -269,12 +277,113 @@ namespace Multiple_Linear_Regression {
                     List<double> newRegressorFactorValues = new List<double>();
 
                     // The value of the new factor is obtained by multiplying the values of the two factors
-                    for (int elemNum = 0; elemNum < Regressors[RegressorsKeys[i]].Count; elemNum++) {
-                        newRegressorFactorValues.Add(Regressors[RegressorsKeys[i]][elemNum] * Regressors[RegressorsKeys[j]][elemNum]);
+                    for (int elemNum = 0; elemNum < BaseRegressors[RegressorsKeys[i]].Count; elemNum++) {
+                        newRegressorFactorValues.Add(BaseRegressors[RegressorsKeys[i]][elemNum] * BaseRegressors[RegressorsKeys[j]][elemNum]);
                     }
-                    Regressors[RegressorsKeys[i] + " & " + RegressorsKeys[j]] = newRegressorFactorValues;
+                    BaseRegressors[RegressorsKeys[i] + " & " + RegressorsKeys[j]] = newRegressorFactorValues;
                 }
             }
+        }
+
+        /// <summary>
+        /// Set regressors and regressors names for each model
+        /// </summary>
+        private void FillRegressorsForModels() {
+            Models.ForEach(model => model.SetNewRegressors(BaseRegressors));
+            Models.ForEach(model => model.SetRegressorsNames(BaseRegressors.Keys.ToList()));
+        }
+
+        private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
+            if (BaseRegressors.Count > 0) {
+                UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
+                warningForm.ShowDialog();
+                if (warningForm.AcceptAction) {
+                    RunBackgroundFunctionalProcessData();
+
+                    doFunctionalProcessButton.Enabled = false;
+                }
+            }
+            else {
+                MessageBox.Show("Вы не выбрали ни одного управляющего фактора");
+            }
+        }
+
+        /// <summary>
+        /// Run background worker for functional process data
+        /// </summary>
+        private void RunBackgroundFunctionalProcessData() {
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
+                functionsForProcessingDataGrid, true, new List<int>() { 3 });
+
+            // Background worker for function preprocessing
+            BackgroundWorker bgWorkerFunc = new BackgroundWorker();
+            bgWorkerFunc.DoWork += new DoWorkEventHandler((sender, e) => FunctionProcessing(sender, e, bgWorkerFunc));
+            bgWorkerFunc.WorkerSupportsCancellation = true;
+            bgWorkerFunc.RunWorkerAsync();
+
+            // Backgound worker for loading label
+            BackgroundWorker bgWorkerLabel = new BackgroundWorker();
+            bgWorkerLabel.DoWork += new DoWorkEventHandler((sender, e) =>
+                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLabel, bgWorkerFunc));
+            bgWorkerLabel.WorkerSupportsCancellation = true;
+            bgWorkerLabel.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Find the functions that maximize the Pearson coefficient between regressors and regressants factors
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <param name="bgWorker">Background worker</param>
+        private void FunctionProcessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+            // Check if bgWorkerFunc has been stopped
+            if (bgWorker.CancellationPending == true) {
+                e.Cancel = true;
+            }
+            else {
+                // Find best functions for each regressors for each model
+                foreach(var model in Models) {
+                    model.StartFunctionalPreprocessing();
+
+                    // Add functions and correlation coefficients to data grid view
+                    foreach (var regressor in model.ProcessFunctions) {
+                        // Add row of preprocess functions to data grid
+                        functionsForProcessingDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingDataGrid.Rows.Add(row.ToArray())),
+                            new List<string>() { model.RegressantName, regressor.Key,
+                                String.Join(", ", regressor.Value.ToArray()),
+                                Math.Abs(model.CorrelationCoefficient[regressor.Key]).ToString() });
+                    }
+                }
+
+                bgWorker.CancelAsync();
+            }
+        }
+
+        /// <summary>
+        /// Function for showing logo of the loading
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <param name="bgWorker">Background worker</param>
+        private void ShowLoadingFunctionPreprocessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker, BackgroundWorker bgWorkerFunc) {
+            labelFuncPreprocess.Invoke(new Action<bool>((vis) => labelFuncPreprocess.Visible = vis), true);
+
+            // While bgWorkerFunc is busy, we will update the load indicator
+            while (bgWorkerFunc.IsBusy == true) {
+                if (labelFuncPreprocess.Text.Count(symb => symb == '.') < 3) {
+                    labelFuncPreprocess.Invoke(new Action<string>((load) => labelFuncPreprocess.Text = load),
+                        labelFuncPreprocess.Text + ".");
+                }
+                else {
+                    labelFuncPreprocess.Invoke(new Action<string>((load) => labelFuncPreprocess.Text = load),
+                        "Загрузка");
+                }
+                System.Threading.Thread.Sleep(500);
+            }
+
+            labelFuncPreprocess.Invoke(new Action<bool>((vis) => labelFuncPreprocess.Visible = vis), false);
+            labelPreprocessingFinish.Invoke(new Action<bool>((vis) => labelPreprocessingFinish.Visible = vis), true);
+            bgWorker.CancelAsync();
         }
 
         /// <summary>
@@ -288,6 +397,18 @@ namespace Multiple_Linear_Regression {
             clearSelectedFactorsButton.Enabled = false;
             regressantsList.Items.Clear();
             regressorsList.Items.Clear();
+            labelResultDataLoad.Visible = false;
+
+            ClearControlsStep2();
+        }
+
+        /// <summary>
+        /// Function for clear controls start with step2
+        /// </summary>
+        private void ClearControlsStep2() {
+            ClearDataGV(functionsForProcessingDataGrid);
+            doFunctionalProcessButton.Enabled = false;
+            labelFuncPreprocess.Visible = false;
         }
 
         /// <summary>
@@ -317,7 +438,7 @@ namespace Multiple_Linear_Regression {
                 }
             }
             if (indexOfSortableColumns != null) {
-                foreach (int index in indexOfSortableColumns) {
+                foreach (var index in indexOfSortableColumns) {
                     dataGV.Columns[index].SortMode = DataGridViewColumnSortMode.Automatic;
                 }
             }
@@ -367,12 +488,24 @@ namespace Multiple_Linear_Regression {
             exitForm.Show();
         }
 
-        private void MainForm_ResizeBegin(object sender, EventArgs e) {
-            isResizeNeeded = true;
+        /// <summary>
+        /// Change information text about step
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void allTabs_Selected(object sender, TabControlEventArgs e) {
+            switch (allTabs.SelectedIndex) {
+                case 0:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.Step1;
+                    break;
+                case 1:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.Step2;
+                    break;
+            }
         }
 
-        private void MainForm_ResizeEnd(object sender, EventArgs e) {
-            isResizeNeeded = false;
+        private void MainForm_Resize(object sender, EventArgs e) {
+            isResizeNeeded = true;
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
@@ -383,36 +516,51 @@ namespace Multiple_Linear_Regression {
         /// Resize all main from components
         /// </summary>
         private void DoResizeComponents(object sender, DoWorkEventArgs e) {
-            while (true) {
-                if (isResizeNeeded) {
-                    int newWidth = this.Width - 196;
-                    int newHeight = this.Height - 67;
-                    int widthDiff = newWidth - allTabs.Width;
-                    int heightDiff = newHeight - allTabs.Height;
-                    allTabs.Invoke(new Action<Size>((size) => allTabs.Size = size), new Size(newWidth, newHeight));
+            // Check if resizeWorker has been stopped
+            if (resizeWorker.CancellationPending == true) {
+                e.Cancel = true;
+            }
+            else {
+                while (true) {
+                    if (isResizeNeeded) {
+                        int newWidth = this.Width - 196;
+                        int newHeight = this.Height - 67;
+                        int widthDiff = newWidth - allTabs.Width;
+                        int heightDiff = newHeight - allTabs.Height;
+                        allTabs.Invoke(new Action<Size>((size) => allTabs.Size = size), new Size(newWidth, newHeight));
 
 
-                    // Tab 1
-                    selectRegressantsButton.Invoke(new Action<Point>((loc) => selectRegressantsButton.Location = loc),
-                        new Point(selectRegressantsButton.Location.X + widthDiff, selectRegressantsButton.Location.Y));
+                        // Tab 1
+                        selectRegressantsButton.Invoke(new Action<Point>((loc) => selectRegressantsButton.Location = loc),
+                            new Point(selectRegressantsButton.Location.X + widthDiff, selectRegressantsButton.Location.Y));
 
-                    selectRegressorsButton.Invoke(new Action<Point>((loc) => selectRegressorsButton.Location = loc),
-                        new Point(selectRegressorsButton.Location.X + widthDiff, selectRegressorsButton.Location.Y));
+                        selectRegressorsButton.Invoke(new Action<Point>((loc) => selectRegressorsButton.Location = loc),
+                            new Point(selectRegressorsButton.Location.X + widthDiff, selectRegressorsButton.Location.Y));
 
-                    clearSelectedFactorsButton.Invoke(new Action<Point>((loc) => clearSelectedFactorsButton.Location = loc),
-                        new Point(clearSelectedFactorsButton.Location.X + widthDiff, clearSelectedFactorsButton.Location.Y));
+                        clearSelectedFactorsButton.Invoke(new Action<Point>((loc) => clearSelectedFactorsButton.Location = loc),
+                            new Point(clearSelectedFactorsButton.Location.X + widthDiff, clearSelectedFactorsButton.Location.Y));
 
-                    acceptFactorsButton.Invoke(new Action<Point>((loc) => acceptFactorsButton.Location = loc),
-                        new Point(acceptFactorsButton.Location.X + widthDiff, acceptFactorsButton.Location.Y));
+                        acceptFactorsButton.Invoke(new Action<Point>((loc) => acceptFactorsButton.Location = loc),
+                            new Point(acceptFactorsButton.Location.X + widthDiff, acceptFactorsButton.Location.Y));
 
-                    factorsData.Invoke(new Action<Size>((size) => factorsData.Size = size),
-                        new Size(factorsData.Width + widthDiff, factorsData.Height + heightDiff));
+                        factorsData.Invoke(new Action<Size>((size) => factorsData.Size = size),
+                            new Size(factorsData.Width + widthDiff, factorsData.Height + heightDiff));
 
-                    progressBarDataLoad.Invoke(new Action<Point>((loc) => progressBarDataLoad.Location = loc),
-                        new Point(progressBarDataLoad.Location.X, progressBarDataLoad.Location.Y + heightDiff));
+                        progressBarDataLoad.Invoke(new Action<Point>((loc) => progressBarDataLoad.Location = loc),
+                            new Point(progressBarDataLoad.Location.X, progressBarDataLoad.Location.Y + heightDiff));
 
-                    progressBarDataLoad.Invoke(new Action<Size>((size) => progressBarDataLoad.Size = size),
-                        new Size(progressBarDataLoad.Width + widthDiff, progressBarDataLoad.Height));
+                        progressBarDataLoad.Invoke(new Action<Size>((size) => progressBarDataLoad.Size = size),
+                            new Size(progressBarDataLoad.Width + widthDiff, progressBarDataLoad.Height));
+
+                        checkPairwiseCombinations.Invoke(new Action<Point>((loc) => checkPairwiseCombinations.Location = loc),
+                            new Point(checkPairwiseCombinations.Location.X + widthDiff, checkPairwiseCombinations.Location.Y));
+
+                        labelResultDataLoad.Invoke(new Action<Point>((loc) => labelResultDataLoad.Location = loc),
+                            new Point(labelResultDataLoad.Location.X + widthDiff, labelResultDataLoad.Location.Y));
+
+
+                        isResizeNeeded = false;
+                    }
                 }
             }
         }

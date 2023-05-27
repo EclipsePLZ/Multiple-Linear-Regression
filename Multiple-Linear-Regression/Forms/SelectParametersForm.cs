@@ -121,12 +121,8 @@ namespace Multiple_Linear_Regression {
             this.Close();
         }
 
-        private void SelectParametersForm_ResizeBegin(object sender, EventArgs e) {
+        private void SelectParametersForm_Resize(object sender, EventArgs e) {
             isResizeNeeded = true;
-        }
-
-        private void SelectParametersForm_ResizeEnd(object sender, EventArgs e) {
-            isResizeNeeded = false;
         }
 
         private void SelectParametersForm_FormClosing(object sender, FormClosingEventArgs e) {
@@ -138,41 +134,49 @@ namespace Multiple_Linear_Regression {
         /// Resize all components on SelectParametersForm
         /// </summary>
         private void DoResizeComponents(object sender, DoWorkEventArgs e) {
-            while (true) {
-                if (isResizeNeeded) {
-                    int widthMainForm = this.Width;
-                    int heightMainForm = this.Height;
+            // Check if resizeWorker has been stopped
+            if (resizeWorker.CancellationPending == true) {
+                e.Cancel = true;
+            }
+            else {
+                while (true) {
+                    if (isResizeNeeded) {
+                        int widthMainForm = this.Width;
+                        int heightMainForm = this.Height;
 
-                    // The height of one element in the list is 13, so for a smooth drawing of the lists
-                    // will change their height to a multiple of 13
-                    int listsHeight = ((heightMainForm - 107 - 17) / 13) * 13 + 17;
+                        // The height of one element in the list is 13, so for a smooth drawing of the lists
+                        // will change their height to a multiple of 13
+                        int listsHeight = ((heightMainForm - 107 - 17) / 13) * 13 + 17;
 
-                    toSelectList.Invoke(new Action<Point>((loc) => toSelectList.Location = loc),
-                        new Point((widthMainForm / 2) - toSelectList.Width, toSelectList.Location.Y));
+                        toSelectList.Invoke(new Action<Point>((loc) => toSelectList.Location = loc),
+                            new Point((widthMainForm / 2) - toSelectList.Width, toSelectList.Location.Y));
 
-                    toAvailableList.Invoke(new Action<Point>((loc) => toAvailableList.Location = loc),
-                        new Point((widthMainForm / 2) - toAvailableList.Width, toAvailableList.Location.Y));
+                        toAvailableList.Invoke(new Action<Point>((loc) => toAvailableList.Location = loc),
+                            new Point((widthMainForm / 2) - toAvailableList.Width, toAvailableList.Location.Y));
 
-                    allToSelectList.Invoke(new Action<Point>((loc) => allToSelectList.Location = loc),
-                        new Point((widthMainForm / 2) - allToSelectList.Width, allToSelectList.Location.Y));
+                        allToSelectList.Invoke(new Action<Point>((loc) => allToSelectList.Location = loc),
+                            new Point((widthMainForm / 2) - allToSelectList.Width, allToSelectList.Location.Y));
 
-                    allToAvailableList.Invoke(new Action<Point>((loc) => allToAvailableList.Location = loc),
-                        new Point((widthMainForm / 2) - allToAvailableList.Width, allToAvailableList.Location.Y));
+                        allToAvailableList.Invoke(new Action<Point>((loc) => allToAvailableList.Location = loc),
+                            new Point((widthMainForm / 2) - allToAvailableList.Width, allToAvailableList.Location.Y));
 
-                    listSelectedFactors.Invoke(new Action<Size>((size) => listSelectedFactors.Size = size),
-                        new Size(toSelectList.Location.X - 77, listsHeight));
+                        listSelectedFactors.Invoke(new Action<Size>((size) => listSelectedFactors.Size = size),
+                            new Size(toSelectList.Location.X - 77, listsHeight));
 
-                    listAvailabelFactors.Invoke(new Action<Point>((loc) => listAvailabelFactors.Location = loc),
-                        new Point(toSelectList.Location.X + 74, listAvailabelFactors.Location.Y));
+                        listAvailabelFactors.Invoke(new Action<Point>((loc) => listAvailabelFactors.Location = loc),
+                            new Point(toSelectList.Location.X + 74, listAvailabelFactors.Location.Y));
 
-                    listAvailabelFactors.Invoke(new Action<Size>((size) => listAvailabelFactors.Size = size),
-                        new Size(widthMainForm - listAvailabelFactors.Location.X - 62, listsHeight));
+                        listAvailabelFactors.Invoke(new Action<Size>((size) => listAvailabelFactors.Size = size),
+                            new Size(widthMainForm - listAvailabelFactors.Location.X - 62, listsHeight));
 
-                    labelAvailableFactors.Invoke(new Action<Point>((loc) => labelAvailableFactors.Location = loc),
-                        new Point(listAvailabelFactors.Location.X - 3, labelAvailableFactors.Location.Y));
+                        labelAvailableFactors.Invoke(new Action<Point>((loc) => labelAvailableFactors.Location = loc),
+                            new Point(listAvailabelFactors.Location.X - 3, labelAvailableFactors.Location.Y));
 
-                    acceptSelectedFactorsButton.Invoke(new Action<Point>((loc) => acceptSelectedFactorsButton.Location = loc),
-                        new Point(toSelectList.Location.X - 33, acceptSelectedFactorsButton.Location.Y));
+                        acceptSelectedFactorsButton.Invoke(new Action<Point>((loc) => acceptSelectedFactorsButton.Location = loc),
+                            new Point(toSelectList.Location.X - 33, acceptSelectedFactorsButton.Location.Y));
+
+                        isResizeNeeded = false;
+                    }
                 }
             }
         }
