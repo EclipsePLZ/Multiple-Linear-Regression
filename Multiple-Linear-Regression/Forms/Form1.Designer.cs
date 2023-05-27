@@ -370,7 +370,7 @@
             this.removeUnimportantFactorsTab.Name = "removeUnimportantFactorsTab";
             this.removeUnimportantFactorsTab.Size = new System.Drawing.Size(816, 390);
             this.removeUnimportantFactorsTab.TabIndex = 2;
-            this.removeUnimportantFactorsTab.Text = "Отсев управляющих факторов";
+            this.removeUnimportantFactorsTab.Text = "Фильтрация управляющих факторов";
             this.removeUnimportantFactorsTab.UseVisualStyleBackColor = true;
             // 
             // onlyImportantFactorsDataGrid
@@ -460,6 +460,7 @@
             this.cancelFilterFactorsButton.TabIndex = 34;
             this.cancelFilterFactorsButton.Text = "Отменить";
             this.cancelFilterFactorsButton.UseVisualStyleBackColor = true;
+            this.cancelFilterFactorsButton.Click += new System.EventHandler(this.cancelFilterFactorsButton_Click);
             // 
             // labelFilterLoad
             // 

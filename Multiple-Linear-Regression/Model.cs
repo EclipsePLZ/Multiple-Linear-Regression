@@ -118,6 +118,7 @@ namespace Multiple_Linear_Regression {
                     }
                 }
             }
+            NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
         }
 
         /// <summary>
@@ -125,8 +126,7 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="thresholdCorrCoeff">Threshold value of the correlation coefficient</param>
         public void EmpiricalWayFilterRegressors(double thresholdCorrCoeff) {
-            NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
-
+            CheckNonFilterRegressors();
             foreach (var corrCoeff in CorrelationCoefficient) {
                 if (Math.Abs(corrCoeff.Value) < thresholdCorrCoeff) {
                     RemoveRegressor(corrCoeff.Key);
@@ -135,7 +135,7 @@ namespace Multiple_Linear_Regression {
         }
 
         public void ClassicWayFilterRegressors() {
-            NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
+            CheckNonFilterRegressors();
             int k = RegressantValues.Count;
             double alpha = 0.05;
 
@@ -146,6 +146,12 @@ namespace Multiple_Linear_Regression {
                 if (p >= alpha) {
                     RemoveRegressor(corrCoeff.Key);
                 }
+            }
+        }
+
+        private void CheckNonFilterRegressors() {
+            if (NonFilterRegressors is null) {
+                NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
             }
         }
 

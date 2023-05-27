@@ -242,6 +242,7 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         private void LoadValuesForFactors() {
             Models.Clear();
+            BaseRegressors.Clear();
             
             // Load regressants
             foreach (var factor in RegressantsHeaders) {
@@ -396,24 +397,13 @@ namespace Multiple_Linear_Regression {
                 }
 
                 loadLabel.Invoke(new Action<bool>((vis) => loadLabel.Visible = vis), false);
-                finishLabel.Invoke(new Action<bool>((vis) => labelPreprocessingFinish.Visible = vis), true);
+                finishLabel.Invoke(new Action<bool>((vis) => finishLabel.Visible = vis), true);
                 bgWorker.CancelAsync();
             }
         }
 
         private void acceptFilterFactorsButton_Click(object sender, EventArgs e) {
-            try {
-                if (classicWayRadio.Checked) {
-                    ClassicWayToFilterRegressors();
-                }
-                else if (empWayRadio.Checked) {
-                    EmpiricalWayToFilterRegressors();
-                }
-                RunBackgroundFillFilteredFactors();
-            }
-            catch (Exception ex) {
-                MessageBox.Show(ex.Message);
-            }
+            RunBackgroundFilterRegressors();
         }
 
         private void RunBackgroundFilterRegressors() {
@@ -448,6 +438,9 @@ namespace Multiple_Linear_Regression {
                     // Update data grid view with filtered factors
                     Action action = () => RunBackgroundFillFilteredFactors();
                     onlyImportantFactorsDataGrid.Invoke(action);
+
+                    // Enable cancel filtering button
+                    cancelFilterFactorsButton.Invoke(new Action<bool>((b) => cancelFilterFactorsButton.Enabled = b), true);
                 }
                 catch (Exception ex) {
                     MessageBox.Show(ex.Message);
@@ -474,6 +467,12 @@ namespace Multiple_Linear_Regression {
             foreach (var model in Models) {
                 model.EmpiricalWayFilterRegressors(thresholdValueCorr);
             }
+        }
+
+        private void cancelFilterFactorsButton_Click(object sender, EventArgs e) {
+            Models.ForEach(model => model.RestoreNonFilterRegressors());
+            cancelFilterFactorsButton.Enabled = false;
+            RunBackgroundFillFilteredFactors();
         }
 
         /// <summary>
@@ -616,6 +615,8 @@ namespace Multiple_Linear_Regression {
             valueEmpWayCorr.Enabled = false;
             acceptFilterFactorsButton.Enabled = false;
             cancelFilterFactorsButton.Enabled = false;
+            labelFilterLoad.Visible = false;
+            labelFilterFinish.Visible = false;
         }
 
         /// <summary>
@@ -732,6 +733,7 @@ namespace Multiple_Linear_Regression {
             }
             else {
                 while (true) {
+                    System.Threading.Thread.Sleep(100);
                     if (isResizeNeeded) {
                         int newWidth = this.Width - 196;
                         int newHeight = this.Height - 67;
@@ -794,6 +796,38 @@ namespace Multiple_Linear_Regression {
 
                         labelFuncPreprocess.Invoke(new Action<Point>((loc) => labelFuncPreprocess.Location = loc),
                             new Point(labelFuncPreprocess.Location.X + widthDiff, labelFuncPreprocess.Location.Y));
+
+
+                        // Tab 3
+                        onlyImportantFactorsDataGrid.Invoke(new Action<Size>((size) => onlyImportantFactorsDataGrid.Size = size),
+                           new Size(onlyImportantFactorsDataGrid.Width + widthDiff, onlyImportantFactorsDataGrid.Height + heightDiff));
+
+                        progressBarFillFilteredData.Invoke(new Action<Point>((loc) => progressBarFillFilteredData.Location = loc),
+                            new Point(progressBarFillFilteredData.Location.X, progressBarFillFilteredData.Location.Y + heightDiff));
+
+                        progressBarFillFilteredData.Invoke(new Action<Size>((size) => progressBarFillFilteredData.Size = size),
+                           new Size(progressBarFillFilteredData.Width + widthDiff, progressBarFillFilteredData.Height));
+
+                        empWayRadio.Invoke(new Action<Point>((loc) => empWayRadio.Location = loc),
+                            new Point(empWayRadio.Location.X + widthDiff, empWayRadio.Location.Y));
+
+                        valueEmpWayCorr.Invoke(new Action<Point>((loc) => valueEmpWayCorr.Location = loc),
+                            new Point(valueEmpWayCorr.Location.X + widthDiff, valueEmpWayCorr.Location.Y));
+
+                        classicWayRadio.Invoke(new Action<Point>((loc) => classicWayRadio.Location = loc),
+                            new Point(classicWayRadio.Location.X + widthDiff, classicWayRadio.Location.Y));
+
+                        acceptFilterFactorsButton.Invoke(new Action<Point>((loc) => acceptFilterFactorsButton.Location = loc),
+                            new Point(acceptFilterFactorsButton.Location.X + widthDiff, acceptFilterFactorsButton.Location.Y));
+
+                        cancelFilterFactorsButton.Invoke(new Action<Point>((loc) => cancelFilterFactorsButton.Location = loc),
+                            new Point(cancelFilterFactorsButton.Location.X + widthDiff, cancelFilterFactorsButton.Location.Y));
+
+                        labelFilterLoad.Invoke(new Action<Point>((loc) => labelFilterLoad.Location = loc),
+                            new Point(labelFilterLoad.Location.X + widthDiff, labelFilterLoad.Location.Y));
+
+                        labelFilterFinish.Invoke(new Action<Point>((loc) => labelFilterFinish.Location = loc),
+                            new Point(labelFilterFinish.Location.X + widthDiff, labelFilterFinish.Location.Y));
 
 
                         isResizeNeeded = false;
