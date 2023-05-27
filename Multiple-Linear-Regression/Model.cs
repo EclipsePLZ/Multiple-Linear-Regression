@@ -13,11 +13,6 @@ namespace Multiple_Linear_Regression {
         public string RegressantName { get; }
 
         /// <summary>
-        /// Names of regressors
-        /// </summary>
-        public List<string> RegressorsNames { get; private set; }
-
-        /// <summary>
         /// Values of regressant
         /// </summary>
         public List<double> RegressantValues { get; private set; }
@@ -26,6 +21,11 @@ namespace Multiple_Linear_Regression {
         /// Dictionary of regressors
         /// </summary>
         public Dictionary<string, List<double>> Regressors { get; private set; }
+
+        /// <summary>
+        /// Dictionary of non-filter regressors
+        /// </summary>
+        private Dictionary<string, List<double>> NonFilterRegressors { get; set; }
 
         /// <summary>
         /// Dictionary of functions that were used in preprocessing data
@@ -37,14 +37,19 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         public Dictionary<string, double> CorrelationCoefficient { get; private set; }
 
-        public Model(string regerssantName, List<double> regressantValues, 
-            List<string> regressorsNames = null, Dictionary<string, List<double>> regressors = null) {
+        public Model(string regerssantName, List<double> regressantValues, Dictionary<string, List<double>> regressors = null) {
             RegressantName = regerssantName;
-            RegressantValues = regressantValues;
-            RegressorsNames = regressorsNames;
-            Regressors = regressors;
+            RegressantValues = regressantValues;            
             ProcessFunctions = new Dictionary<string, List<string>>();
             CorrelationCoefficient = new Dictionary<string, double>();
+
+            if (regressors is null) {
+                Regressors = null;
+                NonFilterRegressors = null;
+            }
+            else {
+                SetNewRegressors(regressors);
+            }
         }
 
         /// <summary>
@@ -53,22 +58,33 @@ namespace Multiple_Linear_Regression {
         /// <param name="regressors">Dictionary of regressors</param>
         public void SetNewRegressors(Dictionary<string, List<double>> regressors) {
             Regressors = new Dictionary<string, List<double>>(regressors);
+            CalcNewCorrelationCoefficients();
         }
 
+        /// <summary>
+        /// Remove regressor by name
+        /// </summary>
+        /// <param name="regressorName">Regressor's name</param>
+        private void RemoveRegressor(string regressorName) {
+            Regressors.Remove(regressorName);
+        }
 
         /// <summary>
-        /// Set new regressors names
+        /// Calculation of correlation coefficients between regressant and regressors
         /// </summary>
-        /// <param name="regressorsNames">List of regressors names</param>
-        public void SetRegressorsNames(List<string> regressorsNames) {
-            RegressorsNames = new List<string>(regressorsNames);
+        private void CalcNewCorrelationCoefficients() {
+            CorrelationCoefficient.Clear();
+            foreach(var regressor in Regressors) {
+                CorrelationCoefficient.Add(regressor.Key, Statistics.PearsonCorrelationCoefficient(RegressantValues, regressor.Value));
+            }
         }
 
         /// <summary>
         /// Functional data preprocessing
         /// </summary>
         public void StartFunctionalPreprocessing() {
-            foreach(var regressor in RegressorsNames) {
+            List<string> regressorsNames = new List<string>(Regressors.Keys);
+            foreach(var regressor in regressorsNames) {
                 List<string> functions = new List<string>();
                 double startCorrCoef = Statistics.PearsonCorrelationCoefficient(RegressantValues,
                     Statistics.ConvertValuesToInterval(2.0, 102.0, Regressors[regressor]));
@@ -97,11 +113,47 @@ namespace Multiple_Linear_Regression {
                     }
                     else {
                         ProcessFunctions.Add(regressor, functions);
-                        CorrelationCoefficient.Add(regressor, startCorrCoef);
+                        CorrelationCoefficient[regressor] = startCorrCoef;
                         break;
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Filtering of regressors by comparison with the threshold value of the correlation coefficient
+        /// </summary>
+        /// <param name="thresholdCorrCoeff">Threshold value of the correlation coefficient</param>
+        public void EmpiricalWayFilterRegressors(double thresholdCorrCoeff) {
+            NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
+
+            foreach (var corrCoeff in CorrelationCoefficient) {
+                if (Math.Abs(corrCoeff.Value) < thresholdCorrCoeff) {
+                    RemoveRegressor(corrCoeff.Key);
+                }
+            }
+        }
+
+        public void ClassicWayFilterRegressors() {
+            NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
+            int k = RegressantValues.Count;
+            double alpha = 0.05;
+
+            foreach (var corrCoeff in CorrelationCoefficient) {
+                // Find the critical area
+                double p = 2.0 * (1.0 - alglib.studenttdistribution(k - 2, Statistics.T_Statistics(k - 2, corrCoeff.Value)));
+
+                if (p >= alpha) {
+                    RemoveRegressor(corrCoeff.Key);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Restoring the regressors to their pre-filter state
+        /// </summary>
+        public void RestoreNonFilterRegressors() {
+            SetNewRegressors(NonFilterRegressors);
         }
     }
 }
