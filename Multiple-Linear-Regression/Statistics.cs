@@ -107,6 +107,16 @@ namespace DeepParameters {
             return result;
         }
 
+        /// <summary>
+        /// Find t-statistics with k degrees of freedom
+        /// </summary>
+        /// <param name="k">Degrees of freedom</param>
+        /// <param name="corr">Pearson correlation coefficient</param>
+        /// <returns>Value of t-statistics</returns>
+        public static double T_Statistics(int k, double corr) {
+            return Math.Abs(corr) * Math.Sqrt(k / (1.0 - Math.Pow(Math.Abs(corr), 2)));
+        }
+
         public static Dictionary<string, Func<List<double>, double>> Functions { get; } = 
             new Dictionary<string, Func<List<double>, double>>() {
                 { "Начальный момент 1-го порядка",  FirstOrderStartMoment},
