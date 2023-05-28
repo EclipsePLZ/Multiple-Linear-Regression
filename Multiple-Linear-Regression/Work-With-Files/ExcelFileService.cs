@@ -1,4 +1,4 @@
-﻿using DeepParameters.Work_WIth_Files.Interfaces;
+﻿using Multiple_Linear_Regression.Work_WIth_Files.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using ExcelDataReader;
 using System.Data;
 
-namespace DeepParameters.Work_WIth_Files {
+namespace Multiple_Linear_Regression.Work_WIth_Files {
     internal class ExcelFileService : IFileService{
         /// <summary>
         /// Read accident information from excel file

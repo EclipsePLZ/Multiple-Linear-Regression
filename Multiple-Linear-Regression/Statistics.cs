@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeepParameters {
+namespace Multiple_Linear_Regression {
     public static class Statistics {
         /// <summary>
         /// Get reliabity interval for vibration signal

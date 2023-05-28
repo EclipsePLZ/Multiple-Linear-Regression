@@ -1,5 +1,4 @@
-﻿using DeepParameters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +22,11 @@ namespace Multiple_Linear_Regression {
         public Dictionary<string, List<double>> Regressors { get; private set; }
 
         /// <summary>
+        /// Dictionary of regressors coefficients
+        /// </summary>
+        public Dictionary<string, List<double>> RegressorsCoeffs { get; private set; }
+
+        /// <summary>
         /// Dictionary of non-filter regressors
         /// </summary>
         private Dictionary<string, List<double>> NonFilterRegressors { get; set; }
@@ -42,6 +46,7 @@ namespace Multiple_Linear_Regression {
             RegressantValues = regressantValues;            
             ProcessFunctions = new Dictionary<string, List<string>>();
             CorrelationCoefficient = new Dictionary<string, double>();
+            RegressorsCoeffs = new Dictionary<string, List<double>>();
 
             if (regressors is null) {
                 Regressors = null;
@@ -168,6 +173,13 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         public void RestoreNonFilterRegressors() {
             SetNewRegressors(NonFilterRegressors);
+        }
+
+        /// <summary>
+        /// Make an equation for expressing regressants through regressors
+        /// </summary>
+        public void FindEquation() {
+
         }
     }
 }

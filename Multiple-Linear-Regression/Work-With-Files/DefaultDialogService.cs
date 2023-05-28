@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using System.Windows;
 using Microsoft.Win32;
 
-namespace DeepParameters.Work_WIth_Files {
+namespace Multiple_Linear_Regression.Work_WIth_Files {
     internal class DefaultDialogService : IDialogService {
         /// <summary>
         /// Path to file

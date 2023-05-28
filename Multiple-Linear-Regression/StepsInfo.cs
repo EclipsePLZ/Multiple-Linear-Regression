@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeepParameters {
+namespace Multiple_Linear_Regression {
     internal static class StepsInfo {
         public static string Step1 { get; } = "Загрузка данных из файла (excel, csv) и выбор показателей для построения моделей.";
 

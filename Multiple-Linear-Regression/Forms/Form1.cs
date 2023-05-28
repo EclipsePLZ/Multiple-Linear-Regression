@@ -1,6 +1,5 @@
-﻿using DeepParameters;
-using DeepParameters.Work_WIth_Files;
-using DeepParameters.Work_WIth_Files.Interfaces;
+﻿using Multiple_Linear_Regression.Work_WIth_Files;
+using Multiple_Linear_Regression.Work_WIth_Files.Interfaces;
 using Multiple_Linear_Regression.Forms;
 using System;
 using System.Collections.Generic;
