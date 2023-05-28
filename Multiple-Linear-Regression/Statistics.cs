@@ -117,6 +117,26 @@ namespace Multiple_Linear_Regression {
             return Math.Abs(corr) * Math.Sqrt(k / (1.0 - Math.Pow(Math.Abs(corr), 2)));
         }
 
+        /// <summary>
+        /// Get adjusted coefficietn of determination
+        /// </summary>
+        /// <param name="realValues">Real values</param>
+        /// <param name="predictedValues">Predicted values</param>
+        /// <param name="k">Number of model parameters</param>
+        /// <returns>Adjusted coefficient of determination</returns>
+        public static double AdjustedDetermCoefficient(IEnumerable<double> realValues, IEnumerable<double> predictedValues, int k) {
+            int n = realValues.Count();
+            double avgReal = realValues.Average();
+            double rss = 0.0;
+            double tss = realValues.Sum(v => Math.Pow(v - avgReal, 2));
+
+            for (int i = 0; i < realValues.Count(); i++) {
+                rss += Math.Pow(realValues.ElementAt(i) - predictedValues.ElementAt(i), 2);
+            }
+
+            return 1 - ((rss / (n - k)) / (tss / (n - 1)));
+        }
+
         public static Dictionary<string, Func<List<double>, double>> Functions { get; } = 
             new Dictionary<string, Func<List<double>, double>>() {
                 { "Начальный момент 1-го порядка",  FirstOrderStartMoment},

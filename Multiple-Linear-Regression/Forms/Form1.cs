@@ -48,6 +48,26 @@ namespace Multiple_Linear_Regression {
             resizeWorker.RunWorkerAsync();
         }
 
+        private void TestMethod() {
+            //PrintMatrix(Algebra.Mult(new double[,] { { 1, 8, 3 }, { 1, 2, 3 } }, new double[,] { { 3, 2 }, { 6, 1 }, { 5, 4 } }));
+            PrintVector(Algebra.Mult(new double[,] { { 1, 8 }, { 1, 2 }, { 2, 5 } }, new double[] { 3, 6 }));
+        }
+
+        private void PrintMatrix(double[,] matrix) {
+            for (int i = 0; i < matrix.GetLength(0); i++) {
+                for (int j = 0; j < matrix.GetLength(1); j++) {
+                    Console.Write($" {matrix[i, j]}");
+                }
+                Console.WriteLine();
+            }
+        }
+
+        private void PrintVector(double[] vector) {
+            for (int i = 0; i < vector.Length; i++) {
+                Console.WriteLine(vector[i]);
+            }
+        }
+
         /// <summary>
         /// Locks all tabs in tab collection
         /// </summary>
@@ -217,11 +237,14 @@ namespace Multiple_Linear_Regression {
 
                 ClearControlsStep2();
                 ClearControlsStep3();
+                ClearControlsStep4();
                 FillRegressorsForModels();
 
                 labelResultDataLoad.Visible = true;
                 processingStatDataTab.Enabled = true;
                 removeUnimportantFactorsTab.Enabled = true;
+                buildRegrEquationsTab.Enabled = true;
+                buildEquationsButton.Enabled = true;
                 doFunctionalProcessButton.Enabled = true;
             }
             else {
@@ -307,6 +330,8 @@ namespace Multiple_Linear_Regression {
                 if (warningForm.AcceptAction) {
                     RunBackgroundFunctionalProcessData();
 
+                    ClearControlsStep4();
+                    buildEquationsButton.Enabled = true;
                     doFunctionalProcessButton.Enabled = false;
                 }
             }
@@ -408,6 +433,9 @@ namespace Multiple_Linear_Regression {
 
         private void acceptFilterFactorsButton_Click(object sender, EventArgs e) {
             RunBackgroundFilterRegressors();
+
+            ClearControlsStep4();
+            buildEquationsButton.Enabled = true;
         }
 
         private void RunBackgroundFilterRegressors() {
@@ -480,6 +508,9 @@ namespace Multiple_Linear_Regression {
 
             // Fill filtered data grid
             RunBackgroundFillFilteredFactors();
+
+            ClearControlsStep4();
+            buildEquationsButton.Enabled = true;
         }
 
         /// <summary>
@@ -562,6 +593,46 @@ namespace Multiple_Linear_Regression {
             }
         }
 
+        private void buildEquationsButton_Click(object sender, EventArgs e) {
+            RunBackgroundFindEquations();
+        }
+
+        private void RunBackgroundFindEquations() {
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Уравнение", "Скорректрованный коэффициент детерминации" },
+                equationsDataGrid, true, new List<int>() { 2 });
+            buildEquationsButton.Enabled = false;
+
+            // Background worker for building equations
+            BackgroundWorker bgWorkerEq = new BackgroundWorker();
+            bgWorkerEq.DoWork += new DoWorkEventHandler((sender, e) => BuildEquations(sender, e, bgWorkerEq));
+            bgWorkerEq.WorkerSupportsCancellation = true;
+            bgWorkerEq.RunWorkerAsync();
+
+            // Background worker for loading label
+            BackgroundWorker bgWorkerLoad = new BackgroundWorker();
+            bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
+                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLoad, bgWorkerEq, labelBuildingLoad, labelBuildingFinish));
+            bgWorkerLoad.WorkerSupportsCancellation = true;
+            bgWorkerLoad.RunWorkerAsync();
+        }
+
+        private void BuildEquations(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+            if (bgWorker.CancellationPending == true) {
+                e.Cancel = true;
+            }
+            else {
+                // Build equation for each model
+                foreach(var model in Models) {
+                    model.BuildEquation();
+
+                    equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
+                        new List<string>() { model.RegressantName, model.Equation, model.DetermCoeff.ToString() });
+                }
+
+                bgWorker.CancelAsync();
+            }
+        }
+
         private void empWayRadio_CheckedChanged(object sender, EventArgs e) {
             if (empWayRadio.Checked) {
                 classicWayRadio.Checked = false;
@@ -600,6 +671,7 @@ namespace Multiple_Linear_Regression {
 
             ClearControlsStep2();
             ClearControlsStep3();
+            ClearControlsStep4();
         }
 
         /// <summary>
@@ -632,7 +704,6 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         private void ClearControlsStep4() {
             ClearDataGV(equationsDataGrid);
-            buildEquationsButton.Enabled = false;
             labelBuildingLoad.Visible = false;
             labelBuildingFinish.Visible = false;
         }
@@ -849,6 +920,20 @@ namespace Multiple_Linear_Regression {
 
                         labelFilterFinish.Invoke(new Action<Point>((loc) => labelFilterFinish.Location = loc),
                             new Point(labelFilterFinish.Location.X + widthDiff, labelFilterFinish.Location.Y));
+
+
+                        // Tab 4
+                        equationsDataGrid.Invoke(new Action<Size>((size) => equationsDataGrid.Size = size),
+                           new Size(equationsDataGrid.Width + widthDiff, equationsDataGrid.Height + heightDiff));
+
+                        buildEquationsButton.Invoke(new Action<Point>((loc) => buildEquationsButton.Location = loc),
+                            new Point(buildEquationsButton.Location.X + widthDiff, buildEquationsButton.Location.Y));
+
+                        labelBuildingLoad.Invoke(new Action<Point>((loc) => labelBuildingLoad.Location = loc),
+                            new Point(labelBuildingLoad.Location.X + widthDiff, labelBuildingLoad.Location.Y));
+
+                        labelBuildingFinish.Invoke(new Action<Point>((loc) => labelBuildingFinish.Location = loc),
+                            new Point(labelBuildingFinish.Location.X + widthDiff, labelBuildingFinish.Location.Y));
 
 
                         isResizeNeeded = false;

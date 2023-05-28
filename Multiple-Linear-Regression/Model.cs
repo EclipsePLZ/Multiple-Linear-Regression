@@ -22,9 +22,14 @@ namespace Multiple_Linear_Regression {
         public Dictionary<string, List<double>> Regressors { get; private set; }
 
         /// <summary>
+        /// List of regressors names
+        /// </summary>
+        private List<string> RegressorsNames { get; set; }
+
+        /// <summary>
         /// Dictionary of regressors coefficients
         /// </summary>
-        public Dictionary<string, List<double>> RegressorsCoeffs { get; private set; }
+        private Dictionary<string, double> RegressorsCoeffs { get; set; }
 
         /// <summary>
         /// Dictionary of non-filter regressors
@@ -41,16 +46,27 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         public Dictionary<string, double> CorrelationCoefficient { get; private set; }
 
+        /// <summary>
+        /// Equation for model
+        /// </summary>
+        public string Equation { get; private set; }
+
+        /// <summary>
+        /// Adjusted coefficient of determination
+        /// </summary>
+        public double DetermCoeff { get; private set; }
+        
         public Model(string regerssantName, List<double> regressantValues, Dictionary<string, List<double>> regressors = null) {
             RegressantName = regerssantName;
             RegressantValues = regressantValues;            
             ProcessFunctions = new Dictionary<string, List<string>>();
             CorrelationCoefficient = new Dictionary<string, double>();
-            RegressorsCoeffs = new Dictionary<string, List<double>>();
+            RegressorsCoeffs = new Dictionary<string, double>();
 
             if (regressors is null) {
                 Regressors = null;
                 NonFilterRegressors = null;
+                RegressorsNames = null;
             }
             else {
                 SetNewRegressors(regressors);
@@ -63,6 +79,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="regressors">Dictionary of regressors</param>
         public void SetNewRegressors(Dictionary<string, List<double>> regressors) {
             Regressors = new Dictionary<string, List<double>>(regressors);
+            RegressorsNames = new List<string>(Regressors.Keys);
             CalcNewCorrelationCoefficients();
         }
 
@@ -72,6 +89,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="regressorName">Regressor's name</param>
         private void RemoveRegressor(string regressorName) {
             Regressors.Remove(regressorName);
+            RegressorsNames.Remove(regressorName);
         }
 
         /// <summary>
@@ -88,8 +106,7 @@ namespace Multiple_Linear_Regression {
         /// Functional data preprocessing
         /// </summary>
         public void StartFunctionalPreprocessing() {
-            List<string> regressorsNames = new List<string>(Regressors.Keys);
-            foreach(var regressor in regressorsNames) {
+            foreach(var regressor in RegressorsNames) {
                 List<string> functions = new List<string>();
                 double startCorrCoef = Statistics.PearsonCorrelationCoefficient(RegressantValues,
                     Statistics.ConvertValuesToInterval(2.0, 102.0, Regressors[regressor]));
@@ -178,8 +195,59 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Make an equation for expressing regressants through regressors
         /// </summary>
-        public void FindEquation() {
+        public void BuildEquation() {
+            RegressorsCoeffs = new Dictionary<string, double>();
+            int numberOfValues = RegressantValues.Count;
+            int numberOfCoeffs = Regressors.Count + 1;
 
+            // Fill arrays Z and Y
+            double[,] Z = new double[numberOfValues, numberOfCoeffs];
+            double[] Y = RegressantValues.ToArray();
+
+            for (int i = 0; i < numberOfValues; i++) { 
+                for (int j = 0; j < numberOfCoeffs; j++) {
+                    if (j == 0) {
+                        Z[i, j] = 1.0;
+                    }
+                    else {
+                        Z[i, j] = Regressors[RegressorsNames[j - 1]][i];
+                    }
+                }
+            }
+
+            // Find vector of coeffs for regression equation
+            double[,] transposedZ = Algebra.Transpose(Z);
+            double[] coeffs = Algebra.Mult(Algebra.Mult(Algebra.Inverse(Algebra.Mult(transposedZ, Z)), transposedZ), Y);
+
+            // Fill coeff for each regressor in dictionary
+            RegressorsCoeffs.Add("", coeffs[0]);
+            for (int i = 1; i < coeffs.Length; i++) {
+                RegressorsCoeffs.Add(RegressorsNames[i - 1], coeffs[i]);
+            }
+
+            // Find adjusted coefficient of determination
+            DetermCoeff = Statistics.AdjustedDetermCoefficient(Y, Algebra.Mult(Z, coeffs), Regressors.Count);
+
+            // Find a string representation of the equation
+            GetEquation();
+        }
+
+        /// <summary>
+        /// Get a string representation of the equation
+        /// </summary>
+        private void GetEquation() {
+            Equation = "Y = " + Math.Round(RegressorsCoeffs[RegressorsCoeffs.Keys.ToList()[0]], 4).ToString();
+
+            for (int i = 1; i < RegressorsCoeffs.Count; i++) { 
+                if (RegressorsCoeffs[RegressorsNames[i - 1]] < 0) {
+                    Equation += " - " + Math.Abs(Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4)).ToString() 
+                        + "*X" + i.ToString();
+                    continue;
+                }
+                else {
+                    Equation += " + " + Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4).ToString() + "*X" + i.ToString();
+                }
+            }
         }
     }
 }
