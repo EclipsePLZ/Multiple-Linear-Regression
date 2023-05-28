@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeepParameters {
+namespace Multiple_Linear_Regression {
     internal static class StepsInfo {
         public static string Step1 { get; } = "Загрузка данных из файла (excel, csv) и выбор показателей для построения моделей.";
 
@@ -19,6 +19,9 @@ namespace DeepParameters {
             "управляемым фактором с некоторым пороговым значением.\n\n" +
             "Классический подход заключается в проверке на значимость при уровне значимости a=0,05 на основании\n" +
             "стандартной гипотезы.";
+
+        public static string Step4 { get; } = "На данном этапе выполняется построение многмерных регрессионных уравнений\n" +
+            "для выражения управляемых факторов через управляющие.";
 
         public static string UserWarningFuncPreprocessing { get; } = "Функциональная предобработка статистических\n" +
             "данных может занять много времени.\nДанный блок является необязательным.";

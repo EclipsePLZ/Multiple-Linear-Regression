@@ -30,6 +30,7 @@
             this.helpAllSteps = new System.Windows.Forms.ToolStripMenuItem();
             this.allTabs = new System.Windows.Forms.TabControl();
             this.loadDataTab = new System.Windows.Forms.TabPage();
+            this.labelResultDataLoad = new System.Windows.Forms.Label();
             this.checkPairwiseCombinations = new System.Windows.Forms.CheckBox();
             this.clearSelectedFactorsButton = new System.Windows.Forms.Button();
             this.acceptFactorsButton = new System.Windows.Forms.Button();
@@ -38,9 +39,25 @@
             this.progressBarDataLoad = new System.Windows.Forms.ProgressBar();
             this.factorsData = new System.Windows.Forms.DataGridView();
             this.processingStatDataTab = new System.Windows.Forms.TabPage();
+            this.labelPreprocessingFinish = new System.Windows.Forms.Label();
             this.labelFuncPreprocess = new System.Windows.Forms.Label();
             this.doFunctionalProcessButton = new System.Windows.Forms.Button();
             this.functionsForProcessingDataGrid = new System.Windows.Forms.DataGridView();
+            this.removeUnimportantFactorsTab = new System.Windows.Forms.TabPage();
+            this.progressBarFillFilteredData = new System.Windows.Forms.ProgressBar();
+            this.labelFilterFinish = new System.Windows.Forms.Label();
+            this.labelFilterLoad = new System.Windows.Forms.Label();
+            this.cancelFilterFactorsButton = new System.Windows.Forms.Button();
+            this.acceptFilterFactorsButton = new System.Windows.Forms.Button();
+            this.valueEmpWayCorr = new System.Windows.Forms.NumericUpDown();
+            this.classicWayRadio = new System.Windows.Forms.RadioButton();
+            this.empWayRadio = new System.Windows.Forms.RadioButton();
+            this.onlyImportantFactorsDataGrid = new System.Windows.Forms.DataGridView();
+            this.buildRegrEquationsTab = new System.Windows.Forms.TabPage();
+            this.labelBuildingFinish = new System.Windows.Forms.Label();
+            this.buildEquationsButton = new System.Windows.Forms.Button();
+            this.labelBuildingLoad = new System.Windows.Forms.Label();
+            this.equationsDataGrid = new System.Windows.Forms.DataGridView();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.WorkFileMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenFileMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,27 +67,17 @@
             this.labelregressantsList = new System.Windows.Forms.Label();
             this.regressorsList = new System.Windows.Forms.ListBox();
             this.labelRegressorsList = new System.Windows.Forms.Label();
-            this.labelResultDataLoad = new System.Windows.Forms.Label();
-            this.labelPreprocessingFinish = new System.Windows.Forms.Label();
-            this.removeUnimportantFactorsTab = new System.Windows.Forms.TabPage();
-            this.onlyImportantFactorsDataGrid = new System.Windows.Forms.DataGridView();
-            this.empWayRadio = new System.Windows.Forms.RadioButton();
-            this.classicWayRadio = new System.Windows.Forms.RadioButton();
-            this.valueEmpWayCorr = new System.Windows.Forms.NumericUpDown();
-            this.acceptFilterFactorsButton = new System.Windows.Forms.Button();
-            this.cancelFilterFactorsButton = new System.Windows.Forms.Button();
-            this.labelFilterLoad = new System.Windows.Forms.Label();
-            this.labelFilterFinish = new System.Windows.Forms.Label();
-            this.progressBarFillFilteredData = new System.Windows.Forms.ProgressBar();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).BeginInit();
             this.processingStatDataTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.functionsForProcessingDataGrid)).BeginInit();
-            this.menuStrip.SuspendLayout();
             this.removeUnimportantFactorsTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.onlyImportantFactorsDataGrid)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.valueEmpWayCorr)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.onlyImportantFactorsDataGrid)).BeginInit();
+            this.buildRegrEquationsTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.equationsDataGrid)).BeginInit();
+            this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // WorkFileMenuItem
@@ -102,6 +109,7 @@
             this.allTabs.Controls.Add(this.loadDataTab);
             this.allTabs.Controls.Add(this.processingStatDataTab);
             this.allTabs.Controls.Add(this.removeUnimportantFactorsTab);
+            this.allTabs.Controls.Add(this.buildRegrEquationsTab);
             this.allTabs.Location = new System.Drawing.Point(177, 27);
             this.allTabs.Name = "allTabs";
             this.allTabs.SelectedIndex = 0;
@@ -126,6 +134,16 @@
             this.loadDataTab.TabIndex = 0;
             this.loadDataTab.Text = "Загрузка данных";
             this.loadDataTab.UseVisualStyleBackColor = true;
+            // 
+            // labelResultDataLoad
+            // 
+            this.labelResultDataLoad.AutoSize = true;
+            this.labelResultDataLoad.Location = new System.Drawing.Point(651, 370);
+            this.labelResultDataLoad.Name = "labelResultDataLoad";
+            this.labelResultDataLoad.Size = new System.Drawing.Size(150, 13);
+            this.labelResultDataLoad.TabIndex = 16;
+            this.labelResultDataLoad.Text = "Факторы успешно выбраны";
+            this.labelResultDataLoad.Visible = false;
             // 
             // checkPairwiseCombinations
             // 
@@ -223,6 +241,16 @@
             this.processingStatDataTab.Text = "Обработка статистических данных";
             this.processingStatDataTab.UseVisualStyleBackColor = true;
             // 
+            // labelPreprocessingFinish
+            // 
+            this.labelPreprocessingFinish.AutoSize = true;
+            this.labelPreprocessingFinish.Location = new System.Drawing.Point(660, 371);
+            this.labelPreprocessingFinish.Name = "labelPreprocessingFinish";
+            this.labelPreprocessingFinish.Size = new System.Drawing.Size(145, 13);
+            this.labelPreprocessingFinish.TabIndex = 17;
+            this.labelPreprocessingFinish.Text = "Предобработка выполнена";
+            this.labelPreprocessingFinish.Visible = false;
+            // 
             // labelFuncPreprocess
             // 
             this.labelFuncPreprocess.AutoSize = true;
@@ -257,6 +285,200 @@
             this.functionsForProcessingDataGrid.RowHeadersWidth = 51;
             this.functionsForProcessingDataGrid.Size = new System.Drawing.Size(632, 381);
             this.functionsForProcessingDataGrid.TabIndex = 10;
+            // 
+            // removeUnimportantFactorsTab
+            // 
+            this.removeUnimportantFactorsTab.Controls.Add(this.progressBarFillFilteredData);
+            this.removeUnimportantFactorsTab.Controls.Add(this.labelFilterFinish);
+            this.removeUnimportantFactorsTab.Controls.Add(this.labelFilterLoad);
+            this.removeUnimportantFactorsTab.Controls.Add(this.cancelFilterFactorsButton);
+            this.removeUnimportantFactorsTab.Controls.Add(this.acceptFilterFactorsButton);
+            this.removeUnimportantFactorsTab.Controls.Add(this.valueEmpWayCorr);
+            this.removeUnimportantFactorsTab.Controls.Add(this.classicWayRadio);
+            this.removeUnimportantFactorsTab.Controls.Add(this.empWayRadio);
+            this.removeUnimportantFactorsTab.Controls.Add(this.onlyImportantFactorsDataGrid);
+            this.removeUnimportantFactorsTab.Location = new System.Drawing.Point(4, 22);
+            this.removeUnimportantFactorsTab.Name = "removeUnimportantFactorsTab";
+            this.removeUnimportantFactorsTab.Size = new System.Drawing.Size(816, 390);
+            this.removeUnimportantFactorsTab.TabIndex = 2;
+            this.removeUnimportantFactorsTab.Text = "Фильтрация управляющих факторов";
+            this.removeUnimportantFactorsTab.UseVisualStyleBackColor = true;
+            // 
+            // progressBarFillFilteredData
+            // 
+            this.progressBarFillFilteredData.Location = new System.Drawing.Point(3, 369);
+            this.progressBarFillFilteredData.Margin = new System.Windows.Forms.Padding(2);
+            this.progressBarFillFilteredData.Name = "progressBarFillFilteredData";
+            this.progressBarFillFilteredData.Size = new System.Drawing.Size(632, 15);
+            this.progressBarFillFilteredData.TabIndex = 37;
+            this.progressBarFillFilteredData.Visible = false;
+            // 
+            // labelFilterFinish
+            // 
+            this.labelFilterFinish.AutoSize = true;
+            this.labelFilterFinish.Location = new System.Drawing.Point(652, 371);
+            this.labelFilterFinish.Name = "labelFilterFinish";
+            this.labelFilterFinish.Size = new System.Drawing.Size(130, 13);
+            this.labelFilterFinish.TabIndex = 36;
+            this.labelFilterFinish.Text = "Фильтрация выполнена";
+            this.labelFilterFinish.Visible = false;
+            // 
+            // labelFilterLoad
+            // 
+            this.labelFilterLoad.AutoSize = true;
+            this.labelFilterLoad.Location = new System.Drawing.Point(652, 371);
+            this.labelFilterLoad.Name = "labelFilterLoad";
+            this.labelFilterLoad.Size = new System.Drawing.Size(71, 13);
+            this.labelFilterLoad.TabIndex = 35;
+            this.labelFilterLoad.Text = "Фильтрация";
+            this.labelFilterLoad.Visible = false;
+            // 
+            // cancelFilterFactorsButton
+            // 
+            this.cancelFilterFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.cancelFilterFactorsButton.Location = new System.Drawing.Point(686, 268);
+            this.cancelFilterFactorsButton.Name = "cancelFilterFactorsButton";
+            this.cancelFilterFactorsButton.Size = new System.Drawing.Size(85, 30);
+            this.cancelFilterFactorsButton.TabIndex = 34;
+            this.cancelFilterFactorsButton.Text = "Отменить";
+            this.cancelFilterFactorsButton.UseVisualStyleBackColor = true;
+            this.cancelFilterFactorsButton.Click += new System.EventHandler(this.cancelFilterFactorsButton_Click);
+            // 
+            // acceptFilterFactorsButton
+            // 
+            this.acceptFilterFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.acceptFilterFactorsButton.Location = new System.Drawing.Point(686, 218);
+            this.acceptFilterFactorsButton.Name = "acceptFilterFactorsButton";
+            this.acceptFilterFactorsButton.Size = new System.Drawing.Size(85, 30);
+            this.acceptFilterFactorsButton.TabIndex = 33;
+            this.acceptFilterFactorsButton.Text = "Применить";
+            this.acceptFilterFactorsButton.UseVisualStyleBackColor = true;
+            this.acceptFilterFactorsButton.Click += new System.EventHandler(this.acceptFilterFactorsButton_Click);
+            // 
+            // valueEmpWayCorr
+            // 
+            this.valueEmpWayCorr.DecimalPlaces = 2;
+            this.valueEmpWayCorr.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.valueEmpWayCorr.Location = new System.Drawing.Point(670, 75);
+            this.valueEmpWayCorr.Maximum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            65536});
+            this.valueEmpWayCorr.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.valueEmpWayCorr.Name = "valueEmpWayCorr";
+            this.valueEmpWayCorr.Size = new System.Drawing.Size(120, 20);
+            this.valueEmpWayCorr.TabIndex = 32;
+            this.valueEmpWayCorr.Value = new decimal(new int[] {
+            15,
+            0,
+            0,
+            131072});
+            // 
+            // classicWayRadio
+            // 
+            this.classicWayRadio.AutoSize = true;
+            this.classicWayRadio.Location = new System.Drawing.Point(655, 128);
+            this.classicWayRadio.Name = "classicWayRadio";
+            this.classicWayRadio.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.classicWayRadio.Size = new System.Drawing.Size(135, 17);
+            this.classicWayRadio.TabIndex = 14;
+            this.classicWayRadio.TabStop = true;
+            this.classicWayRadio.Text = "Классический подход";
+            this.classicWayRadio.UseVisualStyleBackColor = true;
+            this.classicWayRadio.CheckedChanged += new System.EventHandler(this.classicWayRadio_CheckedChanged);
+            // 
+            // empWayRadio
+            // 
+            this.empWayRadio.AutoSize = true;
+            this.empWayRadio.Location = new System.Drawing.Point(653, 52);
+            this.empWayRadio.Name = "empWayRadio";
+            this.empWayRadio.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.empWayRadio.Size = new System.Drawing.Size(137, 17);
+            this.empWayRadio.TabIndex = 13;
+            this.empWayRadio.TabStop = true;
+            this.empWayRadio.Text = "Эмпирический подход";
+            this.empWayRadio.UseVisualStyleBackColor = true;
+            this.empWayRadio.CheckedChanged += new System.EventHandler(this.empWayRadio_CheckedChanged);
+            // 
+            // onlyImportantFactorsDataGrid
+            // 
+            this.onlyImportantFactorsDataGrid.AllowUserToAddRows = false;
+            this.onlyImportantFactorsDataGrid.AllowUserToDeleteRows = false;
+            this.onlyImportantFactorsDataGrid.AllowUserToResizeRows = false;
+            this.onlyImportantFactorsDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.onlyImportantFactorsDataGrid.Location = new System.Drawing.Point(3, 3);
+            this.onlyImportantFactorsDataGrid.Name = "onlyImportantFactorsDataGrid";
+            this.onlyImportantFactorsDataGrid.ReadOnly = true;
+            this.onlyImportantFactorsDataGrid.RowHeadersWidth = 51;
+            this.onlyImportantFactorsDataGrid.Size = new System.Drawing.Size(632, 381);
+            this.onlyImportantFactorsDataGrid.TabIndex = 11;
+            // 
+            // buildRegrEquationsTab
+            // 
+            this.buildRegrEquationsTab.Controls.Add(this.labelBuildingFinish);
+            this.buildRegrEquationsTab.Controls.Add(this.buildEquationsButton);
+            this.buildRegrEquationsTab.Controls.Add(this.labelBuildingLoad);
+            this.buildRegrEquationsTab.Controls.Add(this.equationsDataGrid);
+            this.buildRegrEquationsTab.Location = new System.Drawing.Point(4, 22);
+            this.buildRegrEquationsTab.Name = "buildRegrEquationsTab";
+            this.buildRegrEquationsTab.Size = new System.Drawing.Size(816, 390);
+            this.buildRegrEquationsTab.TabIndex = 3;
+            this.buildRegrEquationsTab.Text = "Построение регрессионных уравнений";
+            this.buildRegrEquationsTab.UseVisualStyleBackColor = true;
+            // 
+            // labelBuildingFinish
+            // 
+            this.labelBuildingFinish.AutoSize = true;
+            this.labelBuildingFinish.Location = new System.Drawing.Point(652, 371);
+            this.labelBuildingFinish.Name = "labelBuildingFinish";
+            this.labelBuildingFinish.Size = new System.Drawing.Size(104, 13);
+            this.labelBuildingFinish.TabIndex = 39;
+            this.labelBuildingFinish.Text = "Модели построены";
+            this.labelBuildingFinish.Visible = false;
+            // 
+            // buildEquationsButton
+            // 
+            this.buildEquationsButton.Enabled = false;
+            this.buildEquationsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.buildEquationsButton.Location = new System.Drawing.Point(669, 55);
+            this.buildEquationsButton.Name = "buildEquationsButton";
+            this.buildEquationsButton.Size = new System.Drawing.Size(126, 66);
+            this.buildEquationsButton.TabIndex = 38;
+            this.buildEquationsButton.Text = "Построить регрессионные модели";
+            this.buildEquationsButton.UseVisualStyleBackColor = true;
+            this.buildEquationsButton.Click += new System.EventHandler(this.buildEquationsButton_Click);
+            // 
+            // labelBuildingLoad
+            // 
+            this.labelBuildingLoad.AutoSize = true;
+            this.labelBuildingLoad.Location = new System.Drawing.Point(652, 371);
+            this.labelBuildingLoad.Name = "labelBuildingLoad";
+            this.labelBuildingLoad.Size = new System.Drawing.Size(115, 13);
+            this.labelBuildingLoad.TabIndex = 37;
+            this.labelBuildingLoad.Text = "Построение моделей";
+            this.labelBuildingLoad.Visible = false;
+            // 
+            // equationsDataGrid
+            // 
+            this.equationsDataGrid.AllowUserToAddRows = false;
+            this.equationsDataGrid.AllowUserToDeleteRows = false;
+            this.equationsDataGrid.AllowUserToResizeRows = false;
+            this.equationsDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.equationsDataGrid.Location = new System.Drawing.Point(3, 3);
+            this.equationsDataGrid.Name = "equationsDataGrid";
+            this.equationsDataGrid.ReadOnly = true;
+            this.equationsDataGrid.RowHeadersWidth = 51;
+            this.equationsDataGrid.Size = new System.Drawing.Size(632, 381);
+            this.equationsDataGrid.TabIndex = 12;
             // 
             // menuStrip
             // 
@@ -335,162 +557,6 @@
             this.labelRegressorsList.TabIndex = 8;
             this.labelRegressorsList.Text = "Управляющие факторы:";
             // 
-            // labelResultDataLoad
-            // 
-            this.labelResultDataLoad.AutoSize = true;
-            this.labelResultDataLoad.Location = new System.Drawing.Point(651, 370);
-            this.labelResultDataLoad.Name = "labelResultDataLoad";
-            this.labelResultDataLoad.Size = new System.Drawing.Size(150, 13);
-            this.labelResultDataLoad.TabIndex = 16;
-            this.labelResultDataLoad.Text = "Факторы успешно выбраны";
-            this.labelResultDataLoad.Visible = false;
-            // 
-            // labelPreprocessingFinish
-            // 
-            this.labelPreprocessingFinish.AutoSize = true;
-            this.labelPreprocessingFinish.Location = new System.Drawing.Point(660, 371);
-            this.labelPreprocessingFinish.Name = "labelPreprocessingFinish";
-            this.labelPreprocessingFinish.Size = new System.Drawing.Size(145, 13);
-            this.labelPreprocessingFinish.TabIndex = 17;
-            this.labelPreprocessingFinish.Text = "Предобработка выполнена";
-            this.labelPreprocessingFinish.Visible = false;
-            // 
-            // removeUnimportantFactorsTab
-            // 
-            this.removeUnimportantFactorsTab.Controls.Add(this.progressBarFillFilteredData);
-            this.removeUnimportantFactorsTab.Controls.Add(this.labelFilterFinish);
-            this.removeUnimportantFactorsTab.Controls.Add(this.labelFilterLoad);
-            this.removeUnimportantFactorsTab.Controls.Add(this.cancelFilterFactorsButton);
-            this.removeUnimportantFactorsTab.Controls.Add(this.acceptFilterFactorsButton);
-            this.removeUnimportantFactorsTab.Controls.Add(this.valueEmpWayCorr);
-            this.removeUnimportantFactorsTab.Controls.Add(this.classicWayRadio);
-            this.removeUnimportantFactorsTab.Controls.Add(this.empWayRadio);
-            this.removeUnimportantFactorsTab.Controls.Add(this.onlyImportantFactorsDataGrid);
-            this.removeUnimportantFactorsTab.Location = new System.Drawing.Point(4, 22);
-            this.removeUnimportantFactorsTab.Name = "removeUnimportantFactorsTab";
-            this.removeUnimportantFactorsTab.Size = new System.Drawing.Size(816, 390);
-            this.removeUnimportantFactorsTab.TabIndex = 2;
-            this.removeUnimportantFactorsTab.Text = "Фильтрация управляющих факторов";
-            this.removeUnimportantFactorsTab.UseVisualStyleBackColor = true;
-            // 
-            // onlyImportantFactorsDataGrid
-            // 
-            this.onlyImportantFactorsDataGrid.AllowUserToAddRows = false;
-            this.onlyImportantFactorsDataGrid.AllowUserToDeleteRows = false;
-            this.onlyImportantFactorsDataGrid.AllowUserToResizeRows = false;
-            this.onlyImportantFactorsDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.onlyImportantFactorsDataGrid.Location = new System.Drawing.Point(3, 3);
-            this.onlyImportantFactorsDataGrid.Name = "onlyImportantFactorsDataGrid";
-            this.onlyImportantFactorsDataGrid.ReadOnly = true;
-            this.onlyImportantFactorsDataGrid.RowHeadersWidth = 51;
-            this.onlyImportantFactorsDataGrid.Size = new System.Drawing.Size(632, 381);
-            this.onlyImportantFactorsDataGrid.TabIndex = 11;
-            // 
-            // empWayRadio
-            // 
-            this.empWayRadio.AutoSize = true;
-            this.empWayRadio.Location = new System.Drawing.Point(653, 52);
-            this.empWayRadio.Name = "empWayRadio";
-            this.empWayRadio.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.empWayRadio.Size = new System.Drawing.Size(137, 17);
-            this.empWayRadio.TabIndex = 13;
-            this.empWayRadio.TabStop = true;
-            this.empWayRadio.Text = "Эмпирический подход";
-            this.empWayRadio.UseVisualStyleBackColor = true;
-            this.empWayRadio.CheckedChanged += new System.EventHandler(this.empWayRadio_CheckedChanged);
-            // 
-            // classicWayRadio
-            // 
-            this.classicWayRadio.AutoSize = true;
-            this.classicWayRadio.Location = new System.Drawing.Point(655, 128);
-            this.classicWayRadio.Name = "classicWayRadio";
-            this.classicWayRadio.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.classicWayRadio.Size = new System.Drawing.Size(135, 17);
-            this.classicWayRadio.TabIndex = 14;
-            this.classicWayRadio.TabStop = true;
-            this.classicWayRadio.Text = "Классический подход";
-            this.classicWayRadio.UseVisualStyleBackColor = true;
-            this.classicWayRadio.CheckedChanged += new System.EventHandler(this.classicWayRadio_CheckedChanged);
-            // 
-            // valueEmpWayCorr
-            // 
-            this.valueEmpWayCorr.DecimalPlaces = 2;
-            this.valueEmpWayCorr.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.valueEmpWayCorr.Location = new System.Drawing.Point(670, 75);
-            this.valueEmpWayCorr.Maximum = new decimal(new int[] {
-            3,
-            0,
-            0,
-            65536});
-            this.valueEmpWayCorr.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.valueEmpWayCorr.Name = "valueEmpWayCorr";
-            this.valueEmpWayCorr.Size = new System.Drawing.Size(120, 20);
-            this.valueEmpWayCorr.TabIndex = 32;
-            this.valueEmpWayCorr.Value = new decimal(new int[] {
-            15,
-            0,
-            0,
-            131072});
-            // 
-            // acceptFilterFactorsButton
-            // 
-            this.acceptFilterFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.acceptFilterFactorsButton.Location = new System.Drawing.Point(686, 218);
-            this.acceptFilterFactorsButton.Name = "acceptFilterFactorsButton";
-            this.acceptFilterFactorsButton.Size = new System.Drawing.Size(85, 30);
-            this.acceptFilterFactorsButton.TabIndex = 33;
-            this.acceptFilterFactorsButton.Text = "Применить";
-            this.acceptFilterFactorsButton.UseVisualStyleBackColor = true;
-            this.acceptFilterFactorsButton.Click += new System.EventHandler(this.acceptFilterFactorsButton_Click);
-            // 
-            // cancelFilterFactorsButton
-            // 
-            this.cancelFilterFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.cancelFilterFactorsButton.Location = new System.Drawing.Point(686, 268);
-            this.cancelFilterFactorsButton.Name = "cancelFilterFactorsButton";
-            this.cancelFilterFactorsButton.Size = new System.Drawing.Size(85, 30);
-            this.cancelFilterFactorsButton.TabIndex = 34;
-            this.cancelFilterFactorsButton.Text = "Отменить";
-            this.cancelFilterFactorsButton.UseVisualStyleBackColor = true;
-            this.cancelFilterFactorsButton.Click += new System.EventHandler(this.cancelFilterFactorsButton_Click);
-            // 
-            // labelFilterLoad
-            // 
-            this.labelFilterLoad.AutoSize = true;
-            this.labelFilterLoad.Location = new System.Drawing.Point(652, 371);
-            this.labelFilterLoad.Name = "labelFilterLoad";
-            this.labelFilterLoad.Size = new System.Drawing.Size(71, 13);
-            this.labelFilterLoad.TabIndex = 35;
-            this.labelFilterLoad.Text = "Фильтрация";
-            this.labelFilterLoad.Visible = false;
-            // 
-            // labelFilterFinish
-            // 
-            this.labelFilterFinish.AutoSize = true;
-            this.labelFilterFinish.Location = new System.Drawing.Point(652, 371);
-            this.labelFilterFinish.Name = "labelFilterFinish";
-            this.labelFilterFinish.Size = new System.Drawing.Size(130, 13);
-            this.labelFilterFinish.TabIndex = 36;
-            this.labelFilterFinish.Text = "Фильтрация выполнена";
-            this.labelFilterFinish.Visible = false;
-            // 
-            // progressBarFillFilteredData
-            // 
-            this.progressBarFillFilteredData.Location = new System.Drawing.Point(3, 369);
-            this.progressBarFillFilteredData.Margin = new System.Windows.Forms.Padding(2);
-            this.progressBarFillFilteredData.Name = "progressBarFillFilteredData";
-            this.progressBarFillFilteredData.Size = new System.Drawing.Size(632, 15);
-            this.progressBarFillFilteredData.TabIndex = 37;
-            this.progressBarFillFilteredData.Visible = false;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -515,12 +581,15 @@
             this.processingStatDataTab.ResumeLayout(false);
             this.processingStatDataTab.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.functionsForProcessingDataGrid)).EndInit();
-            this.menuStrip.ResumeLayout(false);
-            this.menuStrip.PerformLayout();
             this.removeUnimportantFactorsTab.ResumeLayout(false);
             this.removeUnimportantFactorsTab.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.onlyImportantFactorsDataGrid)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.valueEmpWayCorr)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.onlyImportantFactorsDataGrid)).EndInit();
+            this.buildRegrEquationsTab.ResumeLayout(false);
+            this.buildRegrEquationsTab.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.equationsDataGrid)).EndInit();
+            this.menuStrip.ResumeLayout(false);
+            this.menuStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -565,6 +634,11 @@
         private System.Windows.Forms.Label labelFilterLoad;
         private System.Windows.Forms.Label labelFilterFinish;
         private System.Windows.Forms.ProgressBar progressBarFillFilteredData;
+        private System.Windows.Forms.TabPage buildRegrEquationsTab;
+        private System.Windows.Forms.Label labelBuildingFinish;
+        private System.Windows.Forms.Button buildEquationsButton;
+        private System.Windows.Forms.Label labelBuildingLoad;
+        private System.Windows.Forms.DataGridView equationsDataGrid;
     }
 }
 

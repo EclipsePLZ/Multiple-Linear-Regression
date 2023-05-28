@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeepParameters.Work_WIth_Files.Interfaces {
+namespace Multiple_Linear_Regression.Work_WIth_Files.Interfaces {
     internal interface IFileService {
         List<List<string>> Open(string filePath);
     }

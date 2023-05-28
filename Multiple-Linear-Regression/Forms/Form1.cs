@@ -1,6 +1,5 @@
-﻿using DeepParameters;
-using DeepParameters.Work_WIth_Files;
-using DeepParameters.Work_WIth_Files.Interfaces;
+﻿using Multiple_Linear_Regression.Work_WIth_Files;
+using Multiple_Linear_Regression.Work_WIth_Files.Interfaces;
 using Multiple_Linear_Regression.Forms;
 using System;
 using System.Collections.Generic;
@@ -47,6 +46,26 @@ namespace Multiple_Linear_Regression {
             resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
             resizeWorker.WorkerSupportsCancellation = true;
             resizeWorker.RunWorkerAsync();
+        }
+
+        private void TestMethod() {
+            //PrintMatrix(Algebra.Mult(new double[,] { { 1, 8, 3 }, { 1, 2, 3 } }, new double[,] { { 3, 2 }, { 6, 1 }, { 5, 4 } }));
+            PrintVector(Algebra.Mult(new double[,] { { 1, 8 }, { 1, 2 }, { 2, 5 } }, new double[] { 3, 6 }));
+        }
+
+        private void PrintMatrix(double[,] matrix) {
+            for (int i = 0; i < matrix.GetLength(0); i++) {
+                for (int j = 0; j < matrix.GetLength(1); j++) {
+                    Console.Write($" {matrix[i, j]}");
+                }
+                Console.WriteLine();
+            }
+        }
+
+        private void PrintVector(double[] vector) {
+            for (int i = 0; i < vector.Length; i++) {
+                Console.WriteLine(vector[i]);
+            }
         }
 
         /// <summary>
@@ -211,17 +230,21 @@ namespace Multiple_Linear_Regression {
             if (RegressorsHeaders.Count > 0 && RegressantsHeaders.Count > 0) {
                 LoadValuesForFactors();
 
+                // Create pairwise combinations of factors if it's needed
                 if (checkPairwiseCombinations.Checked) {
                     CreatePairwiseCombinationsOfFactors();
                 }
 
                 ClearControlsStep2();
                 ClearControlsStep3();
+                ClearControlsStep4();
                 FillRegressorsForModels();
 
                 labelResultDataLoad.Visible = true;
                 processingStatDataTab.Enabled = true;
                 removeUnimportantFactorsTab.Enabled = true;
+                buildRegrEquationsTab.Enabled = true;
+                buildEquationsButton.Enabled = true;
                 doFunctionalProcessButton.Enabled = true;
             }
             else {
@@ -301,11 +324,14 @@ namespace Multiple_Linear_Regression {
 
         private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
             if (BaseRegressors.Count > 0) {
+                // Show warinig form
                 UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
                 warningForm.ShowDialog();
                 if (warningForm.AcceptAction) {
                     RunBackgroundFunctionalProcessData();
 
+                    ClearControlsStep4();
+                    buildEquationsButton.Enabled = true;
                     doFunctionalProcessButton.Enabled = false;
                 }
             }
@@ -396,7 +422,10 @@ namespace Multiple_Linear_Regression {
                     System.Threading.Thread.Sleep(500);
                 }
 
+                // Hide loadLabel
                 loadLabel.Invoke(new Action<bool>((vis) => loadLabel.Visible = vis), false);
+
+                // Showing finish label
                 finishLabel.Invoke(new Action<bool>((vis) => finishLabel.Visible = vis), true);
                 bgWorker.CancelAsync();
             }
@@ -404,6 +433,9 @@ namespace Multiple_Linear_Regression {
 
         private void acceptFilterFactorsButton_Click(object sender, EventArgs e) {
             RunBackgroundFilterRegressors();
+
+            ClearControlsStep4();
+            buildEquationsButton.Enabled = true;
         }
 
         private void RunBackgroundFilterRegressors() {
@@ -470,9 +502,15 @@ namespace Multiple_Linear_Regression {
         }
 
         private void cancelFilterFactorsButton_Click(object sender, EventArgs e) {
+            // Restore non-filter regressors for each model
             Models.ForEach(model => model.RestoreNonFilterRegressors());
             cancelFilterFactorsButton.Enabled = false;
+
+            // Fill filtered data grid
             RunBackgroundFillFilteredFactors();
+
+            ClearControlsStep4();
+            buildEquationsButton.Enabled = true;
         }
 
         /// <summary>
@@ -530,6 +568,7 @@ namespace Multiple_Linear_Regression {
                         }
                         counter++;
 
+                        // Add information about regressor in data grid row
                         string regressant = model.RegressantName;
                         string regressorName = regressor.Key;
                         string functions = "";
@@ -549,6 +588,46 @@ namespace Multiple_Linear_Regression {
                 // Resize dataGrid
                 onlyImportantFactorsDataGrid.Invoke(new Action<Size>((size) => onlyImportantFactorsDataGrid.Size = size),
                     new Size(onlyImportantFactorsDataGrid.Width, onlyImportantFactorsDataGrid.Height + 19));
+
+                bgWorker.CancelAsync();
+            }
+        }
+
+        private void buildEquationsButton_Click(object sender, EventArgs e) {
+            RunBackgroundFindEquations();
+        }
+
+        private void RunBackgroundFindEquations() {
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Уравнение", "Скорректрованный коэффициент детерминации" },
+                equationsDataGrid, true, new List<int>() { 2 });
+            buildEquationsButton.Enabled = false;
+
+            // Background worker for building equations
+            BackgroundWorker bgWorkerEq = new BackgroundWorker();
+            bgWorkerEq.DoWork += new DoWorkEventHandler((sender, e) => BuildEquations(sender, e, bgWorkerEq));
+            bgWorkerEq.WorkerSupportsCancellation = true;
+            bgWorkerEq.RunWorkerAsync();
+
+            // Background worker for loading label
+            BackgroundWorker bgWorkerLoad = new BackgroundWorker();
+            bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
+                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLoad, bgWorkerEq, labelBuildingLoad, labelBuildingFinish));
+            bgWorkerLoad.WorkerSupportsCancellation = true;
+            bgWorkerLoad.RunWorkerAsync();
+        }
+
+        private void BuildEquations(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+            if (bgWorker.CancellationPending == true) {
+                e.Cancel = true;
+            }
+            else {
+                // Build equation for each model
+                foreach(var model in Models) {
+                    model.BuildEquation();
+
+                    equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
+                        new List<string>() { model.RegressantName, model.Equation, model.DetermCoeff.ToString() });
+                }
 
                 bgWorker.CancelAsync();
             }
@@ -592,6 +671,7 @@ namespace Multiple_Linear_Regression {
 
             ClearControlsStep2();
             ClearControlsStep3();
+            ClearControlsStep4();
         }
 
         /// <summary>
@@ -617,6 +697,15 @@ namespace Multiple_Linear_Regression {
             cancelFilterFactorsButton.Enabled = false;
             labelFilterLoad.Visible = false;
             labelFilterFinish.Visible = false;
+        }
+
+        /// <summary>
+        /// Function for clear controls on step 4
+        /// </summary>
+        private void ClearControlsStep4() {
+            ClearDataGV(equationsDataGrid);
+            labelBuildingLoad.Visible = false;
+            labelBuildingFinish.Visible = false;
         }
 
         /// <summary>
@@ -711,6 +800,9 @@ namespace Multiple_Linear_Regression {
                     break;
                 case 2:
                     helpAllStepsMenu.ToolTipText = StepsInfo.Step3;
+                    break;
+                case 3:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.Step4;
                     break;
             }
         }
@@ -828,6 +920,20 @@ namespace Multiple_Linear_Regression {
 
                         labelFilterFinish.Invoke(new Action<Point>((loc) => labelFilterFinish.Location = loc),
                             new Point(labelFilterFinish.Location.X + widthDiff, labelFilterFinish.Location.Y));
+
+
+                        // Tab 4
+                        equationsDataGrid.Invoke(new Action<Size>((size) => equationsDataGrid.Size = size),
+                           new Size(equationsDataGrid.Width + widthDiff, equationsDataGrid.Height + heightDiff));
+
+                        buildEquationsButton.Invoke(new Action<Point>((loc) => buildEquationsButton.Location = loc),
+                            new Point(buildEquationsButton.Location.X + widthDiff, buildEquationsButton.Location.Y));
+
+                        labelBuildingLoad.Invoke(new Action<Point>((loc) => labelBuildingLoad.Location = loc),
+                            new Point(labelBuildingLoad.Location.X + widthDiff, labelBuildingLoad.Location.Y));
+
+                        labelBuildingFinish.Invoke(new Action<Point>((loc) => labelBuildingFinish.Location = loc),
+                            new Point(labelBuildingFinish.Location.X + widthDiff, labelBuildingFinish.Location.Y));
 
 
                         isResizeNeeded = false;

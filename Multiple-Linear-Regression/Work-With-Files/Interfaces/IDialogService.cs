@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeepParameters {
+namespace Multiple_Linear_Regression {
     internal interface IDialogService {
         /// <summary>
         /// Show the message
