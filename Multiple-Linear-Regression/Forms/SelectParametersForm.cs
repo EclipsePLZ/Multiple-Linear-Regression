@@ -33,55 +33,37 @@ namespace Multiple_Linear_Regression {
         }
 
         private void listSelectedFactors_DoubleClick(object sender, EventArgs e) {
-            AddItemToAllList();
+            MoveItemBetweenLists(listSelectedFactors, listAvailabelFactors);
         }
 
         private void listAvailabelFactors_DoubleClick(object sender, EventArgs e) {
-            AddItemToSelectedList();
+            MoveItemBetweenLists(listAvailabelFactors, listSelectedFactors);
         }
 
         private void toSelectList_Click(object sender, EventArgs e) {
-            AddItemToSelectedList();
+            MoveItemBetweenLists(listAvailabelFactors, listSelectedFactors);
         }
 
         private void toAvailableList_Click(object sender, EventArgs e) {
-            AddItemToAllList();
+            MoveItemBetweenLists(listSelectedFactors, listAvailabelFactors);
         }
 
         /// <summary>
-        /// Move selected item from all list to selected list
+        /// Move selected item from one list to another
         /// </summary>
-        private void AddItemToSelectedList() {
-            if (listAvailabelFactors.SelectedItems.Count == 1) {
-                int selectedIndex = listAvailabelFactors.SelectedIndex;
-                listSelectedFactors.Items.Add(listAvailabelFactors.SelectedItem);
-                listAvailabelFactors.Items.Remove(listAvailabelFactors.SelectedItem);
-                if (listAvailabelFactors.Items.Count > 0) {
-                    if (selectedIndex < listAvailabelFactors.Items.Count) {
-                        listAvailabelFactors.SelectedIndex = selectedIndex;
+        /// <param name="fromList">The list from which we move the item</param>
+        /// <param name="toList">The list to which we move the item</param>
+        private void MoveItemBetweenLists(ListBox fromList, ListBox toList) {
+            if (fromList.SelectedItems.Count == 1) {
+                int selectedIndex = fromList.SelectedIndex;
+                toList.Items.Add(fromList.SelectedItem);
+                fromList.Items.Remove(fromList.SelectedItem);
+                if (fromList.Items.Count > 0) {
+                    if (selectedIndex < fromList.Items.Count) {
+                        fromList.SelectedIndex = selectedIndex;
                     }
                     else {
-                        listAvailabelFactors.SelectedIndex = selectedIndex - 1;
-                    }
-                }
-                CheckRulesForAcceptParamters();
-            }
-        }
-
-        /// <summary>
-        /// Move selected item from selected list to all list
-        /// </summary>
-        private void AddItemToAllList() {
-            if (listSelectedFactors.SelectedItems.Count == 1) {
-                int selectedIndex = listSelectedFactors.SelectedIndex;
-                listAvailabelFactors.Items.Add(listSelectedFactors.SelectedItem);
-                listSelectedFactors.Items.Remove(listSelectedFactors.SelectedItem);
-                if (listSelectedFactors.Items.Count > 0) {
-                    if (selectedIndex < listSelectedFactors.Items.Count) {
-                        listSelectedFactors.SelectedIndex = selectedIndex;
-                    }
-                    else {
-                        listSelectedFactors.SelectedIndex = selectedIndex - 1;
+                        fromList.SelectedIndex = selectedIndex - 1;
                     }
                 }
                 CheckRulesForAcceptParamters();
@@ -89,17 +71,22 @@ namespace Multiple_Linear_Regression {
         }
 
         private void allToSelectList_Click(object sender, EventArgs e) {
-            if (listAvailabelFactors.Items.Count > 0) {
-                listSelectedFactors.Items.AddRange(listAvailabelFactors.Items);
-                listAvailabelFactors.Items.Clear();
-                CheckRulesForAcceptParamters();
-            }
+            MoveAllItemsBetweenLists(listAvailabelFactors, listSelectedFactors);
         }
 
         private void allToAvailableList_Click(object sender, EventArgs e) {
-            if (listSelectedFactors.Items.Count > 0) {
-                listAvailabelFactors.Items.AddRange(listSelectedFactors.Items);
-                listSelectedFactors.Items.Clear();
+            MoveAllItemsBetweenLists(listSelectedFactors, listAvailabelFactors);
+        }
+
+        /// <summary>
+        /// Move all items from one list to another
+        /// </summary>
+        /// <param name="fromList">The list from which we move the items</param>
+        /// <param name="toList">The list to which we move the items</param>
+        private void MoveAllItemsBetweenLists(ListBox fromList, ListBox toList) {
+            if (fromList.Items.Count > 0) {
+                toList.Items.AddRange(fromList.Items);
+                fromList.Items.Clear();
                 CheckRulesForAcceptParamters();
             }
         }
@@ -167,7 +154,7 @@ namespace Multiple_Linear_Regression {
                             new Point(toSelectList.Location.X + 74, listAvailabelFactors.Location.Y));
 
                         listAvailabelFactors.Invoke(new Action<Size>((size) => listAvailabelFactors.Size = size),
-                            new Size(widthMainForm - listAvailabelFactors.Location.X - 62, listsHeight));
+                            new Size(listSelectedFactors.Width, listsHeight));
 
                         labelAvailableFactors.Invoke(new Action<Point>((loc) => labelAvailableFactors.Location = loc),
                             new Point(listAvailabelFactors.Location.X - 3, labelAvailableFactors.Location.Y));

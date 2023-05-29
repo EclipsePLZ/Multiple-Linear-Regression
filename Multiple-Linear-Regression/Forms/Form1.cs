@@ -36,36 +36,12 @@ namespace Multiple_Linear_Regression {
             // Centered Main From on the screen
             this.CenterToScreen();
 
-            // Locks all tabs except the first one
-            LocksAllTabs();
-            loadDataTab.Enabled = true;
-
-            helpAllStepsMenu.ToolTipText = StepsInfo.Step1;
+            SetStartParameters();
 
             // Run background worker for resizing components on form
             resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
             resizeWorker.WorkerSupportsCancellation = true;
             resizeWorker.RunWorkerAsync();
-        }
-
-        private void TestMethod() {
-            //PrintMatrix(Algebra.Mult(new double[,] { { 1, 8, 3 }, { 1, 2, 3 } }, new double[,] { { 3, 2 }, { 6, 1 }, { 5, 4 } }));
-            PrintVector(Algebra.Mult(new double[,] { { 1, 8 }, { 1, 2 }, { 2, 5 } }, new double[] { 3, 6 }));
-        }
-
-        private void PrintMatrix(double[,] matrix) {
-            for (int i = 0; i < matrix.GetLength(0); i++) {
-                for (int j = 0; j < matrix.GetLength(1); j++) {
-                    Console.Write($" {matrix[i, j]}");
-                }
-                Console.WriteLine();
-            }
-        }
-
-        private void PrintVector(double[] vector) {
-            for (int i = 0; i < vector.Length; i++) {
-                Console.WriteLine(vector[i]);
-            }
         }
 
         /// <summary>
@@ -595,6 +571,13 @@ namespace Multiple_Linear_Regression {
 
         private void buildEquationsButton_Click(object sender, EventArgs e) {
             RunBackgroundFindEquations();
+
+            ClearControlsStep5();
+
+            // Set models for next step
+            AddModelsToList();
+
+            controlSimulationTab.Enabled = true;
         }
 
         private void RunBackgroundFindEquations() {
@@ -633,6 +616,15 @@ namespace Multiple_Linear_Regression {
             }
         }
 
+        /// <summary>
+        /// Add all models names (regressants names) to list
+        /// </summary>
+        private void AddModelsToList() {
+            foreach (var model in Models) {
+                listAvailabelModels.Items.Add(model.RegressantName);
+            }
+        }
+
         private void empWayRadio_CheckedChanged(object sender, EventArgs e) {
             if (empWayRadio.Checked) {
                 classicWayRadio.Checked = false;
@@ -654,6 +646,144 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         private void CheckAcceptFilterButtonRule() {
             acceptFilterFactorsButton.Enabled = classicWayRadio.Checked || empWayRadio.Checked;
+        }
+
+        private void toSelectModelsList_Click(object sender, EventArgs e) {
+            MoveModelBetweenLists(listAvailabelModels, listSelectedModels);
+        }
+
+        private void toAvailableModelsList_Click(object sender, EventArgs e) {
+            MoveModelBetweenLists(listSelectedModels, listAvailabelModels);
+        }
+
+        private void listSelectedModels_DoubleClick(object sender, EventArgs e) {
+            MoveModelBetweenLists(listSelectedModels, listAvailabelModels);
+        }
+
+        private void listAvailabelModels_DoubleClick(object sender, EventArgs e) {
+            MoveModelBetweenLists(listAvailabelModels, listSelectedModels);
+        }
+
+        /// <summary>
+        /// Move selected model from one list to another
+        /// </summary>
+        /// <param name="fromList">The list from which we move the model</param>
+        /// <param name="toList">The list to which we move the model</param>
+        private void MoveModelBetweenLists(ListBox fromList, ListBox toList) {
+            if (fromList.SelectedItems.Count == 1) {
+                int selectedIndex = fromList.SelectedIndex;
+                toList.Items.Add(fromList.SelectedItem);
+                fromList.Items.Remove(fromList.SelectedItem);
+                if (fromList.Items.Count > 0) {
+                    if (selectedIndex < fromList.Items.Count) {
+                        fromList.SelectedIndex = selectedIndex;
+                    }
+                    else {
+                        fromList.SelectedIndex = selectedIndex - 1;
+                    }
+                }
+                CheckAcceptControlParameterButton();
+            }
+        }
+
+        private void allToSelectModelsList_Click(object sender, EventArgs e) {
+            MoveAllItemsBetweenLists(listAvailabelModels, listSelectedModels);
+        }
+
+        private void allToAvailableModelsList_Click(object sender, EventArgs e) {
+            MoveAllItemsBetweenLists(listSelectedModels, listAvailabelModels);
+        }
+
+        /// <summary>
+        /// Move all models from one list to another
+        /// </summary>
+        /// <param name="fromList">The list from which we move the models</param>
+        /// <param name="toList">The list to which we move the models</param>
+        private void MoveAllItemsBetweenLists(ListBox fromList, ListBox toList) {
+            if (fromList.Items.Count > 0) {
+                toList.Items.AddRange(fromList.Items);
+                fromList.Items.Clear();
+                CheckAcceptControlParameterButton();
+            }
+        }
+
+        private void empDefAreaRadio_CheckedChanged(object sender, EventArgs e) {
+            if (empDefAreaRadio.Checked) {
+                theoreticalAreaRadio.Checked = false;
+                symbiosisAreaRadio.Checked = false;
+                percentAreaExpansion.Enabled = true;
+                CheckAcceptControlParameterButton();
+            }
+        }
+
+        private void theoreticalAreaRadio_CheckedChanged(object sender, EventArgs e) {
+            if (theoreticalAreaRadio.Checked) {
+                empDefAreaRadio.Checked = false;
+                symbiosisAreaRadio.Checked = false;
+                percentAreaExpansion.Enabled = false;
+                CheckAcceptControlParameterButton();
+            }
+        }
+
+        private void symbiosisAreaRadio_CheckedChanged(object sender, EventArgs e) {
+            if (symbiosisAreaRadio.Checked) {
+                empDefAreaRadio.Checked = false;
+                theoreticalAreaRadio.Checked = false;
+                percentAreaExpansion.Enabled = true;
+                CheckAcceptControlParameterButton();
+            }
+        }
+
+        private void equallyBothWaysRadio_CheckedChanged(object sender, EventArgs e) {
+            if (equallyBothWaysRadio.Checked) {
+                autoProportionRadio.Checked = false;
+                CheckAcceptControlParameterButton();
+            }
+        }
+
+        private void autoProportionRadio_CheckedChanged(object sender, EventArgs e) {
+            if (autoProportionRadio.Checked) {
+                equallyBothWaysRadio.Checked = false;
+                CheckAcceptControlParameterButton();
+            }
+        }
+
+        /// <summary>
+        /// Check rule for enable accept control parameters button
+        /// </summary>
+        private void CheckAcceptControlParameterButton() {
+            acceptControlsParametersButton.Enabled = (empDefAreaRadio.Checked || theoreticalAreaRadio.Checked ||
+                symbiosisAreaRadio.Checked) && (equallyBothWaysRadio.Checked || autoProportionRadio.Checked) &&
+                (listSelectedModels.Items.Count > 0);
+        }
+
+        private void ValidateKeyPressedOnlyNums(object sender, KeyPressEventArgs e) {
+            e.Handled = CheckNumericIntValue(e);
+        }
+
+        /// <summary>
+        /// Check if predded numeric of backspace
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private bool CheckNumericIntValue(KeyPressEventArgs e) {
+            return (e.KeyChar < 48 || e.KeyChar > 57) && e.KeyChar != 8;
+        }
+
+        /// <summary>
+        /// Set start parameters for application controls
+        /// </summary>
+        private void SetStartParameters() {
+            LocksAllTabs();
+            loadDataTab.Enabled = true;
+            helpAllStepsMenu.ToolTipText = StepsInfo.Step1;
+            percentAreaExpansion.Maximum = Decimal.MaxValue;
+            symbiosisAreaRadio.Checked = true;
+            percentAreaExpansion.Value = 10;
+            autoProportionRadio.Checked = true;
+            toolTipSymbiosis.SetToolTip(symbiosisAreaRadio, StepsInfo.SymbiosisInfo);
+            toolTipAutoProportion.SetToolTip(autoProportionRadio, StepsInfo.AutoProportionInfo);
+            toolTipPercentAreaExpansion.SetToolTip(percentAreaExpansion, StepsInfo.PercentAreaExpansion);
         }
 
         /// <summary>
@@ -706,6 +836,22 @@ namespace Multiple_Linear_Regression {
             ClearDataGV(equationsDataGrid);
             labelBuildingLoad.Visible = false;
             labelBuildingFinish.Visible = false;
+            ClearControlsStep5();
+        }
+
+        /// <summary>
+        /// Function for clear controls on step 4
+        /// </summary>
+        private void ClearControlsStep5() {
+            listSelectedModels.Items.Clear();
+            listAvailabelModels.Items.Clear();
+            empDefAreaRadio.Checked = false;
+            theoreticalAreaRadio.Checked = false;
+            symbiosisAreaRadio.Checked = true;
+            percentAreaExpansion.Value = 10;
+            percentAreaExpansion.Enabled = true;
+            autoProportionRadio.Checked = false;
+            acceptControlsParametersButton.Enabled = false;
         }
 
         /// <summary>
@@ -804,6 +950,9 @@ namespace Multiple_Linear_Regression {
                 case 3:
                     helpAllStepsMenu.ToolTipText = StepsInfo.Step4;
                     break;
+                case 4:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.Step5;
+                    break;
             }
         }
 
@@ -825,7 +974,7 @@ namespace Multiple_Linear_Regression {
             }
             else {
                 while (true) {
-                    System.Threading.Thread.Sleep(100);
+                    System.Threading.Thread.Sleep(50);
                     if (isResizeNeeded) {
                         int newWidth = this.Width - 196;
                         int newHeight = this.Height - 67;
@@ -934,6 +1083,49 @@ namespace Multiple_Linear_Regression {
 
                         labelBuildingFinish.Invoke(new Action<Point>((loc) => labelBuildingFinish.Location = loc),
                             new Point(labelBuildingFinish.Location.X + widthDiff, labelBuildingFinish.Location.Y));
+
+
+                        // Tab 5
+                        // The height of one element in the list is 13, so for a smooth drawing of the lists
+                        // will change their height to a multiple of 13
+                        int heightMainTab = controlSimulationTab.Height;
+                        int listsHeight = ((heightMainTab - 152 - 17) / 13) * 13 + 17;
+
+                        labelSelectDefAreaParams.Invoke(new Action<Point>((loc) => labelSelectDefAreaParams.Location = loc),
+                            new Point(controlSimulationTab.Width / 8 * 5, labelSelectDefAreaParams.Location.Y));
+
+                        groupDefinitionAreaType.Invoke(new Action<Point>((loc) => groupDefinitionAreaType.Location = loc),
+                            new Point(labelSelectDefAreaParams.Location.X, groupDefinitionAreaType.Location.Y));
+
+                        groupPercentAreaExpansion.Invoke(new Action<Point>((loc) => groupPercentAreaExpansion.Location = loc),
+                            new Point(labelSelectDefAreaParams.Location.X, groupPercentAreaExpansion.Location.Y));
+
+                        groupProportionOfAreaExpansion.Invoke(new Action<Point>((loc) => groupProportionOfAreaExpansion.Location = loc),
+                            new Point(labelSelectDefAreaParams.Location.X, groupProportionOfAreaExpansion.Location.Y));
+
+                        acceptControlsParametersButton.Invoke(new Action<Point>((loc) => acceptControlsParametersButton.Location = loc),
+                            new Point(labelSelectDefAreaParams.Location.X + 43, acceptControlsParametersButton.Location.Y));
+
+                        toSelectModelsList.Invoke(new Action<Point>((loc) => toSelectModelsList.Location = loc),
+                           new Point(controlSimulationTab.Width / 4, toSelectModelsList.Location.Y));
+
+                        toAvailableModelsList.Invoke(new Action<Point>((loc) => toAvailableModelsList.Location = loc),
+                           new Point(controlSimulationTab.Width / 4, toAvailableModelsList.Location.Y));
+
+                        allToAvailableModelsList.Invoke(new Action<Point>((loc) => allToAvailableModelsList.Location = loc),
+                           new Point(controlSimulationTab.Width / 4, allToAvailableModelsList.Location.Y));
+
+                        allToSelectModelsList.Invoke(new Action<Point>((loc) => allToSelectModelsList.Location = loc),
+                           new Point(controlSimulationTab.Width / 4, allToSelectModelsList.Location.Y));
+
+                        listSelectedModels.Invoke(new Action<Size>((size) => listSelectedModels.Size = size),
+                            new Size(toSelectModelsList.Location.X - 44, listsHeight));
+
+                        listAvailabelModels.Invoke(new Action<Point>((loc) => listAvailabelModels.Location = loc),
+                            new Point(toSelectModelsList.Location.X + 49, listAvailabelModels.Location.Y));
+
+                        listAvailabelModels.Invoke(new Action<Size>((size) => listAvailabelModels.Size = size),
+                            new Size(listSelectedModels.Width, listsHeight));
 
 
                         isResizeNeeded = false;
