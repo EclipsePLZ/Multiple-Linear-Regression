@@ -122,11 +122,12 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         private void DoResizeComponents(object sender, DoWorkEventArgs e) {
             // Check if resizeWorker has been stopped
-            if (resizeWorker.CancellationPending == true) {
+            if (resizeWorker.CancellationPending) {
                 e.Cancel = true;
             }
             else {
                 while (true) {
+                    System.Threading.Thread.Sleep(50);
                     if (isResizeNeeded) {
                         int widthMainForm = this.Width;
                         int heightMainForm = this.Height;

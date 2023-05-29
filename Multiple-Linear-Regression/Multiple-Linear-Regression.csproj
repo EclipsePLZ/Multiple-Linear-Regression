@@ -63,6 +63,12 @@
     <Compile Include="Forms\ExitForm.Designer.cs">
       <DependentUpon>ExitForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\SimulationControlForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\SimulationControlForm.Designer.cs">
+      <DependentUpon>SimulationControlForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\UserWarning.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -95,6 +101,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\SimulationControlForm.resx">
+      <DependentUpon>SimulationControlForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\UserWarning.resx">
       <DependentUpon>UserWarning.cs</DependentUpon>

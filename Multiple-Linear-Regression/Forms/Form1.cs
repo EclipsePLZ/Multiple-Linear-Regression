@@ -92,7 +92,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="bgWorker">Background worker</param>
         private void LoadData(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
             // Check if bgworker has been stopped
-            if (bgWorker.CancellationPending == true) {
+            if (bgWorker.CancellationPending) {
                 e.Cancel = true;
             }
             else {
@@ -345,7 +345,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="bgWorker">Background worker</param>
         private void FunctionProcessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
             // Check if mainBgWorker has been stopped
-            if (bgWorker.CancellationPending == true) {
+            if (bgWorker.CancellationPending) {
                 e.Cancel = true;
             }
             else {
@@ -379,7 +379,7 @@ namespace Multiple_Linear_Regression {
         private void ShowLoadingFunctionPreprocessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker, 
             BackgroundWorker mainBgWorker, Label loadLabel, Label finishLabel) {
             // Check if bgworker has been stopped
-            if (bgWorker.CancellationPending == true) {
+            if (bgWorker.CancellationPending) {
                 e.Cancel = true;
             }
             else {
@@ -431,7 +431,7 @@ namespace Multiple_Linear_Regression {
 
         private void FilterRegressors(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
             // Check if bgworker has been stopped
-            if (bgWorker.CancellationPending == true) {
+            if (bgWorker.CancellationPending) {
                 e.Cancel = true;
             }
             else {
@@ -515,7 +515,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="bgWorker">Background worker</param>
         private void FillFilteredFactors(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
             // Check if bgworker has been stopped
-            if (bgWorker.CancellationPending == true) {
+            if (bgWorker.CancellationPending) {
                 e.Cancel = true;
             }
             else {
@@ -600,7 +600,7 @@ namespace Multiple_Linear_Regression {
         }
 
         private void BuildEquations(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
-            if (bgWorker.CancellationPending == true) {
+            if (bgWorker.CancellationPending) {
                 e.Cancel = true;
             }
             else {
@@ -871,6 +871,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="headers">List of column headers</param>
         /// <param name="dataGV">DataGridView</param>
         /// <param name="autoSize">AutoSize column width</param>
+        /// <param name="indexOfSortableColumns">List of indexes of sortable columns</param>
         private void SetDataGVColumnHeaders(List<string> headers, DataGridView dataGV, bool autoSize, List<int> indexOfSortableColumns = null) {
             dataGV.ColumnCount = headers.Count;
             for (int i = 0; i < dataGV.Columns.Count; i++) {
@@ -965,11 +966,11 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
-        /// Resize all main from components
+        /// Resize all main form components
         /// </summary>
         private void DoResizeComponents(object sender, DoWorkEventArgs e) {
             // Check if resizeWorker has been stopped
-            if (resizeWorker.CancellationPending == true) {
+            if (resizeWorker.CancellationPending) {
                 e.Cancel = true;
             }
             else {

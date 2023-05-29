@@ -122,5 +122,25 @@ namespace Multiple_Linear_Regression {
 
             return resultVector;
         }
+
+        /// <summary>
+        /// Mult vector by vector
+        /// </summary>
+        /// <param name="vector1">Vector</param>
+        /// <param name="vector2">Vector</param>
+        /// <returns>Result value</returns>
+        public static double Mult(double[] vector1, double[] vector2) {
+            if (vector1.Length != vector2.Length) {
+                throw new Exception("Длины векторов должны совпадать!");
+            }
+
+            double result = 0.0;
+
+            for (int i = 0; i < vector1.Length; i++) {
+                result += vector1[i] * vector2[i];
+            }
+
+            return result;
+        }
     }
 }

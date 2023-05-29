@@ -249,5 +249,18 @@ namespace Multiple_Linear_Regression {
                 }
             }
         }
+
+        /// <summary>
+        /// Get model prediction
+        /// </summary>
+        /// <param name="x">Values of regressors</param>
+        /// <returns>Predicted value</returns>
+        public double Predict(double[] x) {
+            double[] xWithFreeCoeff = new double[x.Length];
+            x.CopyTo(xWithFreeCoeff, 1);
+            xWithFreeCoeff[0] = 1;
+
+            return Algebra.Mult(xWithFreeCoeff, RegressorsCoeffs.Values.ToArray());
+        }
     }
 }
