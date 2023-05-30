@@ -137,6 +137,42 @@ namespace Multiple_Linear_Regression {
             return 1 - ((rss / (n - k)) / (tss / (n - 1)));
         }
 
+        /// <summary>
+        /// Get auto definition area by empirical way
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Definition area (min, max)</returns>
+        public static (double, double) AutoEmpiricalDefinitionArea(IEnumerable<double> values) {
+            // Get proportions for each side
+            (double, double) proportions = GetProprotions(values);
+
+            double maxValue = values.Max();
+            double minValue = values.Min();
+
+            // Find new boundaries
+            double newMin = minValue - (maxValue - minValue) * proportions.Item1;
+            double newMax = maxValue + (maxValue - minValue) * proportions.Item2;
+
+            return (newMin, newMax);
+        }
+
+        /// <summary>
+        /// Find the proportions from the average to the minimum and maximum
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>(left propotion, right proportion)</returns>
+        private static (double, double) GetProprotions(IEnumerable<double> values) {
+            double avgValue = values.Average();
+            double maxValue = values.Max();
+            double minValue = values.Min();
+
+            // Find bounaries
+            double leftBoundary = 1 - (avgValue - minValue) / (maxValue - minValue);
+            double rightBoundary = 1 - leftBoundary;
+
+            return (leftBoundary, rightBoundary);
+        }
+
         public static Dictionary<string, Func<List<double>, double>> Functions { get; } = 
             new Dictionary<string, Func<List<double>, double>>() {
                 { "Начальный момент 1-го порядка",  FirstOrderStartMoment},

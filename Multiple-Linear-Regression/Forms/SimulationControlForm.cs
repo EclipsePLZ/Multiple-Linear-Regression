@@ -16,10 +16,15 @@ namespace Multiple_Linear_Regression.Forms {
 
         private List<Model> Models { get; set; }
 
-        private Dictionary<string, double> AllRegressors { get; set; } = new Dictionary<string, double>();
+        private Dictionary<string, List<double>> AllRegressors { get; set; } = new Dictionary<string, List<double>>();
 
-        public SimulationControlForm(List<Model> models) {
+        private Dictionary<string, (double, double)> RegressorsDefinitionArea { get; set; } = new Dictionary<string, (double, double)>();
+
+        private Func<IEnumerable<double>, (double, double)> GetDefinitionArea { get; }
+
+        public SimulationControlForm(List<Model> models, Func<IEnumerable<double>, (double, double)> getDefinitionAreaFunc) {
             Models = models;
+            GetDefinitionArea = getDefinitionAreaFunc;
 
             InitializeComponent();
 

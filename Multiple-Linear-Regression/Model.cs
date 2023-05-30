@@ -283,9 +283,12 @@ namespace Multiple_Linear_Regression {
             for (int i = 0; i < ProcessFunctions.Count; i++) {
                 double funcValue = x[i];
                 foreach(var funcName in ProcessFunctions[RegressorsNames[i]]) {
-                    funcValue = Statistics.PreprocessingFunctions[funcName](funcValue);
+                    funcValue = Statistics.ConversionFuntions[funcName](funcValue);
                 }
+                processX[i] = funcValue;
             }
+
+            return processX;
         }
     }
 }
