@@ -686,6 +686,30 @@ namespace Multiple_Linear_Regression {
             return Pow_XN(values, (1.0 / 3.0));
         }
 
+        private static double Pow_X2(double value) {
+            return Pow_XN(value, 2.0);
+        }
+
+        private static double Pow_X3(double value) {
+            return Pow_XN(value, 3.0);
+        }
+
+        private static double Pow_M1(double value) {
+            return Pow_XN(value, -1.0);
+        }
+
+        private static double Pow_M2(double value) {
+            return Pow_XN(value, -2.0);
+        }
+
+        private static double Pow_M3(double value) {
+            return Pow_XN(value, -3.0);
+        }
+
+        private static double Pow_1_3(double value) {
+            return Pow_XN(value, (1.0 / 3.0));
+        }
+
         /// <summary>
         /// Increment each element of the list to the power of N
         /// </summary>
@@ -704,6 +728,16 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
+        /// Increment value to the power of N
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <param name="n">Value of power</param>
+        /// <returns>Value in the N degree</returns>
+        public static double Pow_XN(double value, double n) {
+            return Math.Pow(value, n);
+        }
+
+        /// <summary>
         /// Take the natural logarithm of each number in the list
         /// </summary>
         /// <param name="values">List of values</param>
@@ -719,6 +753,15 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
+        /// Take the natural logarithm from number
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>Value of natural logarithm</returns>
+        public static double Log(double value) {
+            return Math.Log(value);
+        }
+
+        /// <summary>
         /// Take the root of each number in the list
         /// </summary>
         /// <param name="values">List of values</param>
@@ -731,6 +774,15 @@ namespace Multiple_Linear_Regression {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Take the root of the value
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>Root of the value</returns>
+        public static double Sqrt(double value) {
+            return Math.Sqrt(value);
         }
 
         private static List<double> Sin_0_001(IEnumerable<double> values) {
@@ -877,6 +929,150 @@ namespace Multiple_Linear_Regression {
             return Sin_N(values, -10.0);
         }
 
+        private static double Sin_0_001(double value) {
+            return Sin_N(value, 0.001);
+        }
+
+        private static double Sin_M0_001(double value) {
+            return Sin_N(value, -0.001);
+        }
+
+        private static double Sin_0_01(double value) {
+            return Sin_N(value, 0.01);
+        }
+
+        private static double Sin_M0_01(double value) {
+            return Sin_N(value, -0.01);
+        }
+
+        private static double Sin_0_1(double value) {
+            return Sin_N(value, 0.1);
+        }
+
+        private static double Sin_M0_1(double value) {
+            return Sin_N(value, -0.1);
+        }
+
+        private static double Sin_0_5(double value) {
+            return Sin_N(value, 0.5);
+        }
+
+        private static double Sin_M0_5(double value) {
+            return Sin_N(value, -0.5);
+        }
+
+        private static double Sin_1(double value) {
+            return Sin_N(value, 1.0);
+        }
+
+        private static double Sin_M1(double value) {
+            return Sin_N(value, -1.0);
+        }
+
+        private static double Sin_1_5(double value) {
+            return Sin_N(value, 1.5);
+        }
+
+        private static double Sin_M1_5(double value) {
+            return Sin_N(value, -1.5);
+        }
+
+        private static double Sin_2(double value) {
+            return Sin_N(value, 2.0);
+        }
+
+        private static double Sin_M2(double value) {
+            return Sin_N(value, -2.0);
+        }
+
+        private static double Sin_2_5(double value) {
+            return Sin_N(value, 2.5);
+        }
+
+        private static double Sin_M2_5(double value) {
+            return Sin_N(value, -2.5);
+        }
+
+        private static double Sin_3(double value) {
+            return Sin_N(value, 3.0);
+        }
+
+        private static double Sin_M3(double value) {
+            return Sin_N(value, -3.0);
+        }
+
+        private static double Sin_3_5(double value) {
+            return Sin_N(value, 3.5);
+        }
+
+        private static double Sin_M3_5(double value) {
+            return Sin_N(value, -3.5);
+        }
+
+        private static double Sin_4(double value) {
+            return Sin_N(value, 4.0);
+        }
+
+        private static double Sin_M4(double value) {
+            return Sin_N(value, -4.0);
+        }
+
+        private static double Sin_4_5(double value) {
+            return Sin_N(value, 4.5);
+        }
+
+        private static double Sin_M4_5(double value) {
+            return Sin_N(value, -4.5);
+        }
+
+        private static double Sin_5(double value) {
+            return Sin_N(value, 5.0);
+        }
+
+        private static double Sin_M5(double value) {
+            return Sin_N(value, -5.0);
+        }
+
+        private static double Sin_6(double value) {
+            return Sin_N(value, 6.0);
+        }
+
+        private static double Sin_M6(double value) {
+            return Sin_N(value, -6.0);
+        }
+
+        private static double Sin_7(double value) {
+            return Sin_N(value, 7.0);
+        }
+
+        private static double Sin_M7(double value) {
+            return Sin_N(value, -7.0);
+        }
+
+        private static double Sin_8(double value) {
+            return Sin_N(value, 8.0);
+        }
+
+        private static double Sin_M8(double value) {
+            return Sin_N(value, -8.0);
+        }
+
+        private static double Sin_9(double value) {
+            return Sin_N(value, 9.0);
+        }
+
+        private static double Sin_M9(double value) {
+            return Sin_N(value, -9.0);
+        }
+
+        private static double Sin_10(double value) {
+            return Sin_N(value, 10.0);
+        }
+
+        private static double Sin_M10(double value) {
+            return Sin_N(value, -10.0);
+        }
+
         /// <summary>
         /// Get the sin value from each number in the list multiple by alpha
         /// </summary>
@@ -891,6 +1087,16 @@ namespace Multiple_Linear_Regression {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Get the sin value for number multiple by alpha
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <param name="alpha">Value of alpha</param>
+        /// <returns>Sin of value multiple by alpha</returns>
+        public static double Sin_N(double value, double alpha) {
+            return Math.Sin(value * alpha);
         }
 
         private static List<double> Tan_0_001(IEnumerable<double> values) {

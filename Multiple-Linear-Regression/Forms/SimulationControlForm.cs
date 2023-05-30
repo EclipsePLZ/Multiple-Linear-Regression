@@ -45,8 +45,10 @@ namespace Multiple_Linear_Regression.Forms {
                 true);
 
             // Fill last value for each regressor as default value
-            foreach (var model in Models) { 
+            foreach (var model in Models) {
+                foreach(var regressor in model.StartRegressors) {
 
+                }
             }
 
             helpImitationContorl.ToolTipText = StepsInfo.ImitationOfControlForm;

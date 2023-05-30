@@ -22,6 +22,11 @@ namespace Multiple_Linear_Regression {
         public Dictionary<string, List<double>> Regressors { get; private set; }
 
         /// <summary>
+        /// Dictionary for not processing regressors data
+        /// </summary>
+        public Dictionary<string, List<double>> StartRegressors { get; private set; }
+
+        /// <summary>
         /// List of regressors names
         /// </summary>
         private List<string> RegressorsNames { get; set; }
@@ -62,6 +67,7 @@ namespace Multiple_Linear_Regression {
             ProcessFunctions = new Dictionary<string, List<string>>();
             CorrelationCoefficient = new Dictionary<string, double>();
             RegressorsCoeffs = new Dictionary<string, double>();
+            StartRegressors = null;
 
             if (regressors is null) {
                 Regressors = null;
@@ -78,6 +84,9 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="regressors">Dictionary of regressors</param>
         public void SetNewRegressors(Dictionary<string, List<double>> regressors) {
+            if (StartRegressors is null) {
+                StartRegressors = new Dictionary<string, List<double>>(regressors);
+            }
             Regressors = new Dictionary<string, List<double>>(regressors);
             RegressorsNames = new List<string>(Regressors.Keys);
             CalcNewCorrelationCoefficients();
@@ -261,6 +270,22 @@ namespace Multiple_Linear_Regression {
             xWithFreeCoeff[0] = 1;
 
             return Algebra.Mult(xWithFreeCoeff, RegressorsCoeffs.Values.ToArray());
+        }
+
+        /// <summary>
+        /// Apply the functions to the new values of the regressors
+        /// </summary>
+        /// <param name="x">New regressors values</param>
+        /// <returns>Processed regressors values</returns>
+        private double[] ProcessValues(double[] x) {
+            double[] processX = new double[x.Length];
+
+            for (int i = 0; i < ProcessFunctions.Count; i++) {
+                double funcValue = x[i];
+                foreach(var funcName in ProcessFunctions[RegressorsNames[i]]) {
+                    funcValue = Statistics.PreprocessingFunctions[funcName](funcValue);
+                }
+            }
         }
     }
 }
