@@ -56,7 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algebra.cs" />
+    <Compile Include="Mathematic\Algebra.cs" />
     <Compile Include="Forms\ExitForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -94,7 +94,7 @@
     <Compile Include="Work-With-Files\Interfaces\IFileService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Statistics.cs" />
+    <Compile Include="Mathematic\Statistics.cs" />
     <Compile Include="StepsInfo.cs" />
     <EmbeddedResource Include="Forms\ExitForm.resx">
       <DependentUpon>ExitForm.cs</DependentUpon>

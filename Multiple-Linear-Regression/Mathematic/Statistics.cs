@@ -161,6 +161,207 @@ namespace Multiple_Linear_Regression {
                 { "Kurtosis (KURT)", Kurtosis }
             };
 
+        /// <summary>
+        /// Get first-order start moment
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Value of first-order start moment</returns>
+        public static double FirstOrderStartMoment(IEnumerable<double> values) {
+            return values.Average();
+        }
+
+        /// <summary>
+        /// Get second-order start moment
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Value of second-order start moment</returns>
+        public static double SecondOrderStartMoment(IEnumerable<double> values) {
+            return values.Average(v => Math.Pow(v, 2));
+        }
+
+        /// <summary>
+        /// Get third-order start moment
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Value of third-order start moment</returns>
+        public static double ThirdOrderStartMoment(IEnumerable<double> values) {
+            return values.Average(v => Math.Pow(v, 3));
+        }
+
+        /// <summary>
+        /// Get fourth-order start moment
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Value of fourth-order start moment</returns>
+        public static double FourthOrderStartMoment(IEnumerable<double> values) {
+            return values.Average(v => Math.Pow(v, 4));
+        }
+
+        /// <summary>
+        /// Get first-order central moment
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Value of first-order central moment</returns>
+        public static double FirstOrderCentralMoment(IEnumerable<double> values) {
+            double avg = values.Average();
+            return values.Average(v => (v - avg));
+        }
+
+        /// <summary>
+        /// Get second-order central moment
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Value of second-order central moment</returns>
+        public static double SecondOrderCentralMoment(IEnumerable<double> values) {
+            double avg = values.Average();
+            return values.Average(v => Math.Pow((v - avg), 2));
+        }
+
+        /// <summary>
+        /// Get third-order central moment
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Value of third-order central moment</returns>
+        public static double ThirdOrderCentralMoment(IEnumerable<double> values) {
+            double avg = values.Average();
+            return values.Average(v => Math.Pow((v - avg), 3));
+        }
+
+        /// <summary>
+        /// Get fourth-order central moment
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Value of fourth-order central moment</returns>
+        public static double FourthOrderCentralMoment(IEnumerable<double> values) {
+            double avg = values.Average();
+            return values.Average(v => Math.Pow((v - avg), 4));
+        }
+
+        /// <summary>
+        /// Get min value
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Min value</returns>
+        public static double Min(IEnumerable<double> values) {
+            return values.Min();
+        }
+
+        /// <summary>
+        /// Get max value
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Max value</returns>
+        public static double Max(IEnumerable<double> values) {
+            return values.Max();
+        }
+
+        /// <summary>
+        /// Get asymmetry coefficient of values
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Asymmetry coefficient</returns>
+        public static double AsymmetryCoefficient(IEnumerable<double> values) { 
+            return (ThirdOrderCentralMoment(values) / Math.Pow(StandardDeviation(values), 3));
+        }
+
+        /// <summary>
+        /// Get excess coefficient of values
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Excess coefficient</returns>
+        public static double ExcessCoefficient(IEnumerable<double> values) {
+            return ((FourthOrderCentralMoment(values) / Math.Pow(StandardDeviation(values), 4)) - 3);
+        }
+
+        /// <summary>
+        /// Get median value of list
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Median</returns>
+        public static double Median(IEnumerable<double> values) {
+            if (values.Count() == 1) {
+                return values.First();
+            }
+
+            List<double>sortedValues = values.OrderBy(s => s).ToList();
+            return sortedValues.Count % 2 != 0 ? sortedValues[(sortedValues.Count - 1) / 2] : 
+                (sortedValues[(sortedValues.Count / 2)] + sortedValues[(sortedValues.Count / 2) - 1]) / 2;
+        }
+
+        /// <summary>
+        /// Get variation coefficient of values
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Variation coefficient</returns>
+        public static double VariationCoefficient(IEnumerable<double> values) {
+            return StandardDeviation(values) / values.Average();
+        }
+
+        /// <summary>
+        /// Get average value on interval (0, 1)
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Average value on (0, 1)</returns>
+        public static double AverageOnInterval_0_1(IEnumerable<double> values) {
+            double min = values.Min();
+            double maxMinDiff = values.Max() - min;
+            return values.Average(v => (v - min) / maxMinDiff);
+        }
+
+        /// <summary>
+        /// Get standard deviation on interval (0, 1)
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Standard deviation on (0, 1)</returns>
+        public static double StandardDeviationOnInterval_0_1(IEnumerable<double> values) {
+            double min = values.Min();
+            double maxMinDiff = values.Max() - min;
+            double avg = AverageOnInterval_0_1(values);
+            return Math.Sqrt(values.Average(v => Math.Pow((((v - min) / maxMinDiff) - avg), 2)));
+        }
+
+        /// <summary>
+        /// Get variation coefficient on interval (0, 1)
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Variation coefficient on (0, 1)</returns>
+        public static double VariationCoefficientOnInterval_0_1(IEnumerable<double> values) {
+            return StandardDeviationOnInterval_0_1(values) / AverageOnInterval_0_1(values);
+        }
+
+        /// <summary>
+        /// Get standard error on interval (0, 1)
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Standard error on (0, 1)</returns>
+        public static double StandardErrorOnInterval_0_1(IEnumerable<double> values) {
+            return StandardDeviationOnInterval_0_1(values) / Math.Sqrt(values.Count());
+        }
+
+        /// <summary>
+        /// Get waveform length (WL)
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Waveform length (WL)</returns>
+        public static double WavefromLength(IEnumerable<double> values) {
+            double result = 0;
+            
+            for (int i = 1; i < values.Count(); i++) {
+                result += Math.Abs(values.ElementAt(i) - values.ElementAt(i - 1));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get kurtosis (KURT)
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Kurtosis (KURT)</returns>
+        public static double Kurtosis(IEnumerable<double> values) { 
+            return (FourthOrderCentralMoment(values) / Math.Pow(SecondOrderCentralMoment(values), 2));
+        }
+
         public static Dictionary<string, Func<List<double>, List<double>>> PreprocessingFunctions { get; } =
             new Dictionary<string, Func<List<double>, List<double>>>() {
                 { "x^2", Pow_X2},
@@ -461,206 +662,305 @@ namespace Multiple_Linear_Regression {
                 { "(e^(-10*x)-e^(10*x))/2", Exp_Exp_2_M10},
             };
 
-        /// <summary>
-        /// Get first-order start moment
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Value of first-order start moment</returns>
-        public static double FirstOrderStartMoment(IEnumerable<double> values) {
-            return values.Average();
-        }
-
-        /// <summary>
-        /// Get second-order start moment
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Value of second-order start moment</returns>
-        public static double SecondOrderStartMoment(IEnumerable<double> values) {
-            return values.Average(v => Math.Pow(v, 2));
-        }
-
-        /// <summary>
-        /// Get third-order start moment
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Value of third-order start moment</returns>
-        public static double ThirdOrderStartMoment(IEnumerable<double> values) {
-            return values.Average(v => Math.Pow(v, 3));
-        }
-
-        /// <summary>
-        /// Get fourth-order start moment
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Value of fourth-order start moment</returns>
-        public static double FourthOrderStartMoment(IEnumerable<double> values) {
-            return values.Average(v => Math.Pow(v, 4));
-        }
-
-        /// <summary>
-        /// Get first-order central moment
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Value of first-order central moment</returns>
-        public static double FirstOrderCentralMoment(IEnumerable<double> values) {
-            double avg = values.Average();
-            return values.Average(v => (v - avg));
-        }
-
-        /// <summary>
-        /// Get second-order central moment
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Value of second-order central moment</returns>
-        public static double SecondOrderCentralMoment(IEnumerable<double> values) {
-            double avg = values.Average();
-            return values.Average(v => Math.Pow((v - avg), 2));
-        }
-
-        /// <summary>
-        /// Get third-order central moment
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Value of third-order central moment</returns>
-        public static double ThirdOrderCentralMoment(IEnumerable<double> values) {
-            double avg = values.Average();
-            return values.Average(v => Math.Pow((v - avg), 3));
-        }
-
-        /// <summary>
-        /// Get fourth-order central moment
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Value of fourth-order central moment</returns>
-        public static double FourthOrderCentralMoment(IEnumerable<double> values) {
-            double avg = values.Average();
-            return values.Average(v => Math.Pow((v - avg), 4));
-        }
-
-        /// <summary>
-        /// Get min value
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Min value</returns>
-        public static double Min(IEnumerable<double> values) {
-            return values.Min();
-        }
-
-        /// <summary>
-        /// Get max value
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Max value</returns>
-        public static double Max(IEnumerable<double> values) {
-            return values.Max();
-        }
-
-        /// <summary>
-        /// Get asymmetry coefficient of values
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Asymmetry coefficient</returns>
-        public static double AsymmetryCoefficient(IEnumerable<double> values) { 
-            return (ThirdOrderCentralMoment(values) / Math.Pow(StandardDeviation(values), 3));
-        }
-
-        /// <summary>
-        /// Get excess coefficient of values
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Excess coefficient</returns>
-        public static double ExcessCoefficient(IEnumerable<double> values) {
-            return ((FourthOrderCentralMoment(values) / Math.Pow(StandardDeviation(values), 4)) - 3);
-        }
-
-        /// <summary>
-        /// Get median value of list
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Median</returns>
-        public static double Median(IEnumerable<double> values) {
-            if (values.Count() == 1) {
-                return values.First();
-            }
-
-            List<double>sortedValues = values.OrderBy(s => s).ToList();
-            return sortedValues.Count % 2 != 0 ? sortedValues[(sortedValues.Count - 1) / 2] : 
-                (sortedValues[(sortedValues.Count / 2)] + sortedValues[(sortedValues.Count / 2) - 1]) / 2;
-        }
-
-        /// <summary>
-        /// Get variation coefficient of values
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Variation coefficient</returns>
-        public static double VariationCoefficient(IEnumerable<double> values) {
-            return StandardDeviation(values) / values.Average();
-        }
-
-        /// <summary>
-        /// Get average value on interval (0, 1)
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Average value on (0, 1)</returns>
-        public static double AverageOnInterval_0_1(IEnumerable<double> values) {
-            double min = values.Min();
-            double maxMinDiff = values.Max() - min;
-            return values.Average(v => (v - min) / maxMinDiff);
-        }
-
-        /// <summary>
-        /// Get standard deviation on interval (0, 1)
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Standard deviation on (0, 1)</returns>
-        public static double StandardDeviationOnInterval_0_1(IEnumerable<double> values) {
-            double min = values.Min();
-            double maxMinDiff = values.Max() - min;
-            double avg = AverageOnInterval_0_1(values);
-            return Math.Sqrt(values.Average(v => Math.Pow((((v - min) / maxMinDiff) - avg), 2)));
-        }
-
-        /// <summary>
-        /// Get variation coefficient on interval (0, 1)
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Variation coefficient on (0, 1)</returns>
-        public static double VariationCoefficientOnInterval_0_1(IEnumerable<double> values) {
-            return StandardDeviationOnInterval_0_1(values) / AverageOnInterval_0_1(values);
-        }
-
-        /// <summary>
-        /// Get standard error on interval (0, 1)
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Standard error on (0, 1)</returns>
-        public static double StandardErrorOnInterval_0_1(IEnumerable<double> values) {
-            return StandardDeviationOnInterval_0_1(values) / Math.Sqrt(values.Count());
-        }
-
-        /// <summary>
-        /// Get waveform length (WL)
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Waveform length (WL)</returns>
-        public static double WavefromLength(IEnumerable<double> values) {
-            double result = 0;
-            
-            for (int i = 1; i < values.Count(); i++) {
-                result += Math.Abs(values.ElementAt(i) - values.ElementAt(i - 1));
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Get kurtosis (KURT)
-        /// </summary>
-        /// <param name="values">List of values</param>
-        /// <returns>Kurtosis (KURT)</returns>
-        public static double Kurtosis(IEnumerable<double> values) { 
-            return (FourthOrderCentralMoment(values) / Math.Pow(SecondOrderCentralMoment(values), 2));
-        }
+        public static Dictionary<string, Func<double, double>> ConversionFuntions { get; } =
+            new Dictionary<string, Func<double, double>>() {
+                { "x^2", Pow_X2},
+                { "x^3", Pow_X3},
+                { "x^(-1)", Pow_M1},
+                { "x^(-2)", Pow_M2},
+                { "x^(-3)", Pow_M3},
+                { "x^(1/3)", Pow_1_3},
+                { "ln(x)", Log},
+                { "sqrt(x)", Sqrt},
+                { "sin(0,001*x)", Sin_0_001},
+                { "sin(-0,001*x)", Sin_M0_001},
+                { "sin(0,01*x)", Sin_0_01},
+                { "sin(-0,01*x)", Sin_M0_01},
+                { "sin(0,1*x)", Sin_0_1},
+                { "sin(-0,1*x)", Sin_M0_1},
+                { "sin(0,5*x)", Sin_0_5},
+                { "sin(-0,5*x)", Sin_M0_5},
+                { "sin(1*x)", Sin_1},
+                { "sin(-1*x)", Sin_M1},
+                { "sin(1,5*x)", Sin_1_5},
+                { "sin(-1,5*x)", Sin_M1_5},
+                { "sin(2*x)", Sin_2},
+                { "sin(-2*x)", Sin_M2},
+                { "sin(2,5*x)", Sin_2_5},
+                { "sin(-2,5*x)", Sin_M2_5},
+                { "sin(3*x)", Sin_3},
+                { "sin(-3*x)", Sin_M3},
+                { "sin(3,5*x)", Sin_3_5},
+                { "sin(-3,5*x)", Sin_M3_5},
+                { "sin(4*x)", Sin_4},
+                { "sin(-4*x)", Sin_M4},
+                { "sin(4,5*x)", Sin_4_5},
+                { "sin(-4,5*x)", Sin_M4_5},
+                { "sin(5*x)", Sin_5},
+                { "sin(-5*x)", Sin_M5},
+                { "sin(6*x)", Sin_6},
+                { "sin(-6*x)", Sin_M6},
+                { "sin(7*x)", Sin_7},
+                { "sin(-7*x)", Sin_M7},
+                { "sin(8*x)", Sin_8},
+                { "sin(-8*x)", Sin_M8},
+                { "sin(9*x)", Sin_9},
+                { "sin(-9*x)", Sin_M9},
+                { "sin(10*x)", Sin_10},
+                { "sin(-10*x)", Sin_M10},
+                { "tg(0,001*x)", Tan_0_001},
+                { "tg(-0,001*x)", Tan_M0_001},
+                { "tg(0,01*x)", Tan_0_01},
+                { "tg(-0,01*x)", Tan_M0_01},
+                { "tg(0,1*x)", Tan_0_1},
+                { "tg(-0,1*x)", Tan_M0_1},
+                { "tg(0,5*x)", Tan_0_5},
+                { "tg(-0,5*x)", Tan_M0_5},
+                { "tg(1*x)", Tan_1},
+                { "tg(-1*x)", Tan_M1},
+                { "tg(1,5*x)", Tan_1_5},
+                { "tg(-1,5*x)", Tan_M1_5},
+                { "tg(2*x)", Tan_2},
+                { "tg(-2*x)", Tan_M2},
+                { "tg(2,5*x)", Tan_2_5},
+                { "tg(-2,5*x)", Tan_M2_5},
+                { "tg(3*x)", Tan_3},
+                { "tg(-3*x)", Tan_M3},
+                { "tg(3,5*x)", Tan_3_5},
+                { "tg(-3,5*x)", Tan_M3_5},
+                { "tg(4*x)", Tan_4},
+                { "tg(-4*x)", Tan_M4},
+                { "tg(4,5*x)", Tan_4_5},
+                { "tg(-4,5*x)", Tan_M4_5},
+                { "tg(5*x)", Tan_5},
+                { "tg(-5*x)", Tan_M5},
+                { "tg(6*x)", Tan_6},
+                { "tg(-6*x)", Tan_M6},
+                { "tg(7*x)", Tan_7},
+                { "tg(-7*x)", Tan_M7},
+                { "tg(8*x)", Tan_8},
+                { "tg(-8*x)", Tan_M8},
+                { "tg(9*x)", Tan_9},
+                { "tg(-9*x)", Tan_M9},
+                { "tg(10*x)", Tan_10},
+                { "tg(-10*x)", Tan_M10},
+                { "arctg(0,001*x)", Atan_0_001},
+                { "arctg(-0,001*x)", Atan_M0_001},
+                { "arctg(0,01*x)", Atan_0_01},
+                { "arctg(-0,01*x)", Atan_M0_01},
+                { "arctg(0,1*x)", Atan_0_1},
+                { "arctg(-0,1*x)", Atan_M0_1},
+                { "arctg(0,5*x)", Atan_0_5},
+                { "arctg(-0,5*x)", Atan_M0_5},
+                { "arctg(1*x)", Atan_1},
+                { "arctg(-1*x)", Atan_M1},
+                { "arctg(1,5*x)", Atan_1_5},
+                { "arctg(-1,5*x)", Atan_M1_5},
+                { "arctg(2*x)", Atan_2},
+                { "arctg(-2*x)", Atan_M2},
+                { "arctg(2,5*x)", Atan_2_5},
+                { "arctg(-2,5*x)", Atan_M2_5},
+                { "arctg(3*x)", Atan_3},
+                { "arctg(-3*x)", Atan_M3},
+                { "arctg(3,5*x)", Atan_3_5},
+                { "arctg(-3,5*x)", Atan_M3_5},
+                { "arctg(4*x)", Atan_4},
+                { "arctg(-4*x)", Atan_M4},
+                { "arctg(4,5*x)", Atan_4_5},
+                { "arctg(-4,5*x)", Atan_M4_5},
+                { "arctg(5*x)", Atan_5},
+                { "arctg(-5*x)", Atan_M5},
+                { "arctg(6*x)", Atan_6},
+                { "arctg(-6*x)", Atan_M6},
+                { "arctg(7*x)", Atan_7},
+                { "arctg(-7*x)", Atan_M7},
+                { "arctg(8*x)", Atan_8},
+                { "arctg(-8*x)", Atan_M8},
+                { "arctg(9*x)", Atan_9},
+                { "arctg(-9*x)", Atan_M9},
+                { "arctg(10*x)", Atan_10},
+                { "arctg(-10*x)", Atan_M10},
+                { "e^(0,001*x)", ExpX_0_001},
+                { "e^(-0,001*x)", ExpX_M0_001},
+                { "e^(0,01*x)", ExpX_0_01},
+                { "e^(-0,01*x)", ExpX_M0_01},
+                { "e^(0,1*x)", ExpX_0_1},
+                { "e^(-0,1*x)", ExpX_M0_1},
+                { "e^(0,5*x)", ExpX_0_5},
+                { "e^(-0,5*x)", ExpX_M0_5},
+                { "e^(1*x)", ExpX_1},
+                { "e^(-1*x)", ExpX_M1},
+                { "e^(1,5*x)", ExpX_1_5},
+                { "e^(-1,5*x)", ExpX_M1_5},
+                { "e^(2*x)", ExpX_2},
+                { "e^(-2*x)", ExpX_M2},
+                { "e^(2,5*x)", ExpX_2_5},
+                { "e^(-2,5*x)", ExpX_M2_5},
+                { "e^(3*x)", ExpX_3},
+                { "e^(-3*x)", ExpX_M3},
+                { "e^(3,5*x)", ExpX_3_5},
+                { "e^(-3,5*x)", ExpX_M3_5},
+                { "e^(4*x)", ExpX_4},
+                { "e^(-4*x)", ExpX_M4},
+                { "e^(4,5*x)", ExpX_4_5},
+                { "e^(-4,5*x)", ExpX_M4_5},
+                { "e^(5*x)", ExpX_5},
+                { "e^(-5*x)", ExpX_M5},
+                { "e^(6*x)", ExpX_6},
+                { "e^(-6*x)", ExpX_M6},
+                { "e^(7*x)", ExpX_7},
+                { "e^(-7*x)", ExpX_M7},
+                { "e^(8*x)", ExpX_8},
+                { "e^(-8*x)", ExpX_M8},
+                { "e^(9*x)", ExpX_9},
+                { "e^(-9*x)", ExpX_M9},
+                { "e^(10*x)", ExpX_10},
+                { "e^(-10*x)", ExpX_M10},
+                { "e^(0,001*x^2)", Exp_X2_0_001},
+                { "e^(-0,001*x^2)", Exp_X2_M0_001},
+                { "e^(0,01*x^2)", Exp_X2_0_01},
+                { "e^(-0,01*x^2)", Exp_X2_M0_01},
+                { "e^(0,1*x^2)", Exp_X2_0_1},
+                { "e^(-0,1*x^2)", Exp_X2_M0_1},
+                { "e^(0,5*x^2)", Exp_X2_0_5},
+                { "e^(-0,5*x^2)", Exp_X2_M0_5},
+                { "e^(1*x^2)", Exp_X2_1},
+                { "e^(-1*x^2)", Exp_X2_M1},
+                { "e^(1,5*x^2)", Exp_X2_1_5},
+                { "e^(-1,5*x^2)", Exp_X2_M1_5},
+                { "e^(2*x^2)", Exp_X2_2},
+                { "e^(-2*x^2)", Exp_X2_M2},
+                { "e^(2,5*x^2)", Exp_X2_2_5},
+                { "e^(-2,5*x^2)", Exp_X2_M2_5},
+                { "e^(3*x^2)", Exp_X2_3},
+                { "e^(-3*x^2)", Exp_X2_M3},
+                { "e^(3,5*x^2)", Exp_X2_3_5},
+                { "e^(-3,5*x^2)", Exp_X2_M3_5},
+                { "e^(4*x^2)", Exp_X2_4},
+                { "e^(-4*x^2)", Exp_X2_M4},
+                { "e^(4,5*x^2)", Exp_X2_4_5},
+                { "e^(-4,5*x^2)", Exp_X2_M4_5},
+                { "e^(5*x^2)", Exp_X2_5},
+                { "e^(-5*x^2)", Exp_X2_M5},
+                { "e^(6*x^2)", Exp_X2_6},
+                { "e^(-6*x^2)", Exp_X2_M6},
+                { "e^(7*x^2)", Exp_X2_7},
+                { "e^(-7*x^2)", Exp_X2_M7},
+                { "e^(8*x^2)", Exp_X2_8},
+                { "e^(-8*x^2)", Exp_X2_M8},
+                { "e^(9*x^2)", Exp_X2_9},
+                { "e^(-9*x^2)", Exp_X2_M9},
+                { "e^(10*x^2)", Exp_X2_10},
+                { "e^(-10*x^2)", Exp_X2_M10},
+                { "1/(1+e^(0,001*x))", Sigm_0_001},
+                { "1/(1+e^(-0,001*x))", Sigm_M0_001},
+                { "1/(1+e^(0,01*x))", Sigm_0_01},
+                { "1/(1+e^(-0,01*x))", Sigm_M0_01},
+                { "1/(1+e^(0,1*x))", Sigm_0_1},
+                { "1/(1+e^(-0,1*x))", Sigm_M0_1},
+                { "1/(1+e^(0,5*x))", Sigm_0_5},
+                { "1/(1+e^(-0,5*x))", Sigm_M0_5},
+                { "1/(1+e^(1*x))", Sigm_1},
+                { "1/(1+e^(-1*x))", Sigm_M1},
+                { "1/(1+e^(1,5*x))", Sigm_1_5},
+                { "1/(1+e^(-1,5*x))", Sigm_M1_5},
+                { "1/(1+e^(2*x))", Sigm_2},
+                { "1/(1+e^(-2*x))", Sigm_M2},
+                { "1/(1+e^(2,5*x))", Sigm_2_5},
+                { "1/(1+e^(-2,5*x))", Sigm_M2_5},
+                { "1/(1+e^(3*x))", Sigm_3},
+                { "1/(1+e^(-3*x))", Sigm_M3},
+                { "1/(1+e^(3,5*x))", Sigm_3_5},
+                { "1/(1+e^(-3,5*x))", Sigm_M3_5},
+                { "1/(1+e^(4*x))", Sigm_4},
+                { "1/(1+e^(-4*x))", Sigm_M4},
+                { "1/(1+e^(4,5*x))", Sigm_4_5},
+                { "1/(1+e^(-4,5*x))", Sigm_M4_5},
+                { "1/(1+e^(5*x))", Sigm_5},
+                { "1/(1+e^(-5*x))", Sigm_M5},
+                { "1/(1+e^(6*x))", Sigm_6},
+                { "1/(1+e^(-6*x))", Sigm_M6},
+                { "1/(1+e^(7*x))", Sigm_7},
+                { "1/(1+e^(-7*x))", Sigm_M7},
+                { "1/(1+e^(8*x))", Sigm_8},
+                { "1/(1+e^(-8*x))", Sigm_M8},
+                { "1/(1+e^(9*x))", Sigm_9},
+                { "1/(1+e^(-9*x))", Sigm_M9},
+                { "1/(1+e^(10*x))", Sigm_10},
+                { "1/(1+e^(-10*x))", Sigm_M10},
+                { "(e^(0,001*x)-1)/(1+e^(0,001*x))", Exp_Exp_0_001},
+                { "(e^(-0,001*x)-1)/(1+e^(-0,001*x))", Exp_Exp_M0_001},
+                { "(e^(0,01*x)-1)/(1+e^(0,01*x))", Exp_Exp_0_01},
+                { "(e^(-0,01*x)-1)/(1+e^(-0,01*x))", Exp_Exp_M0_01},
+                { "(e^(0,1*x)-1)/(1+e^(0,1*x))", Exp_Exp_0_1},
+                { "(e^(-0,1*x)-1)/(1+e^(-0,1*x))", Exp_Exp_M0_1},
+                { "(e^(0,5*x)-1)/(1+e^(0,5*x))", Exp_Exp_0_5},
+                { "(e^(-0,5*x)-1)/(1+e^(-0,5*x))", Exp_Exp_M0_5},
+                { "(e^(1*x)-1)/(1+e^(1*x))", Exp_Exp_1},
+                { "(e^(-1*x)-1)/(1+e^(-1*x))", Exp_Exp_M1},
+                { "(e^(1,5*x)-1)/(1+e^(1,5*x))", Exp_Exp_1_5},
+                { "(e^(-1,5*x)-1)/(1+e^(-1,5*x))", Exp_Exp_M1_5},
+                { "(e^(2*x)-1)/(1+e^(2*x))", Exp_Exp_2},
+                { "(e^(-2*x)-1)/(1+e^(-2*x))", Exp_Exp_M2},
+                { "(e^(2,5*x)-1)/(1+e^(2,5*x))", Exp_Exp_2_5},
+                { "(e^(-2,5*x)-1)/(1+e^(-2,5*x))", Exp_Exp_M2_5},
+                { "(e^(3*x)-1)/(1+e^(3*x))", Exp_Exp_3},
+                { "(e^(-3*x)-1)/(1+e^(-3*x))", Exp_Exp_M3},
+                { "(e^(3,5*x)-1)/(1+e^(3,5*x))", Exp_Exp_3_5},
+                { "(e^(-3,5*x)-1)/(1+e^(-3,5*x))", Exp_Exp_M3_5},
+                { "(e^(4*x)-1)/(1+e^(4*x))", Exp_Exp_4},
+                { "(e^(-4*x)-1)/(1+e^(-4*x))", Exp_Exp_M4},
+                { "(e^(4,5*x)-1)/(1+e^(4,5*x))", Exp_Exp_4_5},
+                { "(e^(-4,5*x)-1)/(1+e^(-4,5*x))", Exp_Exp_M4_5},
+                { "(e^(5*x)-1)/(1+e^(5*x))", Exp_Exp_5},
+                { "(e^(-5*x)-1)/(1+e^(-5*x))", Exp_Exp_M5},
+                { "(e^(6*x)-1)/(1+e^(6*x))", Exp_Exp_6},
+                { "(e^(-6*x)-1)/(1+e^(-6*x))", Exp_Exp_M6},
+                { "(e^(7*x)-1)/(1+e^(7*x))", Exp_Exp_7},
+                { "(e^(-7*x)-1)/(1+e^(-7*x))", Exp_Exp_M7},
+                { "(e^(8*x)-1)/(1+e^(8*x))", Exp_Exp_8},
+                { "(e^(-8*x)-1)/(1+e^(-8*x))", Exp_Exp_M8},
+                { "(e^(9*x)-1)/(1+e^(9*x))", Exp_Exp_9},
+                { "(e^(-9*x)-1)/(1+e^(-9*x))", Exp_Exp_M9},
+                { "(e^(10*x)-1)/(1+e^(10*x))", Exp_Exp_10},
+                { "(e^(-10*x)-1)/(1+e^(-10*x))", Exp_Exp_M10},
+                { "(e^(0,001*x)-e^(-0,001*x))/2", Exp_Exp_2_0_001},
+                { "(e^(-0,001*x)-e^(0,001*x))/2", Exp_Exp_2_M0_001},
+                { "(e^(0,01*x)-e^(-0,01*x))/2", Exp_Exp_2_0_01},
+                { "(e^(-0,01*x)-e^(0,01*x))/2", Exp_Exp_2_M0_01},
+                { "(e^(0,1*x)-e^(-0,1*x))/2", Exp_Exp_2_0_1},
+                { "(e^(-0,1*x)-e^(0,1*x))/2", Exp_Exp_2_M0_1},
+                { "(e^(0,5*x)-e^(-0,5*x))/2", Exp_Exp_2_0_5},
+                { "(e^(-0,5*x)-e^(0,5*x))/2", Exp_Exp_2_M0_5},
+                { "(e^(x)-e^(-x))/2", Exp_Exp_2_1},
+                { "(e^(-x)-e^(x))/2", Exp_Exp_2_M1},
+                { "(e^(1,5*x)-e^(-1,5*x))/2", Exp_Exp_2_1_5},
+                { "(e^(-1,5*x)-e^(1,5*x))/2", Exp_Exp_2_M1_5},
+                { "(e^(2*x)-e^(-2*x))/2", Exp_Exp_2_2},
+                { "(e^(-2*x)-e^(2*x))/2", Exp_Exp_2_M2},
+                { "(e^(2,5*x)-e^(-2,5*x))/2", Exp_Exp_2_2_5},
+                { "(e^(-2,5*x)-e^(2,5*x))/2", Exp_Exp_2_M2_5},
+                { "(e^(3*x)-e^(-3*x))/2", Exp_Exp_2_3},
+                { "(e^(-3*x)-e^(3*x))/2", Exp_Exp_2_M3},
+                { "(e^(3,5*x)-e^(-3,5*x))/2", Exp_Exp_2_3_5},
+                { "(e^(-3,5*x)-e^(3,5*x))/2", Exp_Exp_2_M3_5},
+                { "(e^(4*x)-e^(-4*x))/2", Exp_Exp_2_4},
+                { "(e^(-4*x)-e^(4*x))/2", Exp_Exp_2_M4},
+                { "(e^(4,5*x)-e^(-4,5*x))/2", Exp_Exp_2_4_5},
+                { "(e^(-4,5*x)-e^(4,5*x))/2", Exp_Exp_2_M4_5},
+                { "(e^(5*x)-e^(-5*x))/2", Exp_Exp_2__5},
+                { "(e^(-5*x)-e^(5*x))/2", Exp_Exp_2_M5},
+                { "(e^(6*x)-e^(-6*x))/2", Exp_Exp_2_6},
+                { "(e^(-6*x)-e^(6*x))/2", Exp_Exp_2_M6},
+                { "(e^(7*x)-e^(-7*x))/2", Exp_Exp_2_7},
+                { "(e^(-7*x)-e^(7*x))/2", Exp_Exp_2_M7},
+                { "(e^(8*x)-e^(-8*x))/2", Exp_Exp_2_8},
+                { "(e^(-8*x)-e^(8*x))/2", Exp_Exp_2_M8},
+                { "(e^(9*x)-e^(-9*x))/2", Exp_Exp_2_9},
+                { "(e^(-9*x)-e^(9*x))/2", Exp_Exp_2_M9},
+                { "(e^(10*x)-e^(-10*x))/2", Exp_Exp_2_10},
+                { "(e^(-10*x)-e^(10*x))/2", Exp_Exp_2_M10},
+            };
 
         private static List<double> Pow_X2(IEnumerable<double> values) {
             return Pow_XN(values, 2.0);
@@ -1243,6 +1543,150 @@ namespace Multiple_Linear_Regression {
             return Tan_N(values, -10.0);
         }
 
+        private static double Tan_0_001(double value) {
+            return Tan_N(value, 0.001);
+        }
+
+        private static double Tan_M0_001(double value) {
+            return Tan_N(value, -0.001);
+        }
+
+        private static double Tan_0_01(double value) {
+            return Tan_N(value, 0.01);
+        }
+
+        private static double Tan_M0_01(double value) {
+            return Tan_N(value, -0.01);
+        }
+
+        private static double Tan_0_1(double value) {
+            return Tan_N(value, 0.1);
+        }
+
+        private static double Tan_M0_1(double value) {
+            return Tan_N(value, -0.1);
+        }
+
+        private static double Tan_0_5(double value) {
+            return Tan_N(value, 0.5);
+        }
+
+        private static double Tan_M0_5(double value) {
+            return Tan_N(value, -0.5);
+        }
+
+        private static double Tan_1(double value) {
+            return Tan_N(value, 1.0);
+        }
+
+        private static double Tan_M1(double value) {
+            return Tan_N(value, -1.0);
+        }
+
+        private static double Tan_1_5(double value) {
+            return Tan_N(value, 1.5);
+        }
+
+        private static double Tan_M1_5(double value) {
+            return Tan_N(value, -1.5);
+        }
+
+        private static double Tan_2(double value) {
+            return Tan_N(value, 2.0);
+        }
+
+        private static double Tan_M2(double value) {
+            return Tan_N(value, -2.0);
+        }
+
+        private static double Tan_2_5(double value) {
+            return Tan_N(value, 2.5);
+        }
+
+        private static double Tan_M2_5(double value) {
+            return Tan_N(value, -2.5);
+        }
+
+        private static double Tan_3(double value) {
+            return Tan_N(value, 3.0);
+        }
+
+        private static double Tan_M3(double value) {
+            return Tan_N(value, -3.0);
+        }
+
+        private static double Tan_3_5(double value) {
+            return Tan_N(value, 3.5);
+        }
+
+        private static double Tan_M3_5(double value) {
+            return Tan_N(value, -3.5);
+        }
+
+        private static double Tan_4(double value) {
+            return Tan_N(value, 4.0);
+        }
+
+        private static double Tan_M4(double value) {
+            return Tan_N(value, -4.0);
+        }
+
+        private static double Tan_4_5(double value) {
+            return Tan_N(value, 4.5);
+        }
+
+        private static double Tan_M4_5(double value) {
+            return Tan_N(value, -4.5);
+        }
+
+        private static double Tan_5(double value) {
+            return Tan_N(value, 5.0);
+        }
+
+        private static double Tan_M5(double value) {
+            return Tan_N(value, -5.0);
+        }
+
+        private static double Tan_6(double value) {
+            return Tan_N(value, 6.0);
+        }
+
+        private static double Tan_M6(double value) {
+            return Tan_N(value, -6.0);
+        }
+
+        private static double Tan_7(double value) {
+            return Tan_N(value, 7.0);
+        }
+
+        private static double Tan_M7(double value) {
+            return Tan_N(value, -7.0);
+        }
+
+        private static double Tan_8(double value) {
+            return Tan_N(value, 8.0);
+        }
+
+        private static double Tan_M8(double value) {
+            return Tan_N(value, -8.0);
+        }
+
+        private static double Tan_9(double value) {
+            return Tan_N(value, 9.0);
+        }
+
+        private static double Tan_M9(double value) {
+            return Tan_N(value, -9.0);
+        }
+
+        private static double Tan_10(double value) {
+            return Tan_N(value, 10.0);
+        }
+
+        private static double Tan_M10(double value) {
+            return Tan_N(value, -10.0);
+        }
+
         /// <summary>
         /// Get the tg value from each number in the list multiple by alpha
         /// </summary>
@@ -1257,6 +1701,16 @@ namespace Multiple_Linear_Regression {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Get the tg from value multiple by alpha 
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <param name="alpha">Value of alpha</param>
+        /// <returns>Tg value</returns>
+        public static double Tan_N(double value, double alpha) {
+            return Math.Tan(value * alpha);
         }
 
         private static List<double> Atan_0_001(IEnumerable<double> values) {
@@ -1403,6 +1857,150 @@ namespace Multiple_Linear_Regression {
             return Atan_N(values, -10.0);
         }
 
+        private static double Atan_0_001(double value) {
+            return Atan_N(value, 0.001);
+        }
+
+        private static double Atan_M0_001(double value) {
+            return Atan_N(value, -0.001);
+        }
+
+        private static double Atan_0_01(double value) {
+            return Atan_N(value, 0.01);
+        }
+
+        private static double Atan_M0_01(double value) {
+            return Atan_N(value, -0.01);
+        }
+
+        private static double Atan_0_1(double value) {
+            return Atan_N(value, 0.1);
+        }
+
+        private static double Atan_M0_1(double value) {
+            return Atan_N(value, -0.1);
+        }
+
+        private static double Atan_0_5(double value) {
+            return Atan_N(value, 0.5);
+        }
+
+        private static double Atan_M0_5(double value) {
+            return Atan_N(value, -0.5);
+        }
+
+        private static double Atan_1(double value) {
+            return Atan_N(value, 1.0);
+        }
+
+        private static double Atan_M1(double value) {
+            return Atan_N(value, -1.0);
+        }
+
+        private static double Atan_1_5(double value) {
+            return Atan_N(value, 1.5);
+        }
+
+        private static double Atan_M1_5(double value) {
+            return Atan_N(value, -1.5);
+        }
+
+        private static double Atan_2(double value) {
+            return Atan_N(value, 2.0);
+        }
+
+        private static double Atan_M2(double value) {
+            return Atan_N(value, -2.0);
+        }
+
+        private static double Atan_2_5(double value) {
+            return Atan_N(value, 2.5);
+        }
+
+        private static double Atan_M2_5(double value) {
+            return Atan_N(value, -2.5);
+        }
+
+        private static double Atan_3(double value) {
+            return Atan_N(value, 3.0);
+        }
+
+        private static double Atan_M3(double value) {
+            return Atan_N(value, -3.0);
+        }
+
+        private static double Atan_3_5(double value) {
+            return Atan_N(value, 3.5);
+        }
+
+        private static double Atan_M3_5(double value) {
+            return Atan_N(value, -3.5);
+        }
+
+        private static double Atan_4(double value) {
+            return Atan_N(value, 4.0);
+        }
+
+        private static double Atan_M4(double value) {
+            return Atan_N(value, -4.0);
+        }
+
+        private static double Atan_4_5(double value) {
+            return Atan_N(value, 4.5);
+        }
+
+        private static double Atan_M4_5(double value) {
+            return Atan_N(value, -4.5);
+        }
+
+        private static double Atan_5(double value) {
+            return Atan_N(value, 5.0);
+        }
+
+        private static double Atan_M5(double value) {
+            return Atan_N(value, -5.0);
+        }
+
+        private static double Atan_6(double value) {
+            return Atan_N(value, 6.0);
+        }
+
+        private static double Atan_M6(double value) {
+            return Atan_N(value, -6.0);
+        }
+
+        private static double Atan_7(double value) {
+            return Atan_N(value, 7.0);
+        }
+
+        private static double Atan_M7(double value) {
+            return Atan_N(value, -7.0);
+        }
+
+        private static double Atan_8(double value) {
+            return Atan_N(value, 8.0);
+        }
+
+        private static double Atan_M8(double value) {
+            return Atan_N(value, -8.0);
+        }
+
+        private static double Atan_9(double value) {
+            return Atan_N(value, 9.0);
+        }
+
+        private static double Atan_M9(double value) {
+            return Atan_N(value, -9.0);
+        }
+
+        private static double Atan_10(double value) {
+            return Atan_N(value, 10.0);
+        }
+
+        private static double Atan_M10(double value) {
+            return Atan_N(value, -10.0);
+        }
+
         /// <summary>
         /// Get the arctg value from each number in the list multiple by alpha
         /// </summary>
@@ -1417,6 +2015,16 @@ namespace Multiple_Linear_Regression {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Get the arctg from value multiple by alpha
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <param name="alpha">Value of alpha</param>
+        /// <returns>Atan value</returns>
+        public static double Atan_N(double value, double alpha) {
+            return Math.Atan(value * alpha);
         }
 
         private static List<double> ExpX_0_001(IEnumerable<double> values) {
@@ -1563,6 +2171,150 @@ namespace Multiple_Linear_Regression {
             return ExpX_N(values, -10.0);
         }
 
+        private static double ExpX_0_001(double value) {
+            return ExpX_N(value, 0.001);
+        }
+
+        private static double ExpX_M0_001(double value) {
+            return ExpX_N(value, -0.001);
+        }
+
+        private static double ExpX_0_01(double value) {
+            return ExpX_N(value, 0.01);
+        }
+
+        private static double ExpX_M0_01(double value) {
+            return ExpX_N(value, -0.01);
+        }
+
+        private static double ExpX_0_1(double value) {
+            return ExpX_N(value, 0.1);
+        }
+
+        private static double ExpX_M0_1(double value) {
+            return ExpX_N(value, -0.1);
+        }
+
+        private static double ExpX_0_5(double value) {
+            return ExpX_N(value, 0.5);
+        }
+
+        private static double ExpX_M0_5(double value) {
+            return ExpX_N(value, -0.5);
+        }
+
+        private static double ExpX_1(double value) {
+            return ExpX_N(value, 1.0);
+        }
+
+        private static double ExpX_M1(double value) {
+            return ExpX_N(value, -1.0);
+        }
+
+        private static double ExpX_1_5(double value) {
+            return ExpX_N(value, 1.5);
+        }
+
+        private static double ExpX_M1_5(double value) {
+            return ExpX_N(value, -1.5);
+        }
+
+        private static double ExpX_2(double value) {
+            return ExpX_N(value, 2.0);
+        }
+
+        private static double ExpX_M2(double value) {
+            return ExpX_N(value, -2.0);
+        }
+
+        private static double ExpX_2_5(double value) {
+            return ExpX_N(value, 2.5);
+        }
+
+        private static double ExpX_M2_5(double value) {
+            return ExpX_N(value, -2.5);
+        }
+
+        private static double ExpX_3(double value) {
+            return ExpX_N(value, 3.0);
+        }
+
+        private static double ExpX_M3(double value) {
+            return ExpX_N(value, -3.0);
+        }
+
+        private static double ExpX_3_5(double value) {
+            return ExpX_N(value, 3.5);
+        }
+
+        private static double ExpX_M3_5(double value) {
+            return ExpX_N(value, -3.5);
+        }
+
+        private static double ExpX_4(double value) {
+            return ExpX_N(value, 4.0);
+        }
+
+        private static double ExpX_M4(double value) {
+            return ExpX_N(value, -4.0);
+        }
+
+        private static double ExpX_4_5(double value) {
+            return ExpX_N(value, 4.5);
+        }
+
+        private static double ExpX_M4_5(double value) {
+            return ExpX_N(value, -4.5);
+        }
+
+        private static double ExpX_5(double value) {
+            return ExpX_N(value, 5.0);
+        }
+
+        private static double ExpX_M5(double value) {
+            return ExpX_N(value, -5.0);
+        }
+
+        private static double ExpX_6(double value) {
+            return ExpX_N(value, 6.0);
+        }
+
+        private static double ExpX_M6(double value) {
+            return ExpX_N(value, -6.0);
+        }
+
+        private static double ExpX_7(double value) {
+            return ExpX_N(value, 7.0);
+        }
+
+        private static double ExpX_M7(double value) {
+            return ExpX_N(value, -7.0);
+        }
+
+        private static double ExpX_8(double value) {
+            return ExpX_N(value, 8.0);
+        }
+
+        private static double ExpX_M8(double value) {
+            return ExpX_N(value, -8.0);
+        }
+
+        private static double ExpX_9(double value) {
+            return ExpX_N(value, 9.0);
+        }
+
+        private static double ExpX_M9(double value) {
+            return ExpX_N(value, -9.0);
+        }
+
+        private static double ExpX_10(double value) {
+            return ExpX_N(value, 10.0);
+        }
+
+        private static double ExpX_M10(double value) {
+            return ExpX_N(value, -10.0);
+        }
+
         /// <summary>
         /// Get the exp value from each number in the list multiple by alpha
         /// </summary>
@@ -1577,6 +2329,16 @@ namespace Multiple_Linear_Regression {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Get the exp from value multiple by alpha
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <param name="alpha">Value of alpha</param>
+        /// <returns>Exp value</returns>
+        public static double ExpX_N(double value, double alpha) {
+            return Math.Exp(value * alpha);
         }
 
         private static List<double> Exp_X2_0_001(IEnumerable<double> values) {
@@ -1723,6 +2485,150 @@ namespace Multiple_Linear_Regression {
             return Exp_X2_N(values, -10.0);
         }
 
+        private static double Exp_X2_0_001(double value) {
+            return Exp_X2_N(value, 0.001);
+        }
+
+        private static double Exp_X2_M0_001(double value) {
+            return Exp_X2_N(value, -0.001);
+        }
+
+        private static double Exp_X2_0_01(double value) {
+            return Exp_X2_N(value, 0.01);
+        }
+
+        private static double Exp_X2_M0_01(double value) {
+            return Exp_X2_N(value, -0.01);
+        }
+
+        private static double Exp_X2_0_1(double value) {
+            return Exp_X2_N(value, 0.1);
+        }
+
+        private static double Exp_X2_M0_1(double value) {
+            return Exp_X2_N(value, -0.1);
+        }
+
+        private static double Exp_X2_0_5(double value) {
+            return Exp_X2_N(value, 0.5);
+        }
+
+        private static double Exp_X2_M0_5(double value) {
+            return Exp_X2_N(value, -0.5);
+        }
+
+        private static double Exp_X2_1(double value) {
+            return Exp_X2_N(value, 1.0);
+        }
+
+        private static double Exp_X2_M1(double value) {
+            return Exp_X2_N(value, -1.0);
+        }
+
+        private static double Exp_X2_1_5(double value) {
+            return Exp_X2_N(value, 1.5);
+        }
+
+        private static double Exp_X2_M1_5(double value) {
+            return Exp_X2_N(value, -1.5);
+        }
+
+        private static double Exp_X2_2(double value) {
+            return Exp_X2_N(value, 2.0);
+        }
+
+        private static double Exp_X2_M2(double value) {
+            return Exp_X2_N(value, -2.0);
+        }
+
+        private static double Exp_X2_2_5(double value) {
+            return Exp_X2_N(value, 2.5);
+        }
+
+        private static double Exp_X2_M2_5(double value) {
+            return Exp_X2_N(value, -2.5);
+        }
+
+        private static double Exp_X2_3(double value) {
+            return Exp_X2_N(value, 3.0);
+        }
+
+        private static double Exp_X2_M3(double value) {
+            return Exp_X2_N(value, -3.0);
+        }
+
+        private static double Exp_X2_3_5(double value) {
+            return Exp_X2_N(value, 3.5);
+        }
+
+        private static double Exp_X2_M3_5(double value) {
+            return Exp_X2_N(value, -3.5);
+        }
+
+        private static double Exp_X2_4(double value) {
+            return Exp_X2_N(value, 4.0);
+        }
+
+        private static double Exp_X2_M4(double value) {
+            return Exp_X2_N(value, -4.0);
+        }
+
+        private static double Exp_X2_4_5(double value) {
+            return Exp_X2_N(value, 4.5);
+        }
+
+        private static double Exp_X2_M4_5(double value) {
+            return Exp_X2_N(value, -4.5);
+        }
+
+        private static double Exp_X2_5(double value) {
+            return Exp_X2_N(value, 5.0);
+        }
+
+        private static double Exp_X2_M5(double value) {
+            return Exp_X2_N(value, -5.0);
+        }
+
+        private static double Exp_X2_6(double value) {
+            return Exp_X2_N(value, 6.0);
+        }
+
+        private static double Exp_X2_M6(double value) {
+            return Exp_X2_N(value, -6.0);
+        }
+
+        private static double Exp_X2_7(double value) {
+            return Exp_X2_N(value, 7.0);
+        }
+
+        private static double Exp_X2_M7(double value) {
+            return Exp_X2_N(value, -7.0);
+        }
+
+        private static double Exp_X2_8(double value) {
+            return Exp_X2_N(value, 8.0);
+        }
+
+        private static double Exp_X2_M8(double value) {
+            return Exp_X2_N(value, -8.0);
+        }
+
+        private static double Exp_X2_9(double value) {
+            return Exp_X2_N(value, 9.0);
+        }
+
+        private static double Exp_X2_M9(double value) {
+            return Exp_X2_N(value, -9.0);
+        }
+
+        private static double Exp_X2_10(double value) {
+            return Exp_X2_N(value, 10.0);
+        }
+
+        private static double Exp_X2_M10(double value) {
+            return Exp_X2_N(value, -10.0);
+        }
+
         /// <summary>
         /// Get the exp value from each number in the list multiple by alpha
         /// </summary>
@@ -1737,6 +2643,16 @@ namespace Multiple_Linear_Regression {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Get the exp from multiple by alpha
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <param name="alpha">Value of alpha</param>
+        /// <returns>Exp value</returns>
+        public static double Exp_X2_N(double value, double alpha) {
+            return Math.Exp(Math.Pow(value, 2) * alpha);
         }
 
         private static List<double> Sigm_0_001(IEnumerable<double> values) {
@@ -1883,6 +2799,150 @@ namespace Multiple_Linear_Regression {
             return Sigm_X(values, -10.0);
         }
 
+        private static double Sigm_0_001(double value) {
+            return Sigm_X(value, 0.001);
+        }
+
+        private static double Sigm_M0_001(double value) {
+            return Sigm_X(value, -0.001);
+        }
+
+        private static double Sigm_0_01(double value) {
+            return Sigm_X(value, 0.01);
+        }
+
+        private static double Sigm_M0_01(double value) {
+            return Sigm_X(value, -0.01);
+        }
+
+        private static double Sigm_0_1(double value) {
+            return Sigm_X(value, 0.1);
+        }
+
+        private static double Sigm_M0_1(double value) {
+            return Sigm_X(value, -0.1);
+        }
+
+        private static double Sigm_0_5(double value) {
+            return Sigm_X(value, 0.5);
+        }
+
+        private static double Sigm_M0_5(double value) {
+            return Sigm_X(value, -0.5);
+        }
+
+        private static double Sigm_1(double value) {
+            return Sigm_X(value, 1.0);
+        }
+
+        private static double Sigm_M1(double value) {
+            return Sigm_X(value, -1.0);
+        }
+
+        private static double Sigm_1_5(double value) {
+            return Sigm_X(value, 1.5);
+        }
+
+        private static double Sigm_M1_5(double value) {
+            return Sigm_X(value, -1.5);
+        }
+
+        private static double Sigm_2(double value) {
+            return Sigm_X(value, 2.0);
+        }
+
+        private static double Sigm_M2(double value) {
+            return Sigm_X(value, -2.0);
+        }
+
+        private static double Sigm_2_5(double value) {
+            return Sigm_X(value, 2.5);
+        }
+
+        private static double Sigm_M2_5(double value) {
+            return Sigm_X(value, -2.5);
+        }
+
+        private static double Sigm_3(double value) {
+            return Sigm_X(value, 3.0);
+        }
+
+        private static double Sigm_M3(double value) {
+            return Sigm_X(value, -3.0);
+        }
+
+        private static double Sigm_3_5(double value) {
+            return Sigm_X(value, 3.5);
+        }
+
+        private static double Sigm_M3_5(double value) {
+            return Sigm_X(value, -3.5);
+        }
+
+        private static double Sigm_4(double value) {
+            return Sigm_X(value, 4.0);
+        }
+
+        private static double Sigm_M4(double value) {
+            return Sigm_X(value, -4.0);
+        }
+
+        private static double Sigm_4_5(double value) {
+            return Sigm_X(value, 4.5);
+        }
+
+        private static double Sigm_M4_5(double value) {
+            return Sigm_X(value, -4.5);
+        }
+
+        private static double Sigm_5(double value) {
+            return Sigm_X(value, 5.0);
+        }
+
+        private static double Sigm_M5(double value) {
+            return Sigm_X(value, -5.0);
+        }
+
+        private static double Sigm_6(double value) {
+            return Sigm_X(value, 6.0);
+        }
+
+        private static double Sigm_M6(double value) {
+            return Sigm_X(value, -6.0);
+        }
+
+        private static double Sigm_7(double value) {
+            return Sigm_X(value, 7.0);
+        }
+
+        private static double Sigm_M7(double value) {
+            return Sigm_X(value, -7.0);
+        }
+
+        private static double Sigm_8(double value) {
+            return Sigm_X(value, 8.0);
+        }
+
+        private static double Sigm_M8(double value) {
+            return Sigm_X(value, -8.0);
+        }
+
+        private static double Sigm_9(double value) {
+            return Sigm_X(value, 9.0);
+        }
+
+        private static double Sigm_M9(double value) {
+            return Sigm_X(value, -9.0);
+        }
+
+        private static double Sigm_10(double value) {
+            return Sigm_X(value, 10.0);
+        }
+
+        private static double Sigm_M10(double value) {
+            return Sigm_X(value, -10.0);
+        }
+
         /// <summary>
         /// Get the sigm x value from each number in the list multiple by alpha
         /// </summary>
@@ -1897,6 +2957,16 @@ namespace Multiple_Linear_Regression {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Get the sigm from x value multiple by alpha
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <param name="alpha">Value of alpha</param>
+        /// <returns>Sigm value</returns>
+        public static double Sigm_X(double value, double alpha) {
+            return 1.0 / (1.0 + Math.Exp(value * alpha));
         }
 
         private static List<double> Exp_Exp_0_001(IEnumerable<double> values) {
@@ -2043,6 +3113,150 @@ namespace Multiple_Linear_Regression {
             return Exp_Exp(values, -10.0);
         }
 
+        private static double Exp_Exp_0_001(double value) {
+            return Exp_Exp(value, 0.001);
+        }
+
+        private static double Exp_Exp_M0_001(double value) {
+            return Exp_Exp(value, -0.001);
+        }
+
+        private static double Exp_Exp_0_01(double value) {
+            return Exp_Exp(value, 0.01);
+        }
+
+        private static double Exp_Exp_M0_01(double value) {
+            return Exp_Exp(value, -0.01);
+        }
+
+        private static double Exp_Exp_0_1(double value) {
+            return Exp_Exp(value, 0.1);
+        }
+
+        private static double Exp_Exp_M0_1(double value) {
+            return Exp_Exp(value, -0.1);
+        }
+
+        private static double Exp_Exp_0_5(double value) {
+            return Exp_Exp(value, 0.5);
+        }
+
+        private static double Exp_Exp_M0_5(double value) {
+            return Exp_Exp(value, -0.5);
+        }
+
+        private static double Exp_Exp_1(double value) {
+            return Exp_Exp(value, 1.0);
+        }
+
+        private static double Exp_Exp_M1(double value) {
+            return Exp_Exp(value, -1.0);
+        }
+
+        private static double Exp_Exp_1_5(double value) {
+            return Exp_Exp(value, 1.5);
+        }
+
+        private static double Exp_Exp_M1_5(double value) {
+            return Exp_Exp(value, -1.5);
+        }
+
+        private static double Exp_Exp_2(double value) {
+            return Exp_Exp(value, 2.0);
+        }
+
+        private static double Exp_Exp_M2(double value) {
+            return Exp_Exp(value, -2.0);
+        }
+
+        private static double Exp_Exp_2_5(double value) {
+            return Exp_Exp(value, 2.5);
+        }
+
+        private static double Exp_Exp_M2_5(double value) {
+            return Exp_Exp(value, -2.5);
+        }
+
+        private static double Exp_Exp_3(double value) {
+            return Exp_Exp(value, 3.0);
+        }
+
+        private static double Exp_Exp_M3(double value) {
+            return Exp_Exp(value, -3.0);
+        }
+
+        private static double Exp_Exp_3_5(double value) {
+            return Exp_Exp(value, 3.5);
+        }
+
+        private static double Exp_Exp_M3_5(double value) {
+            return Exp_Exp(value, -3.5);
+        }
+
+        private static double Exp_Exp_4(double value) {
+            return Exp_Exp(value, 4.0);
+        }
+
+        private static double Exp_Exp_M4(double value) {
+            return Exp_Exp(value, -4.0);
+        }
+
+        private static double Exp_Exp_4_5(double value) {
+            return Exp_Exp(value, 4.5);
+        }
+
+        private static double Exp_Exp_M4_5(double value) {
+            return Exp_Exp(value, -4.5);
+        }
+
+        private static double Exp_Exp_5(double value) {
+            return Exp_Exp(value, 5.0);
+        }
+
+        private static double Exp_Exp_M5(double value) {
+            return Exp_Exp(value, -5.0);
+        }
+
+        private static double Exp_Exp_6(double value) {
+            return Exp_Exp(value, 6.0);
+        }
+
+        private static double Exp_Exp_M6(double value) {
+            return Exp_Exp(value, -6.0);
+        }
+
+        private static double Exp_Exp_7(double value) {
+            return Exp_Exp(value, 7.0);
+        }
+
+        private static double Exp_Exp_M7(double value) {
+            return Exp_Exp(value, -7.0);
+        }
+
+        private static double Exp_Exp_8(double value) {
+            return Exp_Exp(value, 8.0);
+        }
+
+        private static double Exp_Exp_M8(double value) {
+            return Exp_Exp(value, -8.0);
+        }
+
+        private static double Exp_Exp_9(double value) {
+            return Exp_Exp(value, 9.0);
+        }
+
+        private static double Exp_Exp_M9(double value) {
+            return Exp_Exp(value, -9.0);
+        }
+
+        private static double Exp_Exp_10(double value) {
+            return Exp_Exp(value, 10.0);
+        }
+
+        private static double Exp_Exp_M10(double value) {
+            return Exp_Exp(value, -10.0);
+        }
+
         /// <summary>
         /// Get the (exp-1)/(exp+1) value from each number in the list multiple by alpha
         /// </summary>
@@ -2057,6 +3271,16 @@ namespace Multiple_Linear_Regression {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Get the (exp-1)/(exp+1) from value multiple by alpha
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <param name="alpha">Value of alpha</param>
+        /// <returns>(exp-1)/(exp+1) value</returns>
+        public static double Exp_Exp(double value, double alpha) {
+            return (Math.Exp(value * alpha) - 1) / (1.0 + Math.Exp(value * alpha));
         }
 
         private static List<double> Exp_Exp_2_0_001(IEnumerable<double> values) {
@@ -2203,6 +3427,150 @@ namespace Multiple_Linear_Regression {
             return Exp_Exp_2(values, -10.0);
         }
 
+        private static double Exp_Exp_2_0_001(double value) {
+            return Exp_Exp_2(value, 0.001);
+        }
+
+        private static double Exp_Exp_2_M0_001(double value) {
+            return Exp_Exp_2(value, -0.001);
+        }
+
+        private static double Exp_Exp_2_0_01(double value) {
+            return Exp_Exp_2(value, 0.01);
+        }
+
+        private static double Exp_Exp_2_M0_01(double value) {
+            return Exp_Exp_2(value, -0.01);
+        }
+
+        private static double Exp_Exp_2_0_1(double value) {
+            return Exp_Exp_2(value, 0.1);
+        }
+
+        private static double Exp_Exp_2_M0_1(double value) {
+            return Exp_Exp_2(value, -0.1);
+        }
+
+        private static double Exp_Exp_2_0_5(double value) {
+            return Exp_Exp_2(value, 0.5);
+        }
+
+        private static double Exp_Exp_2_M0_5(double value) {
+            return Exp_Exp_2(value, -0.5);
+        }
+
+        private static double Exp_Exp_2_1(double value) {
+            return Exp_Exp_2(value, 1.0);
+        }
+
+        private static double Exp_Exp_2_M1(double value) {
+            return Exp_Exp_2(value, -1.0);
+        }
+
+        private static double Exp_Exp_2_1_5(double value) {
+            return Exp_Exp_2(value, 1.5);
+        }
+
+        private static double Exp_Exp_2_M1_5(double value) {
+            return Exp_Exp_2(value, -1.5);
+        }
+
+        private static double Exp_Exp_2_2(double value) {
+            return Exp_Exp_2(value, 2.0);
+        }
+
+        private static double Exp_Exp_2_M2(double value) {
+            return Exp_Exp_2(value, -2.0);
+        }
+
+        private static double Exp_Exp_2_2_5(double value) {
+            return Exp_Exp_2(value, 2.5);
+        }
+
+        private static double Exp_Exp_2_M2_5(double value) {
+            return Exp_Exp_2(value, -2.5);
+        }
+
+        private static double Exp_Exp_2_3(double value) {
+            return Exp_Exp_2(value, 3.0);
+        }
+
+        private static double Exp_Exp_2_M3(double value) {
+            return Exp_Exp_2(value, -3.0);
+        }
+
+        private static double Exp_Exp_2_3_5(double value) {
+            return Exp_Exp_2(value, 3.5);
+        }
+
+        private static double Exp_Exp_2_M3_5(double value) {
+            return Exp_Exp_2(value, -3.5);
+        }
+
+        private static double Exp_Exp_2_4(double value) {
+            return Exp_Exp_2(value, 4.0);
+        }
+
+        private static double Exp_Exp_2_M4(double value) {
+            return Exp_Exp_2(value, -4.0);
+        }
+
+        private static double Exp_Exp_2_4_5(double value) {
+            return Exp_Exp_2(value, 4.5);
+        }
+
+        private static double Exp_Exp_2_M4_5(double value) {
+            return Exp_Exp_2(value, -4.5);
+        }
+
+        private static double Exp_Exp_2__5(double value) {
+            return Exp_Exp_2(value, 5.0);
+        }
+
+        private static double Exp_Exp_2_M5(double value) {
+            return Exp_Exp_2(value, -5.0);
+        }
+
+        private static double Exp_Exp_2_6(double value) {
+            return Exp_Exp_2(value, 6.0);
+        }
+
+        private static double Exp_Exp_2_M6(double value) {
+            return Exp_Exp_2(value, -6.0);
+        }
+
+        private static double Exp_Exp_2_7(double value) {
+            return Exp_Exp_2(value, 7.0);
+        }
+
+        private static double Exp_Exp_2_M7(double value) {
+            return Exp_Exp_2(value, -7.0);
+        }
+
+        private static double Exp_Exp_2_8(double value) {
+            return Exp_Exp_2(value, 8.0);
+        }
+
+        private static double Exp_Exp_2_M8(double value) {
+            return Exp_Exp_2(value, -8.0);
+        }
+
+        private static double Exp_Exp_2_9(double value) {
+            return Exp_Exp_2(value, 9.0);
+        }
+
+        private static double Exp_Exp_2_M9(double value) {
+            return Exp_Exp_2(value, -9.0);
+        }
+
+        private static double Exp_Exp_2_10(double value) {
+            return Exp_Exp_2(value, 10.0);
+        }
+
+        private static double Exp_Exp_2_M10(double value) {
+            return Exp_Exp_2(value, -10.0);
+        }
+
         /// <summary>
         /// Get the (exp-exp^-1)/2 value from each number in the list multiple by alpha
         /// </summary>
@@ -2217,6 +3585,16 @@ namespace Multiple_Linear_Regression {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Get the (exp-exp^-1)/2 from value multiple by alpha
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <param name="alpha">Value of alpha</param>
+        /// <returns>(exp-exp^-1)/2 value</returns>
+        public static double Exp_Exp_2(double value, double alpha) {
+            return (Math.Exp(value * alpha) - Math.Exp((-1.0) * alpha * value)) / 2.0;
         }
     }
 }
