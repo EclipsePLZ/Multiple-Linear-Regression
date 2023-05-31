@@ -16,7 +16,7 @@ namespace Multiple_Linear_Regression.Forms {
 
         private List<Model> Models { get; set; }
 
-        private Dictionary<string, List<double>> AllRegressors { get; set; } = new Dictionary<string, List<double>>();
+        private Dictionary<string, double> AllRegressors { get; set; } = new Dictionary<string, double>();
 
         private Dictionary<string, (double, double)> RegressorsDefinitionArea { get; set; } = new Dictionary<string, (double, double)>();
 
@@ -52,11 +52,23 @@ namespace Multiple_Linear_Regression.Forms {
             // Fill last value for each regressor as default value
             foreach (var model in Models) {
                 foreach(var regressor in model.StartRegressors) {
+                    if (!AllRegressors.Keys.Contains(regressor.Key)) {
+                        AllRegressors.Add(regressor.Key, regressor.Value.Last());
+                        RegressorsDefinitionArea.Add(regressor.Key, GetDefinitionArea(regressor.Value));
 
+                        regressorsSetDataGrid.Rows.Add(new string[] {regressor.Key, regressor.Value.Last().ToString(),
+                            RegressorsDefinitionArea[regressor.Key].Item1.ToString(), 
+                            RegressorsDefinitionArea[regressor.Key].Item2.ToString()});
+                    }
                 }
+                regressantsResultDataGrid.Rows.Add(new string[] {model.RegressantName, model.RegressantValues.Last().ToString(),
+                    model.Equation});
             }
-
             helpImitationContorl.ToolTipText = StepsInfo.ImitationOfControlForm;
+        }
+
+        private void CalcRegressantValue(string regressantName) {
+
         }
 
         /// <summary>

@@ -138,6 +138,60 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
+        /// Get symbiosis of auto empirical and theoretical definition areas
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <param name="percentExpansion">Percent of area expansion</param>
+        /// <returns>Definition area (min, max)</returns>
+        public static (double, double) AutoSymbiosisDefinitionArea(IEnumerable<double> values, double percentExpansion = 10) {
+            (double, double) theoreticalDefArea = TheoreticalDefinitionArea(values);
+            (double, double) empDefArea = AutoEmpiricalDefinitionArea(values, percentExpansion);
+
+            return FindExtremeAreas(theoreticalDefArea, empDefArea);
+        }
+
+        /// <summary>
+        /// Get symbiosis of equal empirical and theoretical definition areas
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <param name="percentExpansion">Percent of area expansion</param>
+        /// <returns>Definition area (min, max)</returns>
+        public static (double, double) EqualSymbiosisDefinitionArea(IEnumerable<double> values, double percentExpansion = 10) {
+            (double, double) theoreticalDefArea = TheoreticalDefinitionArea(values);
+            (double, double) empDefArea = EqualEmpiricalDefinitionArea(values, percentExpansion);
+
+            return FindExtremeAreas(theoreticalDefArea, empDefArea);
+        }
+
+        /// <summary>
+        /// Find definition area as extreme area from two different areas
+        /// </summary>
+        /// <param name="defArea1">First definition area</param>
+        /// <param name="defArea2">Second definition area</param>
+        /// <returns>Extreme definition area (min, max)</returns>
+        private static (double, double) FindExtremeAreas((double, double) defArea1, (double, double) defArea2) {
+            // Find minimum of minimums
+            double newMin = defArea1.Item1 < defArea2.Item1 ? defArea1.Item1 : defArea2.Item1;
+
+            // Find maximum of maximums
+            double newMax = defArea1.Item2 > defArea2.Item2 ? defArea1.Item2 : defArea2.Item2;
+
+            return (newMin, newMax);
+        }
+
+        /// <summary>
+        /// Get theoretical definition area
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <returns>Definition area (min, max)</returns>
+        public static (double, double) TheoreticalDefinitionArea(IEnumerable<double> values) {
+            double avgValue = values.Average();
+            double stdValue = StandardDeviation(values);
+
+            return (avgValue - 3 * stdValue, avgValue + 3 * stdValue);
+        }
+
+        /// <summary>
         /// Get auto definition area by empirical way
         /// </summary>
         /// <param name="values">List of values</param>
@@ -146,18 +200,46 @@ namespace Multiple_Linear_Regression {
         public static (double, double) AutoEmpiricalDefinitionArea(IEnumerable<double> values, double percentExpansion = 10) {
             // Get proportions for each side
             (double, double) proportions = GetProprotions(values);
+            double leftProp = (percentExpansion / 100.0) * (proportions.Item1);
+            double rightProp = (percentExpansion / 100.0) * (proportions.Item2);
 
+            return GetBoundaries(values, leftProp, rightProp);
+        }
+
+        /// <summary>
+        /// Get equals definition area by empirical way
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <param name="percentExpansion">Percent of area expansion</param>
+        /// <returns>Definition area (min, max)</returns>
+        public static (double, double) EqualEmpiricalDefinitionArea(IEnumerable<double> values, double percentExpansion = 10) {
+            // Get proportions for each side
+            double leftProp = (percentExpansion / 100.0) * 0.5;
+            double rightProp = (percentExpansion / 100.0) * 0.5;
+
+            return GetBoundaries(values, leftProp, rightProp);
+        }
+
+        /// <summary>
+        /// Get new boundaries to expand definition area
+        /// </summary>
+        /// <param name="values">List of values</param>
+        /// <param name="leftProp">Proportion for left side (min)</param>
+        /// <param name="rightProp">Proportion for right side (max)</param>
+        /// <returns>Definition area (min, max)</returns>
+        private static (double, double) GetBoundaries(IEnumerable<double> values, double leftProp, double rightProp) {
             double maxValue = values.Max();
             double minValue = values.Min();
 
-            // Find new boundaries
-            double newMin = minValue - (maxValue - minValue) * ((percentExpansion / 100.0) * (proportions.Item1));
-            double newMax = maxValue + (maxValue - minValue) * ((percentExpansion / 100.0) * (proportions.Item2));
+            double newMin = minValue - (maxValue - minValue) * leftProp;
+            double newMax = maxValue + (maxValue - minValue) * rightProp;
+
+            if (minValue >= 0 && newMin < 0) {
+                newMin = 0;
+            }
 
             return (newMin, newMax);
         }
-
-
 
         /// <summary>
         /// Find the proportions from the average to the minimum and maximum

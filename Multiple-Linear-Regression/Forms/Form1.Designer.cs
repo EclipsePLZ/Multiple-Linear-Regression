@@ -90,6 +90,8 @@
             this.toolTipSymbiosis = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipAutoProportion = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipPercentAreaExpansion = new System.Windows.Forms.ToolTip(this.components);
+            this.labelSelectedModels = new System.Windows.Forms.Label();
+            this.labelAvailableModels = new System.Windows.Forms.Label();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).BeginInit();
@@ -511,6 +513,8 @@
             // 
             // controlSimulationTab
             // 
+            this.controlSimulationTab.Controls.Add(this.labelAvailableModels);
+            this.controlSimulationTab.Controls.Add(this.labelSelectedModels);
             this.controlSimulationTab.Controls.Add(this.acceptControlsParametersButton);
             this.controlSimulationTab.Controls.Add(this.groupProportionOfAreaExpansion);
             this.controlSimulationTab.Controls.Add(this.groupPercentAreaExpansion);
@@ -539,6 +543,7 @@
             this.acceptControlsParametersButton.TabIndex = 21;
             this.acceptControlsParametersButton.Text = "Подтвердить";
             this.acceptControlsParametersButton.UseVisualStyleBackColor = true;
+            this.acceptControlsParametersButton.Click += new System.EventHandler(this.acceptControlsParametersButton_Click);
             // 
             // groupProportionOfAreaExpansion
             // 
@@ -655,7 +660,7 @@
             // 
             this.labelSelectDefAreaParams.AutoSize = true;
             this.labelSelectDefAreaParams.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelSelectDefAreaParams.Location = new System.Drawing.Point(510, 28);
+            this.labelSelectDefAreaParams.Location = new System.Drawing.Point(507, 22);
             this.labelSelectDefAreaParams.Name = "labelSelectDefAreaParams";
             this.labelSelectDefAreaParams.Size = new System.Drawing.Size(279, 15);
             this.labelSelectDefAreaParams.TabIndex = 17;
@@ -665,7 +670,7 @@
             // 
             this.labelSelectModelsForControl.AutoSize = true;
             this.labelSelectModelsForControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelSelectModelsForControl.Location = new System.Drawing.Point(22, 28);
+            this.labelSelectModelsForControl.Location = new System.Drawing.Point(20, 22);
             this.labelSelectModelsForControl.Name = "labelSelectModelsForControl";
             this.labelSelectModelsForControl.Size = new System.Drawing.Size(197, 15);
             this.labelSelectModelsForControl.TabIndex = 16;
@@ -673,7 +678,7 @@
             // 
             // allToAvailableModelsList
             // 
-            this.allToAvailableModelsList.Location = new System.Drawing.Point(204, 189);
+            this.allToAvailableModelsList.Location = new System.Drawing.Point(202, 194);
             this.allToAvailableModelsList.Name = "allToAvailableModelsList";
             this.allToAvailableModelsList.Size = new System.Drawing.Size(29, 24);
             this.allToAvailableModelsList.TabIndex = 15;
@@ -683,7 +688,7 @@
             // 
             // allToSelectModelsList
             // 
-            this.allToSelectModelsList.Location = new System.Drawing.Point(204, 159);
+            this.allToSelectModelsList.Location = new System.Drawing.Point(202, 164);
             this.allToSelectModelsList.Name = "allToSelectModelsList";
             this.allToSelectModelsList.Size = new System.Drawing.Size(29, 24);
             this.allToSelectModelsList.TabIndex = 14;
@@ -693,7 +698,7 @@
             // 
             // toAvailableModelsList
             // 
-            this.toAvailableModelsList.Location = new System.Drawing.Point(204, 105);
+            this.toAvailableModelsList.Location = new System.Drawing.Point(202, 110);
             this.toAvailableModelsList.Name = "toAvailableModelsList";
             this.toAvailableModelsList.Size = new System.Drawing.Size(29, 24);
             this.toAvailableModelsList.TabIndex = 13;
@@ -703,7 +708,7 @@
             // 
             // toSelectModelsList
             // 
-            this.toSelectModelsList.Location = new System.Drawing.Point(204, 75);
+            this.toSelectModelsList.Location = new System.Drawing.Point(202, 80);
             this.toSelectModelsList.Name = "toSelectModelsList";
             this.toSelectModelsList.Size = new System.Drawing.Size(29, 24);
             this.toSelectModelsList.TabIndex = 12;
@@ -714,7 +719,7 @@
             // listAvailabelModels
             // 
             this.listAvailabelModels.FormattingEnabled = true;
-            this.listAvailabelModels.Location = new System.Drawing.Point(253, 56);
+            this.listAvailabelModels.Location = new System.Drawing.Point(251, 61);
             this.listAvailabelModels.Margin = new System.Windows.Forms.Padding(2);
             this.listAvailabelModels.Name = "listAvailabelModels";
             this.listAvailabelModels.Size = new System.Drawing.Size(160, 238);
@@ -724,7 +729,7 @@
             // listSelectedModels
             // 
             this.listSelectedModels.FormattingEnabled = true;
-            this.listSelectedModels.Location = new System.Drawing.Point(25, 56);
+            this.listSelectedModels.Location = new System.Drawing.Point(23, 61);
             this.listSelectedModels.Margin = new System.Windows.Forms.Padding(2);
             this.listSelectedModels.Name = "listSelectedModels";
             this.listSelectedModels.Size = new System.Drawing.Size(160, 238);
@@ -807,6 +812,26 @@
             this.labelRegressorsList.Size = new System.Drawing.Size(131, 13);
             this.labelRegressorsList.TabIndex = 8;
             this.labelRegressorsList.Text = "Управляющие факторы:";
+            // 
+            // labelSelectedModels
+            // 
+            this.labelSelectedModels.AutoSize = true;
+            this.labelSelectedModels.Location = new System.Drawing.Point(22, 46);
+            this.labelSelectedModels.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.labelSelectedModels.Name = "labelSelectedModels";
+            this.labelSelectedModels.Size = new System.Drawing.Size(110, 13);
+            this.labelSelectedModels.TabIndex = 22;
+            this.labelSelectedModels.Text = "Выбранные модели:";
+            // 
+            // labelAvailableModels
+            // 
+            this.labelAvailableModels.AutoSize = true;
+            this.labelAvailableModels.Location = new System.Drawing.Point(248, 46);
+            this.labelAvailableModels.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.labelAvailableModels.Name = "labelAvailableModels";
+            this.labelAvailableModels.Size = new System.Drawing.Size(108, 13);
+            this.labelAvailableModels.TabIndex = 23;
+            this.labelAvailableModels.Text = "Доступные модели:";
             // 
             // MainForm
             // 
@@ -920,6 +945,8 @@
         private System.Windows.Forms.ToolTip toolTipSymbiosis;
         private System.Windows.Forms.ToolTip toolTipAutoProportion;
         private System.Windows.Forms.ToolTip toolTipPercentAreaExpansion;
+        private System.Windows.Forms.Label labelSelectedModels;
+        private System.Windows.Forms.Label labelAvailableModels;
     }
 }
 

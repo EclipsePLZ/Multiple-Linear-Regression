@@ -581,8 +581,8 @@ namespace Multiple_Linear_Regression {
         }
 
         private void RunBackgroundFindEquations() {
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Уравнение", "Скорректрованный коэффициент детерминации" },
-                equationsDataGrid, true, new List<int>() { 2 });
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Скорректрованный коэффициент детерминации", "Уравнение" },
+                equationsDataGrid, true, new List<int>() { 1 });
             buildEquationsButton.Enabled = false;
 
             // Background worker for building equations
@@ -599,6 +599,12 @@ namespace Multiple_Linear_Regression {
             bgWorkerLoad.RunWorkerAsync();
         }
 
+        /// <summary>
+        /// Build equation for each model and fill data grid
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <param name="bgWorker">Background worker</param>
         private void BuildEquations(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
             if (bgWorker.CancellationPending) {
                 e.Cancel = true;
@@ -609,7 +615,7 @@ namespace Multiple_Linear_Regression {
                     model.BuildEquation();
 
                     equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
-                        new List<string>() { model.RegressantName, model.Equation, model.DetermCoeff.ToString() });
+                        new List<string>() { model.RegressantName, model.DetermCoeff.ToString(), model.Equation});
                 }
 
                 bgWorker.CancelAsync();
@@ -623,6 +629,55 @@ namespace Multiple_Linear_Regression {
             foreach (var model in Models) {
                 listAvailabelModels.Items.Add(model.RegressantName);
             }
+        }
+
+        private void acceptControlsParametersButton_Click(object sender, EventArgs e) {
+            //Func<IEnumerable<double>, (double, double)> defAreafunc = new Func<IEnumerable<double>, (double, double)>
+            //    ((values) => Statistics.AutoEmpiricalDefinitionArea(values, 10));
+            //SimulationControlForm simulationControlForm = new SimulationControlForm(Models, defAreafunc);
+
+            // Fill selected models
+            List<string> selectedModelsNames = listSelectedModels.Items.Cast<String>().ToList();
+            List<Model> selectedModels = new List<Model>();
+            foreach (var model in Models) {
+                if (selectedModelsNames.Contains(model.RegressantName)) {
+                    selectedModels.Add(model);
+                }
+            }
+
+            SimulationControlForm simulationForm = new SimulationControlForm(selectedModels, DetermFuncAreaDefinition());
+            simulationForm.Show();
+        }
+
+        /// <summary>
+        /// Determining a function to find the area of definition
+        /// </summary>
+        /// <returns>Function for find area definition</returns>
+        private Func<IEnumerable<double>, (double, double)> DetermFuncAreaDefinition() {
+            double percentDefArea = Convert.ToDouble(percentAreaExpansion.Value);
+
+            if (theoreticalAreaRadio.Checked) {
+                return Statistics.TheoreticalDefinitionArea;
+            }
+            if (equallyBothWaysRadio.Checked) {
+                if (theoreticalAreaRadio.Checked) {
+                    return (values) => Statistics.EqualEmpiricalDefinitionArea(values, percentDefArea);
+                }
+                if (symbiosisAreaRadio.Checked) {
+                    return (values) => Statistics.EqualSymbiosisDefinitionArea(values, percentDefArea);
+                }
+            }
+            if (autoProportionRadio.Checked) {
+                if (theoreticalAreaRadio.Checked) {
+                    return (values) => Statistics.AutoEmpiricalDefinitionArea(values, percentDefArea);
+                }
+                if (symbiosisAreaRadio.Checked) {
+                    return (values) => Statistics.AutoSymbiosisDefinitionArea(values, percentDefArea);
+                }
+            }
+
+            // Default function
+            return (values) => Statistics.AutoSymbiosisDefinitionArea(values, 10);
         }
 
         private void empWayRadio_CheckedChanged(object sender, EventArgs e) {
@@ -721,6 +776,8 @@ namespace Multiple_Linear_Regression {
                 empDefAreaRadio.Checked = false;
                 symbiosisAreaRadio.Checked = false;
                 percentAreaExpansion.Enabled = false;
+                equallyBothWaysRadio.Checked = true;
+                autoProportionRadio.Checked = false;
                 CheckAcceptControlParameterButton();
             }
         }
@@ -850,7 +907,7 @@ namespace Multiple_Linear_Regression {
             symbiosisAreaRadio.Checked = true;
             percentAreaExpansion.Value = 10;
             percentAreaExpansion.Enabled = true;
-            autoProportionRadio.Checked = false;
+            autoProportionRadio.Checked = true;
             acceptControlsParametersButton.Enabled = false;
         }
 
@@ -1023,7 +1080,7 @@ namespace Multiple_Linear_Regression {
                             new Point(checkPairwiseCombinations.Location.X + widthDiff, checkPairwiseCombinations.Location.Y));
 
                         labelResultDataLoad.Invoke(new Action<Point>((loc) => labelResultDataLoad.Location = loc),
-                            new Point(labelResultDataLoad.Location.X + widthDiff, labelResultDataLoad.Location.Y));
+                            new Point(labelResultDataLoad.Location.X + widthDiff, labelResultDataLoad.Location.Y + heightDiff));
 
 
                         // Tab 2
@@ -1034,10 +1091,10 @@ namespace Multiple_Linear_Regression {
                             new Point(doFunctionalProcessButton.Location.X + widthDiff, doFunctionalProcessButton.Location.Y));
 
                         labelPreprocessingFinish.Invoke(new Action<Point>((loc) => labelPreprocessingFinish.Location = loc),
-                            new Point(labelPreprocessingFinish.Location.X + widthDiff, labelPreprocessingFinish.Location.Y));
+                            new Point(labelPreprocessingFinish.Location.X + widthDiff, labelPreprocessingFinish.Location.Y + heightDiff));
 
                         labelFuncPreprocess.Invoke(new Action<Point>((loc) => labelFuncPreprocess.Location = loc),
-                            new Point(labelFuncPreprocess.Location.X + widthDiff, labelFuncPreprocess.Location.Y));
+                            new Point(labelFuncPreprocess.Location.X + widthDiff, labelFuncPreprocess.Location.Y + heightDiff));
 
 
                         // Tab 3
@@ -1066,10 +1123,10 @@ namespace Multiple_Linear_Regression {
                             new Point(cancelFilterFactorsButton.Location.X + widthDiff, cancelFilterFactorsButton.Location.Y));
 
                         labelFilterLoad.Invoke(new Action<Point>((loc) => labelFilterLoad.Location = loc),
-                            new Point(labelFilterLoad.Location.X + widthDiff, labelFilterLoad.Location.Y));
+                            new Point(labelFilterLoad.Location.X + widthDiff, labelFilterLoad.Location.Y + heightDiff));
 
                         labelFilterFinish.Invoke(new Action<Point>((loc) => labelFilterFinish.Location = loc),
-                            new Point(labelFilterFinish.Location.X + widthDiff, labelFilterFinish.Location.Y));
+                            new Point(labelFilterFinish.Location.X + widthDiff, labelFilterFinish.Location.Y + heightDiff));
 
 
                         // Tab 4
@@ -1080,10 +1137,10 @@ namespace Multiple_Linear_Regression {
                             new Point(buildEquationsButton.Location.X + widthDiff, buildEquationsButton.Location.Y));
 
                         labelBuildingLoad.Invoke(new Action<Point>((loc) => labelBuildingLoad.Location = loc),
-                            new Point(labelBuildingLoad.Location.X + widthDiff, labelBuildingLoad.Location.Y));
+                            new Point(labelBuildingLoad.Location.X + widthDiff, labelBuildingLoad.Location.Y + heightDiff));
 
                         labelBuildingFinish.Invoke(new Action<Point>((loc) => labelBuildingFinish.Location = loc),
-                            new Point(labelBuildingFinish.Location.X + widthDiff, labelBuildingFinish.Location.Y));
+                            new Point(labelBuildingFinish.Location.X + widthDiff, labelBuildingFinish.Location.Y + heightDiff));
 
 
                         // Tab 5
@@ -1125,6 +1182,9 @@ namespace Multiple_Linear_Regression {
                         listAvailabelModels.Invoke(new Action<Point>((loc) => listAvailabelModels.Location = loc),
                             new Point(toSelectModelsList.Location.X + 49, listAvailabelModels.Location.Y));
 
+                        labelAvailableModels.Invoke(new Action<Point>((loc) => labelAvailableModels.Location = loc),
+                            new Point(listAvailabelModels.Location.X - 3, labelAvailableModels.Location.Y));
+
                         listAvailabelModels.Invoke(new Action<Size>((size) => listAvailabelModels.Size = size),
                             new Size(listSelectedModels.Width, listsHeight));
 
@@ -1134,5 +1194,7 @@ namespace Multiple_Linear_Regression {
                 }
             }
         }
+
+        
     }
 }
