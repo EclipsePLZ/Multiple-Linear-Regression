@@ -141,8 +141,9 @@ namespace Multiple_Linear_Regression {
         /// Get auto definition area by empirical way
         /// </summary>
         /// <param name="values">List of values</param>
+        /// <param name="percentExpansion">Percent of area expansion</param>
         /// <returns>Definition area (min, max)</returns>
-        public static (double, double) AutoEmpiricalDefinitionArea(IEnumerable<double> values) {
+        public static (double, double) AutoEmpiricalDefinitionArea(IEnumerable<double> values, double percentExpansion = 10) {
             // Get proportions for each side
             (double, double) proportions = GetProprotions(values);
 
@@ -150,11 +151,13 @@ namespace Multiple_Linear_Regression {
             double minValue = values.Min();
 
             // Find new boundaries
-            double newMin = minValue - (maxValue - minValue) * proportions.Item1;
-            double newMax = maxValue + (maxValue - minValue) * proportions.Item2;
+            double newMin = minValue - (maxValue - minValue) * ((percentExpansion / 100.0) * (proportions.Item1));
+            double newMax = maxValue + (maxValue - minValue) * ((percentExpansion / 100.0) * (proportions.Item2));
 
             return (newMin, newMax);
         }
+
+
 
         /// <summary>
         /// Find the proportions from the average to the minimum and maximum
