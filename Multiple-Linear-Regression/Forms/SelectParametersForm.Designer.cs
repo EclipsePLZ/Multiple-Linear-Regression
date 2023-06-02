@@ -38,6 +38,7 @@
             // listAvailabelFactors
             // 
             this.listAvailabelFactors.FormattingEnabled = true;
+            this.listAvailabelFactors.HorizontalScrollbar = true;
             this.listAvailabelFactors.Location = new System.Drawing.Point(287, 41);
             this.listAvailabelFactors.Margin = new System.Windows.Forms.Padding(2);
             this.listAvailabelFactors.Name = "listAvailabelFactors";
@@ -48,6 +49,7 @@
             // listSelectedFactors
             // 
             this.listSelectedFactors.FormattingEnabled = true;
+            this.listSelectedFactors.HorizontalScrollbar = true;
             this.listSelectedFactors.Location = new System.Drawing.Point(32, 41);
             this.listSelectedFactors.Margin = new System.Windows.Forms.Padding(2);
             this.listSelectedFactors.Name = "listSelectedFactors";

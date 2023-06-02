@@ -660,7 +660,7 @@ namespace Multiple_Linear_Regression {
                 return Statistics.TheoreticalDefinitionArea;
             }
             if (equallyBothWaysRadio.Checked) {
-                if (theoreticalAreaRadio.Checked) {
+                if (empDefAreaRadio.Checked) {
                     return (values) => Statistics.EqualEmpiricalDefinitionArea(values, percentDefArea);
                 }
                 if (symbiosisAreaRadio.Checked) {
@@ -668,7 +668,7 @@ namespace Multiple_Linear_Regression {
                 }
             }
             if (autoProportionRadio.Checked) {
-                if (theoreticalAreaRadio.Checked) {
+                if (empDefAreaRadio.Checked) {
                     return (values) => Statistics.AutoEmpiricalDefinitionArea(values, percentDefArea);
                 }
                 if (symbiosisAreaRadio.Checked) {

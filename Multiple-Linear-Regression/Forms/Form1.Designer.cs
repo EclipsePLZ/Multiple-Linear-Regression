@@ -719,6 +719,7 @@
             // listAvailabelModels
             // 
             this.listAvailabelModels.FormattingEnabled = true;
+            this.listAvailabelModels.HorizontalScrollbar = true;
             this.listAvailabelModels.Location = new System.Drawing.Point(251, 61);
             this.listAvailabelModels.Margin = new System.Windows.Forms.Padding(2);
             this.listAvailabelModels.Name = "listAvailabelModels";
@@ -729,6 +730,7 @@
             // listSelectedModels
             // 
             this.listSelectedModels.FormattingEnabled = true;
+            this.listSelectedModels.HorizontalScrollbar = true;
             this.listSelectedModels.Location = new System.Drawing.Point(23, 61);
             this.listSelectedModels.Margin = new System.Windows.Forms.Padding(2);
             this.listSelectedModels.Name = "listSelectedModels";
@@ -782,6 +784,7 @@
             // regressantsList
             // 
             this.regressantsList.FormattingEnabled = true;
+            this.regressantsList.HorizontalScrollbar = true;
             this.regressantsList.Location = new System.Drawing.Point(12, 62);
             this.regressantsList.Name = "regressantsList";
             this.regressantsList.Size = new System.Drawing.Size(159, 108);
@@ -799,6 +802,7 @@
             // regressorsList
             // 
             this.regressorsList.FormattingEnabled = true;
+            this.regressorsList.HorizontalScrollbar = true;
             this.regressorsList.Location = new System.Drawing.Point(12, 208);
             this.regressorsList.Name = "regressorsList";
             this.regressorsList.Size = new System.Drawing.Size(159, 225);

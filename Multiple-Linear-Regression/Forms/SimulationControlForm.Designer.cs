@@ -27,9 +27,9 @@
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.workWithFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadDataFileMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAsFileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.exitFormMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpImitationContorl = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveAsFileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.regressorsSetDataGrid = new System.Windows.Forms.DataGridView();
             this.regressantsResultDataGrid = new System.Windows.Forms.DataGridView();
             this.labelRegressors = new System.Windows.Forms.Label();
@@ -66,8 +66,14 @@
             // loadDataFileMenu
             // 
             this.loadDataFileMenu.Name = "loadDataFileMenu";
-            this.loadDataFileMenu.Size = new System.Drawing.Size(180, 22);
+            this.loadDataFileMenu.Size = new System.Drawing.Size(163, 22);
             this.loadDataFileMenu.Text = "Загрузить";
+            // 
+            // saveAsFileMenu
+            // 
+            this.saveAsFileMenu.Name = "saveAsFileMenu";
+            this.saveAsFileMenu.Size = new System.Drawing.Size(163, 22);
+            this.saveAsFileMenu.Text = "Сохранить как...";
             // 
             // exitFormMenuItem
             // 
@@ -81,12 +87,6 @@
             this.helpImitationContorl.Size = new System.Drawing.Size(68, 20);
             this.helpImitationContorl.Text = "Помощь";
             // 
-            // saveAsFileMenu
-            // 
-            this.saveAsFileMenu.Name = "saveAsFileMenu";
-            this.saveAsFileMenu.Size = new System.Drawing.Size(180, 22);
-            this.saveAsFileMenu.Text = "Сохранить как...";
-            // 
             // regressorsSetDataGrid
             // 
             this.regressorsSetDataGrid.AllowUserToAddRows = false;
@@ -95,6 +95,7 @@
             this.regressorsSetDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.regressorsSetDataGrid.Location = new System.Drawing.Point(12, 46);
             this.regressorsSetDataGrid.Name = "regressorsSetDataGrid";
+            this.regressorsSetDataGrid.ReadOnly = true;
             this.regressorsSetDataGrid.RowHeadersWidth = 51;
             this.regressorsSetDataGrid.Size = new System.Drawing.Size(403, 392);
             this.regressorsSetDataGrid.TabIndex = 13;
@@ -107,6 +108,7 @@
             this.regressantsResultDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.regressantsResultDataGrid.Location = new System.Drawing.Point(466, 46);
             this.regressantsResultDataGrid.Name = "regressantsResultDataGrid";
+            this.regressantsResultDataGrid.ReadOnly = true;
             this.regressantsResultDataGrid.RowHeadersWidth = 51;
             this.regressantsResultDataGrid.Size = new System.Drawing.Size(322, 392);
             this.regressantsResultDataGrid.TabIndex = 14;
@@ -144,6 +146,8 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SimulationControlForm";
             this.Text = "Имитация управления";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SimulationControlForm_FormClosing);
+            this.Resize += new System.EventHandler(this.SimulationControlForm_Resize);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.regressorsSetDataGrid)).EndInit();

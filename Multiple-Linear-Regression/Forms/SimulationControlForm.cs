@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -64,11 +65,44 @@ namespace Multiple_Linear_Regression.Forms {
                 regressantsResultDataGrid.Rows.Add(new string[] {model.RegressantName, model.RegressantValues.Last().ToString(),
                     model.Equation});
             }
+
+            // Perform recalculation of regressants
+            for (int i = 0; i < Models.Count; i++) {
+                regressantsResultDataGrid[1, i].Value = CalcModelValue(Models[i]);
+            }
+            //CalcRegressantsValue();
+
             helpImitationContorl.ToolTipText = StepsInfo.ImitationOfControlForm;
         }
 
-        private void CalcRegressantValue(string regressantName) {
+        private double CalcModelValue(Model model) {
+            // Fill new X values for model
+            double[] xValues = new double[model.Regressors.Count];
+            int position = 0;
+            foreach(var regressor in model.Regressors) {
+                xValues[position] = AllRegressors[regressor.Key];
+                position++;
+            }
 
+            // Get predicted value for regressant
+            return model.Predict(xValues);
+        }
+
+        private void CalcRegressantsValue() {
+            for(int i = 0; i < Models.Count; i++) {
+                // Fill new X values for each model
+                int position = 0;
+                double[] xValues = new double[Models[i].Regressors.Count];
+                foreach (var regressor in Models[i].Regressors) {
+                    xValues[position] = AllRegressors[regressor.Key];
+                    position++;
+                }
+
+                // Get predicted value for regressant
+                double newRegressantValue = Models[i].Predict(xValues);
+
+                regressantsResultDataGrid[1, i].Value = newRegressantValue;
+            }
         }
 
         /// <summary>
@@ -100,6 +134,14 @@ namespace Multiple_Linear_Regression.Forms {
                 }
             }
             dataGV.ColumnHeadersVisible = true;
+        }
+
+        private void SimulationControlForm_FormClosing(object sender, FormClosingEventArgs e) {
+            resizeWorker.CancelAsync();
+        }
+
+        private void SimulationControlForm_Resize(object sender, EventArgs e) {
+            isResizeNeeded = true;
         }
 
         /// <summary>

@@ -188,7 +188,14 @@ namespace Multiple_Linear_Regression {
             double avgValue = values.Average();
             double stdValue = StandardDeviation(values);
 
-            return (avgValue - 3 * stdValue, avgValue + 3 * stdValue);
+            double newMin = avgValue - 3 * stdValue;
+            double newMax = avgValue + 3 * stdValue;
+
+            if (values.Min() >= 0 && newMin < 0) {
+                newMin = 0;
+            }
+
+            return (newMin, newMax);
         }
 
         /// <summary>
