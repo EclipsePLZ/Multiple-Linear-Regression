@@ -61,10 +61,15 @@ namespace Multiple_Linear_Regression {
         private void OpenFileMenu_Click(object sender, EventArgs e) {
             allTabs.SelectTab(loadDataTab);
 
-            if (dialogService.OpenFileDialog() == true) {
-                fileService = GetFileService(dialogService.FilePath);
+            try {
+                if (dialogService.OpenFileDialog() == true) {
+                    fileService = GetFileService(dialogService.FilePath);
 
-                RunBackgroundWorkerLoadFile();
+                    RunBackgroundWorkerLoadFile();
+                }
+            }
+            catch (Exception ex) {
+                dialogService.ShowMessage(ex.Message);
             }
         }
 

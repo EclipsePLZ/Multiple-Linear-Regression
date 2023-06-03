@@ -57,7 +57,7 @@ namespace Multiple_Linear_Regression.Forms {
             SetDataGVColumnHeaders(new List<string>() { "Название", "Значение", "Уравнение" }, regressantsResultDataGrid,
                 true);
 
-            // Fill last value for each regressor as default value
+            // Fill last value for each regressorKey as default value
             foreach (var model in Models) {
                 foreach(var regressor in model.StartRegressors) {
                     if (!AllRegressors.Keys.Contains(regressor.Key)) {
@@ -81,12 +81,15 @@ namespace Multiple_Linear_Regression.Forms {
         /// </summary>
         /// <param name="model">Model</param>
         /// <returns>Predicted value</returns>
-        private double CalcModelValue(Model model) {
+        private double CalcModelValue(Model model, Dictionary<string, double> regressors = null) {
+            if (regressors is null) {
+                regressors = new Dictionary<string, double>(AllRegressors);
+            }
             // Fill new X values for model
             double[] xValues = new double[model.Regressors.Count];
             int position = 0;
             foreach(var regressor in model.Regressors) {
-                xValues[position] = AllRegressors[regressor.Key];
+                xValues[position] = regressors[regressor.Key];
                 position++;
             }
 
@@ -100,9 +103,135 @@ namespace Multiple_Linear_Regression.Forms {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void loadDataFileMenu_Click(object sender, EventArgs e) {
-            if (dialogService.OpenFileDialog() == true) {
-                fileService = GetFileService(dialogService.FilePath);
+            try {
+                if (dialogService.OpenFileDialog() == true) {
+                    fileService = GetFileService(dialogService.FilePath);
+                    RegressorsFromFile(fileService.Open(dialogService.FilePath));
+                }
             }
+            catch (Exception ex) {
+                dialogService.ShowMessage(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Get predicted regressants values for regressors from file
+        /// </summary>
+        /// <param name="allRows">Rows form file</param>
+        private void RegressorsFromFile(List<List<string>> allRows) {
+            List<List<string>> predictedRegressants = new List<List<string>>();
+
+            // Create headers row
+            List<string> headers = new List<string>(AllRegressors.Keys);
+            foreach(var model in Models) {
+                headers.Add(model.RegressantName);
+            }
+            predictedRegressants.Add(headers);
+
+            Dictionary<string, List<double>> allRegressorsFromFile = new Dictionary<string, List<double>>();
+
+            // Fill all regressors values from file data
+            for (int col = 0; col < allRows[0].Count; col++) {
+                List<double> regressorValues = new List<double>();
+                string regressorName = allRows[0][col];
+                allRegressorsFromFile.Add(regressorName, new List<double>());
+
+                for (int row = 1; row < allRows.Count; row++) {
+                    allRegressorsFromFile[regressorName].Add(Convert.ToDouble(allRows[row][col]));
+                }
+            }
+
+            // Fill rows for file regressor form
+            for (int row = 0; row < allRows.Count - 1; row++) {
+                List<string> nextRow = new List<string>();
+                Dictionary<string, double> regressorsRowValues = new Dictionary<string, double>();
+
+                foreach (var regressorName in AllRegressors.Keys) {
+                    double value = 0;
+
+                    // If it's pairwise factor then multiply the factors
+                    if (regressorName.Contains(" & ")) {
+                        string[] pairwiseRegressors = regressorName.Split(new string[] { " & " }, StringSplitOptions.None);
+                        value = allRegressorsFromFile[pairwiseRegressors[0]][row] * allRegressorsFromFile[pairwiseRegressors[1]][row];
+                    }
+                    else {
+                        value = allRegressorsFromFile[regressorName][row];
+                    }
+
+                    regressorsRowValues.Add(regressorName, value);
+                }
+
+                // Add regressors values to next Row
+                foreach(var regressorValue in regressorsRowValues.Values) {
+                    nextRow.Add(regressorValue.ToString());
+                }
+
+                // For each model add regressant value to next Row
+                foreach(var model in Models) {
+                    nextRow.Add(CalcModelValue(model, regressorsRowValues).ToString());
+                }
+
+                predictedRegressants.Add(nextRow);
+            }
+
+
+            //List<string> regressorsHeaders = new List<string>(allRows[0]);
+
+            //predictedRegressants.Add(new List<string>(regressorsHeaders));
+
+            //// Add pairwise combinations names
+            //foreach(var regressorName in AllRegressors.Keys) {
+            //    if (regressorName.Contains(" & ")) {
+            //        predictedRegressants[0].Add(regressorName);
+            //    }
+            //}
+
+            //// Add regressant name
+            //foreach(var model in Models) {
+            //    predictedRegressants[0].Add(model.RegressantName);
+            //}
+
+            //for (int row = 1; row < allRows.Count; row++) {
+            //    Dictionary<string, double> regressorsRow = new Dictionary<string, double>();
+
+            //    //// Add all regressors names
+            //    //foreach(var key in AllRegressors.Keys) {
+            //    //    regressorsRow.Add(key, 0);
+            //    //}
+                
+            //    // Add values for each regressor
+            //    for (int i = 0; i < allRows[row].Count; i++) {
+            //        regressorsRow.Add(regressorsHeaders[i], Convert.ToDouble(allRows[row][i]));
+            //        //regressorsRow[regressorsHeaders[i]] = Convert.ToDouble(allRows[row][i]);
+            //    }
+
+            //    // Add values of pairwise combinations regressors
+            //    for (int i = 0; i < regressorsHeaders.Count - 1; i++) {
+            //        for (int j = i + 1; j < regressorsHeaders.Count; j++) {
+            //            regressorsRow.Add
+            //        }
+            //    }
+
+            //    // Create next row of values
+            //    List<string> allValues = new List<string>();
+
+            //    // Write regressors values
+            //    foreach(var value in regressorsRow.Values) {
+            //        allValues.Add(value.ToString());
+            //    }
+
+            //    // Write predicted regressants values
+            //    foreach (var model in Models) {
+            //        double predictedValue = CalcModelValue(model, regressorsRow);
+            //        allValues.Add(predictedValue.ToString());
+            //    }
+
+            //    predictedRegressants.Add(allValues);
+            //}
+
+            // Show predicted regressants with regressors values
+            FileRegressors fileRegressorsForm = new FileRegressors(predictedRegressants);
+            fileRegressorsForm.Show();
         }
 
         /// <summary>
@@ -131,17 +260,88 @@ namespace Multiple_Linear_Regression.Forms {
 
         private void regressorsSetDataGrid_CellValueChanged(object sender, DataGridViewCellEventArgs e) {
             if (e.ColumnIndex == MODIFY_COLUMN && e.RowIndex >= 0) {
-                AllRegressors[AllRegressors.Keys.ToList()[e.RowIndex]] = Convert.ToDouble(regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value);
-                foreach (var model in GetModifiedModels(regressorsSetDataGrid[0, e.RowIndex].Value.ToString())) {
-                    regressantsResultDataGrid[1, Models.IndexOf(model)].Value = CalcModelValue(model);
+                string regressorName = AllRegressors.Keys.ToList()[e.RowIndex];
+
+                // Check whether the regressorKey is not a combination of factors
+                if (!regressorName.Contains(" & ")) {
+                    try {
+                        if ((regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value != null && 
+                            regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value.ToString() != "-") ||
+                            regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value == null) {
+                            double regressorValue = Convert.ToDouble(regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value);
+
+                            // Check if the value falls within the definition area
+                            CheckRegressorDefArea(regressorName, regressorValue);
+                            AllRegressors[regressorName] = regressorValue;
+
+                            UpdatePairwiseCombinations(regressorName);
+
+                            // Calc predicted value for modified model
+                            foreach (var model in GetModifiedModels(regressorsSetDataGrid[0, e.RowIndex].Value.ToString())) {
+                                regressantsResultDataGrid[1, Models.IndexOf(model)].Value = CalcModelValue(model);
+                            }
+                        }
+                    }
+                    catch {
+                        regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value = AllRegressors[regressorName];
+                    }
+                }
+                else {
+                    regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value = AllRegressors[regressorName];
                 }
             }
         }
 
         /// <summary>
-        /// Get a list of models that contain a modified regressor
+        /// Check whether the regressorKey value is within the boundaries of the definition area
         /// </summary>
-        /// <param name="regressorName">Name of modified regressor</param>
+        /// <param name="regressorName">Name of adjustable regressorKey</param>
+        /// <param name="regressorValue">Value of adjustable regressorKey</param>
+        private void CheckRegressorDefArea(string regressorName, double regressorValue) {
+            if (regressorValue < RegressorsDefinitionArea[regressorName].Item1) {
+                MessageBox.Show($"Значение регрессора ({regressorName}) не попадает в область определения (Минимальное значение - " +
+                    $"{RegressorsDefinitionArea[regressorName].Item1}). Модель может работать некорректно.");
+            }
+            else if (regressorValue > RegressorsDefinitionArea[regressorName].Item2) {
+                MessageBox.Show($"Значение регрессора ({regressorName}) не попадает в область определения (Максимальное значение - " +
+                   $"{RegressorsDefinitionArea[regressorName].Item2}). Модель может работать некорректно.");
+            }
+        }
+
+        /// <summary>
+        /// Update pairwise combinations that contains adjustable regressor
+        /// </summary>
+        /// <param name="regressorName">Name of adjustable regressor</param>
+        private void UpdatePairwiseCombinations(string regressorName) {
+            List<string> regressorsNames = new List<string>(AllRegressors.Keys.ToList());
+            foreach(var regressorKey in regressorsNames) {
+
+                // Check if it's combination of regressors
+                if (regressorKey.Contains(regressorName) && regressorKey.Contains(" & ")) {
+
+                    // Find the regressors that form the combination
+                    string[] combinedRegressors = regressorKey.Split(new string[] {" & "}, StringSplitOptions.None);
+
+                    // Update combination of regressors
+                    double newValue = AllRegressors[combinedRegressors[0]] * AllRegressors[combinedRegressors[1]];
+                    AllRegressors[regressorKey] = newValue;
+                    regressorsSetDataGrid[MODIFY_COLUMN, regressorsNames.IndexOf(regressorKey)].Value = newValue;
+
+                    // Check value of pairwise combination regressor
+                    CheckRegressorDefArea(regressorKey, newValue);
+
+                    // Update model that contains combined regressorKey
+                    foreach (var model in GetModifiedModels(regressorKey)) {
+                        regressantsResultDataGrid[1, Models.IndexOf(model)].Value = CalcModelValue(model);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get a list of models that contain a modified regressorKey
+        /// </summary>
+        /// <param name="regressorName">Name of modified regressorKey</param>
         /// <returns></returns>
         private List<Model> GetModifiedModels(string regressorName) {
             List<Model> modifiedModels = new List<Model>();

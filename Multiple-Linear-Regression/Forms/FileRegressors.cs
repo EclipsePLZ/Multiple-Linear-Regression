@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Multiple_Linear_Regression.Work_WIth_Files;
+using Multiple_Linear_Regression.Work_WIth_Files.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,6 +12,9 @@ using System.Windows.Forms;
 
 namespace Multiple_Linear_Regression.Forms {
     public partial class FileRegressors : Form {
+        IFileService fileService;
+        IDialogService dialogService;
+
         private List<List<string>> AllRows { get; set; }
 
         private BackgroundWorker resizeWorker = new BackgroundWorker();
@@ -25,7 +30,11 @@ namespace Multiple_Linear_Regression.Forms {
         public FileRegressors(List<List<string>> rows) {
             AllRows = new List<List<string>>(rows);
 
+            fileService = new ExcelFileService();
+            dialogService = new DefaultDialogService();
+
             InitializeComponent();
+            this.CenterToScreen();
 
             StartSetRows();
             helpImitationContorl.ToolTipText = StepsInfo.ImitationRegressorsFromFile;
@@ -82,7 +91,15 @@ namespace Multiple_Linear_Regression.Forms {
         }
 
         private void saveAsDataFileMenu_Click(object sender, EventArgs e) {
-
+            try {
+                if (dialogService.SaveFileDialog() == true) {
+                    fileService.Save(dialogService.FilePath, AllRows);
+                    isSaved = true;
+                }
+            }
+            catch (Exception ex) {
+                dialogService.ShowMessage(ex.Message);
+            }
         }
 
         /// <summary>
@@ -93,26 +110,20 @@ namespace Multiple_Linear_Regression.Forms {
         private void FileRegressors_FormClosing(object sender, FormClosingEventArgs e) {
             if (isSaved) {
                 resizeWorker.CancelAsync();
+                this.Close();
             }
             else {
-                if (AcceptClosing()) {
+                UserWarningForm acceptForm = new UserWarningForm(StepsInfo.UserWarningFormClosingRegressorsFromFile);
+                acceptForm.Show();
+
+                if (acceptForm.AcceptAction) {
                     resizeWorker.CancelAsync();
+                    this.Close();
                 }
                 else {
                     e.Cancel = true;
                 }
             }
-        }
-
-        /// <summary>
-        /// Make sure the user wants to close the form
-        /// </summary>
-        /// <returns>Is closing accept</returns>
-        private bool AcceptClosing() {
-            UserWarningForm acceptForm = new UserWarningForm(StepsInfo.UserWarningFormClosingRegressorsFromFile);
-            acceptForm.Show();
-
-            return acceptForm.AcceptAction;
         }
 
         private void FileRegressors_Resize(object sender, EventArgs e) {
