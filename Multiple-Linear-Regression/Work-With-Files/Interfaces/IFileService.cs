@@ -8,5 +8,7 @@ using System.Threading.Tasks;
 namespace Multiple_Linear_Regression.Work_WIth_Files.Interfaces {
     internal interface IFileService {
         List<List<string>> Open(string filePath);
+
+        void Save(string filename, List<List<string>> rows);
     }
 }

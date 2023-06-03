@@ -15,7 +15,7 @@ namespace Multiple_Linear_Regression.Work_WIth_Files {
         /// <summary>
         /// Read accident information from excel file
         /// </summary>
-        /// <param name="filePath"></param>
+        /// <param name="filePath">Path to file</param>
         /// <returns>Array of all accidents</returns>
         public List<List<string>> Open(string filePath) {
             List<List<string>> allRows = new List<List<string>>();
@@ -36,6 +36,15 @@ namespace Multiple_Linear_Regression.Work_WIth_Files {
                 }
             }
             return allRows;
+        }
+
+        /// <summary>
+        /// Save rows as excel file
+        /// </summary>
+        /// <param name="filename">Path to file</param>
+        /// <param name="rows">List of rows</param>
+        public void Save(string filename, List<List<string>> rows) {
+
         }
     }
 }
