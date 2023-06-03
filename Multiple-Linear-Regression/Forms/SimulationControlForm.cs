@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Multiple_Linear_Regression.Work_WIth_Files.Interfaces;
+using Multiple_Linear_Regression.Work_WIth_Files;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -11,7 +13,12 @@ using System.Windows.Forms;
 
 namespace Multiple_Linear_Regression.Forms {
     public partial class SimulationControlForm : Form {
+        private IFileService fileService;
+        private IDialogService dialogService = new DefaultDialogService();
+
         private BackgroundWorker resizeWorker = new BackgroundWorker();
+
+        private const int MODIFY_COLUMN = 1;
 
         private bool isResizeNeeded = false;
 
@@ -62,19 +69,18 @@ namespace Multiple_Linear_Regression.Forms {
                             RegressorsDefinitionArea[regressor.Key].Item2.ToString()});
                     }
                 }
-                regressantsResultDataGrid.Rows.Add(new string[] {model.RegressantName, model.RegressantValues.Last().ToString(),
-                    model.Equation});
+                // Calculate the regressants values
+                regressantsResultDataGrid.Rows.Add(new string[] {model.RegressantName, CalcModelValue(model).ToString(), model.Equation});
             }
-
-            // Perform recalculation of regressants
-            for (int i = 0; i < Models.Count; i++) {
-                regressantsResultDataGrid[1, i].Value = CalcModelValue(Models[i]);
-            }
-            //CalcRegressantsValue();
 
             helpImitationContorl.ToolTipText = StepsInfo.ImitationOfControlForm;
         }
 
+        /// <summary>
+        /// Calculate the predicted value for regressant of the model
+        /// </summary>
+        /// <param name="model">Model</param>
+        /// <returns>Predicted value</returns>
         private double CalcModelValue(Model model) {
             // Fill new X values for model
             double[] xValues = new double[model.Regressors.Count];
@@ -88,21 +94,65 @@ namespace Multiple_Linear_Regression.Forms {
             return model.Predict(xValues);
         }
 
-        private void CalcRegressantsValue() {
-            for(int i = 0; i < Models.Count; i++) {
-                // Fill new X values for each model
-                int position = 0;
-                double[] xValues = new double[Models[i].Regressors.Count];
-                foreach (var regressor in Models[i].Regressors) {
-                    xValues[position] = AllRegressors[regressor.Key];
-                    position++;
-                }
-
-                // Get predicted value for regressant
-                double newRegressantValue = Models[i].Predict(xValues);
-
-                regressantsResultDataGrid[1, i].Value = newRegressantValue;
+        /// <summary>
+        /// Open file (csv, excel) with data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void loadDataFileMenu_Click(object sender, EventArgs e) {
+            if (dialogService.OpenFileDialog() == true) {
+                fileService = GetFileService(dialogService.FilePath);
             }
+        }
+
+        /// <summary>
+        /// Get right file service for reading file
+        /// </summary>
+        /// <param name="filename">Path to file</param>
+        /// <returns>File Service</returns>
+        IFileService GetFileService(string filename) {
+            switch (filename.Split('.').Last()) {
+                case "xls":
+                    return new ExcelFileService();
+
+                case "xlsx":
+                    return new ExcelFileService();
+
+                default:
+                    return new ExcelFileService();
+            }
+        }
+
+        private void regressorsSetDataGrid_CurrentCellDirtyStateChanged(object sender, EventArgs e) {
+            if (regressorsSetDataGrid.CurrentCell.ColumnIndex == MODIFY_COLUMN) {
+                regressorsSetDataGrid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        }
+
+        private void regressorsSetDataGrid_CellValueChanged(object sender, DataGridViewCellEventArgs e) {
+            if (e.ColumnIndex == MODIFY_COLUMN && e.RowIndex >= 0) {
+                AllRegressors[AllRegressors.Keys.ToList()[e.RowIndex]] = Convert.ToDouble(regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value);
+                foreach (var model in GetModifiedModels(regressorsSetDataGrid[0, e.RowIndex].Value.ToString())) {
+                    regressantsResultDataGrid[1, Models.IndexOf(model)].Value = CalcModelValue(model);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get a list of models that contain a modified regressor
+        /// </summary>
+        /// <param name="regressorName">Name of modified regressor</param>
+        /// <returns></returns>
+        private List<Model> GetModifiedModels(string regressorName) {
+            List<Model> modifiedModels = new List<Model>();
+
+            foreach(var model in Models) {
+                if (model.Regressors.Keys.Contains(regressorName)) {
+                    modifiedModels.Add(model);
+                }
+            }
+
+            return modifiedModels;
         }
 
         /// <summary>
@@ -119,6 +169,7 @@ namespace Multiple_Linear_Regression.Forms {
             for (int i = 0; i < dataGV.Columns.Count; i++) {
                 dataGV.Columns[i].HeaderText = headers[i];
                 dataGV.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
+                dataGV.Columns[i].ReadOnly = true;
                 if (autoSize) {
                     dataGV.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
                 }
@@ -142,6 +193,10 @@ namespace Multiple_Linear_Regression.Forms {
 
         private void SimulationControlForm_Resize(object sender, EventArgs e) {
             isResizeNeeded = true;
+        }
+
+        private void exitFormMenuItem_Click(object sender, EventArgs e) {
+            this.Close();
         }
 
         /// <summary>

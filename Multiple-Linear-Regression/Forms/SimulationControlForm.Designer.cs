@@ -66,13 +66,14 @@
             // loadDataFileMenu
             // 
             this.loadDataFileMenu.Name = "loadDataFileMenu";
-            this.loadDataFileMenu.Size = new System.Drawing.Size(163, 22);
-            this.loadDataFileMenu.Text = "Загрузить";
+            this.loadDataFileMenu.Size = new System.Drawing.Size(180, 22);
+            this.loadDataFileMenu.Text = "Открыть";
+            this.loadDataFileMenu.Click += new System.EventHandler(this.loadDataFileMenu_Click);
             // 
             // saveAsFileMenu
             // 
             this.saveAsFileMenu.Name = "saveAsFileMenu";
-            this.saveAsFileMenu.Size = new System.Drawing.Size(163, 22);
+            this.saveAsFileMenu.Size = new System.Drawing.Size(180, 22);
             this.saveAsFileMenu.Text = "Сохранить как...";
             // 
             // exitFormMenuItem
@@ -80,6 +81,7 @@
             this.exitFormMenuItem.Name = "exitFormMenuItem";
             this.exitFormMenuItem.Size = new System.Drawing.Size(54, 20);
             this.exitFormMenuItem.Text = "Выход";
+            this.exitFormMenuItem.Click += new System.EventHandler(this.exitFormMenuItem_Click);
             // 
             // helpImitationContorl
             // 
@@ -95,10 +97,11 @@
             this.regressorsSetDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.regressorsSetDataGrid.Location = new System.Drawing.Point(12, 46);
             this.regressorsSetDataGrid.Name = "regressorsSetDataGrid";
-            this.regressorsSetDataGrid.ReadOnly = true;
             this.regressorsSetDataGrid.RowHeadersWidth = 51;
             this.regressorsSetDataGrid.Size = new System.Drawing.Size(403, 392);
             this.regressorsSetDataGrid.TabIndex = 13;
+            this.regressorsSetDataGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.regressorsSetDataGrid_CellValueChanged);
+            this.regressorsSetDataGrid.CurrentCellDirtyStateChanged += new System.EventHandler(this.regressorsSetDataGrid_CurrentCellDirtyStateChanged);
             // 
             // regressantsResultDataGrid
             // 
