@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExcelDataReader;
-using OfficeOpenXml
+using OfficeOpenXml;
 using System.Data;
 
 namespace Multiple_Linear_Regression.Work_WIth_Files {
@@ -45,7 +45,19 @@ namespace Multiple_Linear_Regression.Work_WIth_Files {
         /// <param name="filename">Path to file</param>
         /// <param name="rows">List of rows</param>
         public void Save(string filename, List<List<string>> rows) {
-            
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage package = new ExcelPackage()) {
+                ExcelWorksheet ws = package.Workbook.Worksheets.Add("Результат управления");
+                for (int row = 0; row < rows.Count; row++) { 
+                    for (int col = 0; col < rows[row].Count; col++) {
+                        ws.Cells[row + 1, col + 1].Value = rows[row ][col];
+                    }
+                }
+                if (File.Exists(filename)) {
+                    File.Delete(filename);
+                }
+                package.Save(filename);
+            }
         }
     }
 }

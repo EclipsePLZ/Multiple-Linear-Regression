@@ -40,6 +40,7 @@ namespace Multiple_Linear_Regression.Forms {
             this.CenterToScreen();
 
             SetStartParameters();
+            loadDataFileMenu.ToolTipText = StepsInfo.ImitationRegressorControlOpenFile;
 
             // Run background worker for resizing components on form
             resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);

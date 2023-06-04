@@ -110,15 +110,13 @@ namespace Multiple_Linear_Regression.Forms {
         private void FileRegressors_FormClosing(object sender, FormClosingEventArgs e) {
             if (isSaved) {
                 resizeWorker.CancelAsync();
-                this.Close();
             }
             else {
                 UserWarningForm acceptForm = new UserWarningForm(StepsInfo.UserWarningFormClosingRegressorsFromFile);
-                acceptForm.Show();
+                acceptForm.ShowDialog();
 
                 if (acceptForm.AcceptAction) {
                     resizeWorker.CancelAsync();
-                    this.Close();
                 }
                 else {
                     e.Cancel = true;

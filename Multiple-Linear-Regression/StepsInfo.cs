@@ -52,5 +52,8 @@ namespace Multiple_Linear_Regression {
         public static string ImitationRegressorsFromFile { get; } = "На данной форме представлены результаты имитации управления\n" +
             "для набора параметров, считанных из файла.\n\n" +
             "Вы можете сохранить результаты имитации управления в файл.";
+
+        public static string ImitationRegressorControlOpenFile { get; } = "Для имитации управления вы можете загрузить значения\n" +
+            "управляющих факторов из файла.";
     }
 }

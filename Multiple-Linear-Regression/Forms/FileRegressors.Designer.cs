@@ -42,7 +42,7 @@
             this.regressorsFromFileDataGrid.ReadOnly = true;
             this.regressorsFromFileDataGrid.RowHeadersWidth = 51;
             this.regressorsFromFileDataGrid.RowTemplate.Height = 24;
-            this.regressorsFromFileDataGrid.Size = new System.Drawing.Size(776, 398);
+            this.regressorsFromFileDataGrid.Size = new System.Drawing.Size(1045, 412);
             this.regressorsFromFileDataGrid.TabIndex = 0;
             // 
             // menuStrip
@@ -56,7 +56,7 @@
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
             this.menuStrip.ShowItemToolTips = true;
-            this.menuStrip.Size = new System.Drawing.Size(800, 28);
+            this.menuStrip.Size = new System.Drawing.Size(1069, 28);
             this.menuStrip.TabIndex = 6;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -71,7 +71,7 @@
             // saveAsDataFileMenu
             // 
             this.saveAsDataFileMenu.Name = "saveAsDataFileMenu";
-            this.saveAsDataFileMenu.Size = new System.Drawing.Size(224, 26);
+            this.saveAsDataFileMenu.Size = new System.Drawing.Size(201, 26);
             this.saveAsDataFileMenu.Text = "Сохранить как...";
             this.saveAsDataFileMenu.Click += new System.EventHandler(this.saveAsDataFileMenu_Click);
             // 
@@ -92,7 +92,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1069, 464);
             this.Controls.Add(this.menuStrip);
             this.Controls.Add(this.regressorsFromFileDataGrid);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
