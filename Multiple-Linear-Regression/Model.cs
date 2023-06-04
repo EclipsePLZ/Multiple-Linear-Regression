@@ -22,6 +22,16 @@ namespace Multiple_Linear_Regression {
         public Dictionary<string, List<double>> Regressors { get; private set; }
 
         /// <summary>
+        /// Dictionary for not processing regressors data
+        /// </summary>
+        public Dictionary<string, List<double>> StartRegressors { get; private set; }
+
+        /// <summary>
+        /// Dictionary for not processing and not filter regressors data
+        /// </summary>
+        public Dictionary<string, List<double>> NonFilterStartRegressors { get; private set; }
+
+        /// <summary>
         /// List of regressors names
         /// </summary>
         private List<string> RegressorsNames { get; set; }
@@ -62,6 +72,8 @@ namespace Multiple_Linear_Regression {
             ProcessFunctions = new Dictionary<string, List<string>>();
             CorrelationCoefficient = new Dictionary<string, double>();
             RegressorsCoeffs = new Dictionary<string, double>();
+            StartRegressors = null;
+            NonFilterStartRegressors = null;
 
             if (regressors is null) {
                 Regressors = null;
@@ -78,6 +90,10 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="regressors">Dictionary of regressors</param>
         public void SetNewRegressors(Dictionary<string, List<double>> regressors) {
+            if (StartRegressors is null) {
+                StartRegressors = new Dictionary<string, List<double>>(regressors);
+                NonFilterStartRegressors = new Dictionary<string, List<double>>(regressors);
+            }
             Regressors = new Dictionary<string, List<double>>(regressors);
             RegressorsNames = new List<string>(Regressors.Keys);
             CalcNewCorrelationCoefficients();
@@ -88,6 +104,7 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="regressorName">Regressor's name</param>
         private void RemoveRegressor(string regressorName) {
+            StartRegressors.Remove(regressorName);
             Regressors.Remove(regressorName);
             RegressorsNames.Remove(regressorName);
         }
@@ -189,6 +206,7 @@ namespace Multiple_Linear_Regression {
         /// Restoring the regressors to their pre-filter state
         /// </summary>
         public void RestoreNonFilterRegressors() {
+            NonFilterStartRegressors = new Dictionary<string, List<double>>(StartRegressors);
             SetNewRegressors(NonFilterRegressors);
         }
 
@@ -248,6 +266,47 @@ namespace Multiple_Linear_Regression {
                     Equation += " + " + Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4).ToString() + "*X" + i.ToString();
                 }
             }
+        }
+
+        /// <summary>
+        /// Get model prediction
+        /// </summary>
+        /// <param name="x">Values of regressors</param>
+        /// <returns>Predicted value</returns>
+        public double Predict(double[] x) {
+            double[] functionX;
+            if (ProcessFunctions.Count > 0) {
+                functionX = ProcessValues(x);
+            }
+            else {
+                functionX = x;
+            }
+            double[] xWithFreeCoeff = new double[functionX.Length + 1];
+            functionX.CopyTo(xWithFreeCoeff, 1);
+            xWithFreeCoeff[0] = 1;
+
+            return Algebra.Mult(xWithFreeCoeff, RegressorsCoeffs.Values.ToArray());
+        }
+
+        /// <summary>
+        /// Apply the functions to the new values of the regressors
+        /// </summary>
+        /// <param name="x">New regressors values</param>
+        /// <returns>Processed regressors values</returns>
+        private double[] ProcessValues(double[] x) {
+            double[] processX = new double[x.Length];
+
+            for (int i = 0; i < ProcessFunctions.Count; i++) {
+                List<double> nextValue = new List<double>(StartRegressors[RegressorsNames[i]]);
+                nextValue.Add(x[i]);
+                foreach(var funcName in ProcessFunctions[RegressorsNames[i]]) {
+                    nextValue = Statistics.ConvertValuesToInterval(2, 102, nextValue);
+                    nextValue = Statistics.PreprocessingFunctions[funcName](nextValue);
+                }
+                nextValue = Statistics.ConvertValuesToInterval(2, 102, nextValue);
+                processX[i] = nextValue.Last();
+            }
+            return processX;
         }
     }
 }

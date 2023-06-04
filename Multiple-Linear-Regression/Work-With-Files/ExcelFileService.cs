@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExcelDataReader;
+using OfficeOpenXml;
 using System.Data;
 
 namespace Multiple_Linear_Regression.Work_WIth_Files {
@@ -15,7 +16,7 @@ namespace Multiple_Linear_Regression.Work_WIth_Files {
         /// <summary>
         /// Read accident information from excel file
         /// </summary>
-        /// <param name="filePath"></param>
+        /// <param name="filePath">Path to file</param>
         /// <returns>Array of all accidents</returns>
         public List<List<string>> Open(string filePath) {
             List<List<string>> allRows = new List<List<string>>();
@@ -36,6 +37,37 @@ namespace Multiple_Linear_Regression.Work_WIth_Files {
                 }
             }
             return allRows;
+        }
+
+        /// <summary>
+        /// Save rows as excel file
+        /// </summary>
+        /// <param name="filename">Path to file</param>
+        /// <param name="rows">List of rows</param>
+        public void Save(string filename, List<List<string>> rows) {
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+            using (ExcelPackage package = new ExcelPackage()) {
+                ExcelWorksheet ws = package.Workbook.Worksheets.Add("Результат управления");
+                for (int row = 0; row < rows.Count; row++) { 
+                    for (int col = 0; col < rows[row].Count; col++) {
+
+                        // Check if it is a number
+                        if (double.TryParse(rows[row][col], out _)) {
+                            ws.Cells[row + 1, col + 1].Value = Convert.ToDouble(rows[row][col]);
+                        }
+                        else {
+                            ws.Cells[row + 1, col + 1].Value = rows[row][col];
+                        }
+                        
+                    }
+                }
+
+                // Rewrite file if it's already exist
+                if (File.Exists(filename)) {
+                    File.Delete(filename);
+                }
+                File.WriteAllBytes(filename, package.GetAsByteArray());
+            }
         }
     }
 }

@@ -20,7 +20,13 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Open File Dialog
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Result of opening the file</returns>
         bool OpenFileDialog();
+
+        /// <summary>
+        /// Save File Dialog
+        /// </summary>
+        /// <returns>Result of saving the file</returns>
+        bool SaveFileDialog();
     }
 }

@@ -23,6 +23,7 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.WorkFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenFile = new System.Windows.Forms.ToolStripMenuItem();
@@ -58,6 +59,25 @@
             this.buildEquationsButton = new System.Windows.Forms.Button();
             this.labelBuildingLoad = new System.Windows.Forms.Label();
             this.equationsDataGrid = new System.Windows.Forms.DataGridView();
+            this.controlSimulationTab = new System.Windows.Forms.TabPage();
+            this.acceptControlsParametersButton = new System.Windows.Forms.Button();
+            this.groupProportionOfAreaExpansion = new System.Windows.Forms.GroupBox();
+            this.autoProportionRadio = new System.Windows.Forms.RadioButton();
+            this.equallyBothWaysRadio = new System.Windows.Forms.RadioButton();
+            this.groupPercentAreaExpansion = new System.Windows.Forms.GroupBox();
+            this.percentAreaExpansion = new System.Windows.Forms.NumericUpDown();
+            this.groupDefinitionAreaType = new System.Windows.Forms.GroupBox();
+            this.symbiosisAreaRadio = new System.Windows.Forms.RadioButton();
+            this.theoreticalAreaRadio = new System.Windows.Forms.RadioButton();
+            this.empDefAreaRadio = new System.Windows.Forms.RadioButton();
+            this.labelSelectDefAreaParams = new System.Windows.Forms.Label();
+            this.labelSelectModelsForControl = new System.Windows.Forms.Label();
+            this.allToAvailableModelsList = new System.Windows.Forms.Button();
+            this.allToSelectModelsList = new System.Windows.Forms.Button();
+            this.toAvailableModelsList = new System.Windows.Forms.Button();
+            this.toSelectModelsList = new System.Windows.Forms.Button();
+            this.listAvailabelModels = new System.Windows.Forms.ListBox();
+            this.listSelectedModels = new System.Windows.Forms.ListBox();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.WorkFileMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenFileMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -67,6 +87,11 @@
             this.labelregressantsList = new System.Windows.Forms.Label();
             this.regressorsList = new System.Windows.Forms.ListBox();
             this.labelRegressorsList = new System.Windows.Forms.Label();
+            this.toolTipSymbiosis = new System.Windows.Forms.ToolTip(this.components);
+            this.toolTipAutoProportion = new System.Windows.Forms.ToolTip(this.components);
+            this.toolTipPercentAreaExpansion = new System.Windows.Forms.ToolTip(this.components);
+            this.labelSelectedModels = new System.Windows.Forms.Label();
+            this.labelAvailableModels = new System.Windows.Forms.Label();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).BeginInit();
@@ -77,6 +102,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.onlyImportantFactorsDataGrid)).BeginInit();
             this.buildRegrEquationsTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.equationsDataGrid)).BeginInit();
+            this.controlSimulationTab.SuspendLayout();
+            this.groupProportionOfAreaExpansion.SuspendLayout();
+            this.groupPercentAreaExpansion.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.percentAreaExpansion)).BeginInit();
+            this.groupDefinitionAreaType.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -110,6 +140,7 @@
             this.allTabs.Controls.Add(this.processingStatDataTab);
             this.allTabs.Controls.Add(this.removeUnimportantFactorsTab);
             this.allTabs.Controls.Add(this.buildRegrEquationsTab);
+            this.allTabs.Controls.Add(this.controlSimulationTab);
             this.allTabs.Location = new System.Drawing.Point(177, 27);
             this.allTabs.Name = "allTabs";
             this.allTabs.SelectedIndex = 0;
@@ -480,6 +511,233 @@
             this.equationsDataGrid.Size = new System.Drawing.Size(632, 381);
             this.equationsDataGrid.TabIndex = 12;
             // 
+            // controlSimulationTab
+            // 
+            this.controlSimulationTab.Controls.Add(this.labelAvailableModels);
+            this.controlSimulationTab.Controls.Add(this.labelSelectedModels);
+            this.controlSimulationTab.Controls.Add(this.acceptControlsParametersButton);
+            this.controlSimulationTab.Controls.Add(this.groupProportionOfAreaExpansion);
+            this.controlSimulationTab.Controls.Add(this.groupPercentAreaExpansion);
+            this.controlSimulationTab.Controls.Add(this.groupDefinitionAreaType);
+            this.controlSimulationTab.Controls.Add(this.labelSelectDefAreaParams);
+            this.controlSimulationTab.Controls.Add(this.labelSelectModelsForControl);
+            this.controlSimulationTab.Controls.Add(this.allToAvailableModelsList);
+            this.controlSimulationTab.Controls.Add(this.allToSelectModelsList);
+            this.controlSimulationTab.Controls.Add(this.toAvailableModelsList);
+            this.controlSimulationTab.Controls.Add(this.toSelectModelsList);
+            this.controlSimulationTab.Controls.Add(this.listAvailabelModels);
+            this.controlSimulationTab.Controls.Add(this.listSelectedModels);
+            this.controlSimulationTab.Location = new System.Drawing.Point(4, 22);
+            this.controlSimulationTab.Name = "controlSimulationTab";
+            this.controlSimulationTab.Size = new System.Drawing.Size(816, 390);
+            this.controlSimulationTab.TabIndex = 4;
+            this.controlSimulationTab.Text = "Имитация управления";
+            this.controlSimulationTab.UseVisualStyleBackColor = true;
+            // 
+            // acceptControlsParametersButton
+            // 
+            this.acceptControlsParametersButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.acceptControlsParametersButton.Location = new System.Drawing.Point(553, 323);
+            this.acceptControlsParametersButton.Name = "acceptControlsParametersButton";
+            this.acceptControlsParametersButton.Size = new System.Drawing.Size(118, 48);
+            this.acceptControlsParametersButton.TabIndex = 21;
+            this.acceptControlsParametersButton.Text = "Подтвердить";
+            this.acceptControlsParametersButton.UseVisualStyleBackColor = true;
+            this.acceptControlsParametersButton.Click += new System.EventHandler(this.acceptControlsParametersButton_Click);
+            // 
+            // groupProportionOfAreaExpansion
+            // 
+            this.groupProportionOfAreaExpansion.Controls.Add(this.autoProportionRadio);
+            this.groupProportionOfAreaExpansion.Controls.Add(this.equallyBothWaysRadio);
+            this.groupProportionOfAreaExpansion.Location = new System.Drawing.Point(510, 222);
+            this.groupProportionOfAreaExpansion.Name = "groupProportionOfAreaExpansion";
+            this.groupProportionOfAreaExpansion.Size = new System.Drawing.Size(200, 77);
+            this.groupProportionOfAreaExpansion.TabIndex = 20;
+            this.groupProportionOfAreaExpansion.TabStop = false;
+            this.groupProportionOfAreaExpansion.Text = "Пропорция расширения области";
+            // 
+            // autoProportionRadio
+            // 
+            this.autoProportionRadio.AutoSize = true;
+            this.autoProportionRadio.Location = new System.Drawing.Point(18, 51);
+            this.autoProportionRadio.Name = "autoProportionRadio";
+            this.autoProportionRadio.Size = new System.Drawing.Size(103, 17);
+            this.autoProportionRadio.TabIndex = 1;
+            this.autoProportionRadio.TabStop = true;
+            this.autoProportionRadio.Text = "Автоматически";
+            this.autoProportionRadio.UseVisualStyleBackColor = true;
+            this.autoProportionRadio.CheckedChanged += new System.EventHandler(this.autoProportionRadio_CheckedChanged);
+            // 
+            // equallyBothWaysRadio
+            // 
+            this.equallyBothWaysRadio.AutoSize = true;
+            this.equallyBothWaysRadio.Location = new System.Drawing.Point(18, 28);
+            this.equallyBothWaysRadio.Name = "equallyBothWaysRadio";
+            this.equallyBothWaysRadio.Size = new System.Drawing.Size(156, 17);
+            this.equallyBothWaysRadio.TabIndex = 0;
+            this.equallyBothWaysRadio.TabStop = true;
+            this.equallyBothWaysRadio.Text = "В обе стороны одинаково";
+            this.equallyBothWaysRadio.UseVisualStyleBackColor = true;
+            this.equallyBothWaysRadio.CheckedChanged += new System.EventHandler(this.equallyBothWaysRadio_CheckedChanged);
+            // 
+            // groupPercentAreaExpansion
+            // 
+            this.groupPercentAreaExpansion.Controls.Add(this.percentAreaExpansion);
+            this.groupPercentAreaExpansion.Location = new System.Drawing.Point(510, 159);
+            this.groupPercentAreaExpansion.Name = "groupPercentAreaExpansion";
+            this.groupPercentAreaExpansion.Size = new System.Drawing.Size(200, 57);
+            this.groupPercentAreaExpansion.TabIndex = 19;
+            this.groupPercentAreaExpansion.TabStop = false;
+            this.groupPercentAreaExpansion.Text = "Процент расширения области";
+            // 
+            // percentAreaExpansion
+            // 
+            this.percentAreaExpansion.Location = new System.Drawing.Point(18, 30);
+            this.percentAreaExpansion.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.percentAreaExpansion.Name = "percentAreaExpansion";
+            this.percentAreaExpansion.Size = new System.Drawing.Size(120, 20);
+            this.percentAreaExpansion.TabIndex = 25;
+            this.percentAreaExpansion.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.percentAreaExpansion.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ValidateKeyPressedOnlyNums);
+            // 
+            // groupDefinitionAreaType
+            // 
+            this.groupDefinitionAreaType.Controls.Add(this.symbiosisAreaRadio);
+            this.groupDefinitionAreaType.Controls.Add(this.theoreticalAreaRadio);
+            this.groupDefinitionAreaType.Controls.Add(this.empDefAreaRadio);
+            this.groupDefinitionAreaType.Location = new System.Drawing.Point(510, 56);
+            this.groupDefinitionAreaType.Name = "groupDefinitionAreaType";
+            this.groupDefinitionAreaType.Size = new System.Drawing.Size(200, 97);
+            this.groupDefinitionAreaType.TabIndex = 18;
+            this.groupDefinitionAreaType.TabStop = false;
+            this.groupDefinitionAreaType.Text = "Вид области определения";
+            // 
+            // symbiosisAreaRadio
+            // 
+            this.symbiosisAreaRadio.AutoSize = true;
+            this.symbiosisAreaRadio.Location = new System.Drawing.Point(18, 74);
+            this.symbiosisAreaRadio.Name = "symbiosisAreaRadio";
+            this.symbiosisAreaRadio.Size = new System.Drawing.Size(120, 17);
+            this.symbiosisAreaRadio.TabIndex = 2;
+            this.symbiosisAreaRadio.TabStop = true;
+            this.symbiosisAreaRadio.Text = "Симбиоз областей";
+            this.symbiosisAreaRadio.UseVisualStyleBackColor = true;
+            this.symbiosisAreaRadio.CheckedChanged += new System.EventHandler(this.symbiosisAreaRadio_CheckedChanged);
+            // 
+            // theoreticalAreaRadio
+            // 
+            this.theoreticalAreaRadio.AutoSize = true;
+            this.theoreticalAreaRadio.Location = new System.Drawing.Point(18, 51);
+            this.theoreticalAreaRadio.Name = "theoreticalAreaRadio";
+            this.theoreticalAreaRadio.Size = new System.Drawing.Size(146, 17);
+            this.theoreticalAreaRadio.TabIndex = 1;
+            this.theoreticalAreaRadio.TabStop = true;
+            this.theoreticalAreaRadio.Text = "Теоретическая область";
+            this.theoreticalAreaRadio.UseVisualStyleBackColor = true;
+            this.theoreticalAreaRadio.CheckedChanged += new System.EventHandler(this.theoreticalAreaRadio_CheckedChanged);
+            // 
+            // empDefAreaRadio
+            // 
+            this.empDefAreaRadio.AutoSize = true;
+            this.empDefAreaRadio.Location = new System.Drawing.Point(18, 28);
+            this.empDefAreaRadio.Name = "empDefAreaRadio";
+            this.empDefAreaRadio.Size = new System.Drawing.Size(143, 17);
+            this.empDefAreaRadio.TabIndex = 0;
+            this.empDefAreaRadio.TabStop = true;
+            this.empDefAreaRadio.Text = "Эмпирическая область";
+            this.empDefAreaRadio.UseVisualStyleBackColor = true;
+            this.empDefAreaRadio.CheckedChanged += new System.EventHandler(this.empDefAreaRadio_CheckedChanged);
+            // 
+            // labelSelectDefAreaParams
+            // 
+            this.labelSelectDefAreaParams.AutoSize = true;
+            this.labelSelectDefAreaParams.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelSelectDefAreaParams.Location = new System.Drawing.Point(507, 22);
+            this.labelSelectDefAreaParams.Name = "labelSelectDefAreaParams";
+            this.labelSelectDefAreaParams.Size = new System.Drawing.Size(279, 15);
+            this.labelSelectDefAreaParams.TabIndex = 17;
+            this.labelSelectDefAreaParams.Text = "Настройка параметров области определения:";
+            // 
+            // labelSelectModelsForControl
+            // 
+            this.labelSelectModelsForControl.AutoSize = true;
+            this.labelSelectModelsForControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelSelectModelsForControl.Location = new System.Drawing.Point(20, 22);
+            this.labelSelectModelsForControl.Name = "labelSelectModelsForControl";
+            this.labelSelectModelsForControl.Size = new System.Drawing.Size(197, 15);
+            this.labelSelectModelsForControl.TabIndex = 16;
+            this.labelSelectModelsForControl.Text = "Выбор моделей для управления:";
+            // 
+            // allToAvailableModelsList
+            // 
+            this.allToAvailableModelsList.Location = new System.Drawing.Point(202, 194);
+            this.allToAvailableModelsList.Name = "allToAvailableModelsList";
+            this.allToAvailableModelsList.Size = new System.Drawing.Size(29, 24);
+            this.allToAvailableModelsList.TabIndex = 15;
+            this.allToAvailableModelsList.Text = ">>";
+            this.allToAvailableModelsList.UseVisualStyleBackColor = true;
+            this.allToAvailableModelsList.Click += new System.EventHandler(this.allToAvailableModelsList_Click);
+            // 
+            // allToSelectModelsList
+            // 
+            this.allToSelectModelsList.Location = new System.Drawing.Point(202, 164);
+            this.allToSelectModelsList.Name = "allToSelectModelsList";
+            this.allToSelectModelsList.Size = new System.Drawing.Size(29, 24);
+            this.allToSelectModelsList.TabIndex = 14;
+            this.allToSelectModelsList.Text = "<<";
+            this.allToSelectModelsList.UseVisualStyleBackColor = true;
+            this.allToSelectModelsList.Click += new System.EventHandler(this.allToSelectModelsList_Click);
+            // 
+            // toAvailableModelsList
+            // 
+            this.toAvailableModelsList.Location = new System.Drawing.Point(202, 110);
+            this.toAvailableModelsList.Name = "toAvailableModelsList";
+            this.toAvailableModelsList.Size = new System.Drawing.Size(29, 24);
+            this.toAvailableModelsList.TabIndex = 13;
+            this.toAvailableModelsList.Text = ">";
+            this.toAvailableModelsList.UseVisualStyleBackColor = true;
+            this.toAvailableModelsList.Click += new System.EventHandler(this.toAvailableModelsList_Click);
+            // 
+            // toSelectModelsList
+            // 
+            this.toSelectModelsList.Location = new System.Drawing.Point(202, 80);
+            this.toSelectModelsList.Name = "toSelectModelsList";
+            this.toSelectModelsList.Size = new System.Drawing.Size(29, 24);
+            this.toSelectModelsList.TabIndex = 12;
+            this.toSelectModelsList.Text = "<";
+            this.toSelectModelsList.UseVisualStyleBackColor = true;
+            this.toSelectModelsList.Click += new System.EventHandler(this.toSelectModelsList_Click);
+            // 
+            // listAvailabelModels
+            // 
+            this.listAvailabelModels.FormattingEnabled = true;
+            this.listAvailabelModels.HorizontalScrollbar = true;
+            this.listAvailabelModels.Location = new System.Drawing.Point(251, 61);
+            this.listAvailabelModels.Margin = new System.Windows.Forms.Padding(2);
+            this.listAvailabelModels.Name = "listAvailabelModels";
+            this.listAvailabelModels.Size = new System.Drawing.Size(160, 238);
+            this.listAvailabelModels.TabIndex = 3;
+            this.listAvailabelModels.DoubleClick += new System.EventHandler(this.listAvailabelModels_DoubleClick);
+            // 
+            // listSelectedModels
+            // 
+            this.listSelectedModels.FormattingEnabled = true;
+            this.listSelectedModels.HorizontalScrollbar = true;
+            this.listSelectedModels.Location = new System.Drawing.Point(23, 61);
+            this.listSelectedModels.Margin = new System.Windows.Forms.Padding(2);
+            this.listSelectedModels.Name = "listSelectedModels";
+            this.listSelectedModels.Size = new System.Drawing.Size(160, 238);
+            this.listSelectedModels.TabIndex = 2;
+            this.listSelectedModels.DoubleClick += new System.EventHandler(this.listSelectedModels_DoubleClick);
+            // 
             // menuStrip
             // 
             this.menuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -526,6 +784,7 @@
             // regressantsList
             // 
             this.regressantsList.FormattingEnabled = true;
+            this.regressantsList.HorizontalScrollbar = true;
             this.regressantsList.Location = new System.Drawing.Point(12, 62);
             this.regressantsList.Name = "regressantsList";
             this.regressantsList.Size = new System.Drawing.Size(159, 108);
@@ -543,6 +802,7 @@
             // regressorsList
             // 
             this.regressorsList.FormattingEnabled = true;
+            this.regressorsList.HorizontalScrollbar = true;
             this.regressorsList.Location = new System.Drawing.Point(12, 208);
             this.regressorsList.Name = "regressorsList";
             this.regressorsList.Size = new System.Drawing.Size(159, 225);
@@ -556,6 +816,26 @@
             this.labelRegressorsList.Size = new System.Drawing.Size(131, 13);
             this.labelRegressorsList.TabIndex = 8;
             this.labelRegressorsList.Text = "Управляющие факторы:";
+            // 
+            // labelSelectedModels
+            // 
+            this.labelSelectedModels.AutoSize = true;
+            this.labelSelectedModels.Location = new System.Drawing.Point(22, 46);
+            this.labelSelectedModels.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.labelSelectedModels.Name = "labelSelectedModels";
+            this.labelSelectedModels.Size = new System.Drawing.Size(110, 13);
+            this.labelSelectedModels.TabIndex = 22;
+            this.labelSelectedModels.Text = "Выбранные модели:";
+            // 
+            // labelAvailableModels
+            // 
+            this.labelAvailableModels.AutoSize = true;
+            this.labelAvailableModels.Location = new System.Drawing.Point(248, 46);
+            this.labelAvailableModels.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.labelAvailableModels.Name = "labelAvailableModels";
+            this.labelAvailableModels.Size = new System.Drawing.Size(108, 13);
+            this.labelAvailableModels.TabIndex = 23;
+            this.labelAvailableModels.Text = "Доступные модели:";
             // 
             // MainForm
             // 
@@ -588,6 +868,14 @@
             this.buildRegrEquationsTab.ResumeLayout(false);
             this.buildRegrEquationsTab.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.equationsDataGrid)).EndInit();
+            this.controlSimulationTab.ResumeLayout(false);
+            this.controlSimulationTab.PerformLayout();
+            this.groupProportionOfAreaExpansion.ResumeLayout(false);
+            this.groupProportionOfAreaExpansion.PerformLayout();
+            this.groupPercentAreaExpansion.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.percentAreaExpansion)).EndInit();
+            this.groupDefinitionAreaType.ResumeLayout(false);
+            this.groupDefinitionAreaType.PerformLayout();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -639,6 +927,30 @@
         private System.Windows.Forms.Button buildEquationsButton;
         private System.Windows.Forms.Label labelBuildingLoad;
         private System.Windows.Forms.DataGridView equationsDataGrid;
+        private System.Windows.Forms.TabPage controlSimulationTab;
+        private System.Windows.Forms.ListBox listSelectedModels;
+        private System.Windows.Forms.ListBox listAvailabelModels;
+        private System.Windows.Forms.Label labelSelectModelsForControl;
+        private System.Windows.Forms.Button allToAvailableModelsList;
+        private System.Windows.Forms.Button allToSelectModelsList;
+        private System.Windows.Forms.Button toAvailableModelsList;
+        private System.Windows.Forms.Button toSelectModelsList;
+        private System.Windows.Forms.GroupBox groupPercentAreaExpansion;
+        private System.Windows.Forms.GroupBox groupDefinitionAreaType;
+        private System.Windows.Forms.RadioButton symbiosisAreaRadio;
+        private System.Windows.Forms.RadioButton theoreticalAreaRadio;
+        private System.Windows.Forms.RadioButton empDefAreaRadio;
+        private System.Windows.Forms.Label labelSelectDefAreaParams;
+        private System.Windows.Forms.NumericUpDown percentAreaExpansion;
+        private System.Windows.Forms.GroupBox groupProportionOfAreaExpansion;
+        private System.Windows.Forms.RadioButton autoProportionRadio;
+        private System.Windows.Forms.RadioButton equallyBothWaysRadio;
+        private System.Windows.Forms.Button acceptControlsParametersButton;
+        private System.Windows.Forms.ToolTip toolTipSymbiosis;
+        private System.Windows.Forms.ToolTip toolTipAutoProportion;
+        private System.Windows.Forms.ToolTip toolTipPercentAreaExpansion;
+        private System.Windows.Forms.Label labelSelectedModels;
+        private System.Windows.Forms.Label labelAvailableModels;
     }
 }
 
