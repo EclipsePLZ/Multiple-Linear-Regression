@@ -42,6 +42,16 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, double> RegressorsCoeffs { get; set; }
 
         /// <summary>
+        /// Dictionay for equation of impact on other regressors
+        /// </summary>
+        private Dictionary<string, Dictionary<string, Dictionary<string, double>>> RegressorsImpact { get; set; }
+
+        /// <summary>
+        /// Dictionary for correlation coefficient between regressors
+        /// </summary>
+        private Dictionary<string, Dictionary<string, double>> RegressorsCorrelation { get; set; }
+
+        /// <summary>
         /// Dictionary of non-filter regressors
         /// </summary>
         private Dictionary<string, List<double>> NonFilterRegressors { get; set; }
@@ -71,7 +81,6 @@ namespace Multiple_Linear_Regression {
             RegressantValues = regressantValues;            
             ProcessFunctions = new Dictionary<string, List<string>>();
             CorrelationCoefficient = new Dictionary<string, double>();
-            RegressorsCoeffs = new Dictionary<string, double>();
             StartRegressors = null;
             NonFilterStartRegressors = null;
 
@@ -248,6 +257,9 @@ namespace Multiple_Linear_Regression {
 
             // Find a string representation of the equation
             GetEquation();
+
+            // Find regressors mutual impact
+            GetRegressorsMutualImpact();
         }
 
         /// <summary>
@@ -267,6 +279,74 @@ namespace Multiple_Linear_Regression {
                 }
             }
         }
+
+        /// <summary>
+        /// Get a coefficient for equation that represents regressors mutual impact
+        /// </summary>
+        private void GetRegressorsMutualImpact() {
+            // Get correlation coefficients between regressors
+            GetCorrelationBetweenRegressors();
+
+            RegressorsImpact = new Dictionary<string, Dictionary<string, Dictionary<string, double>>>();
+
+            // For each regressor, find the impact on the other regressors
+            foreach (var mainRegressor in Regressors) {
+                // Check if it's not a combined factor
+                if (!IsCombinedRegressor(mainRegressor.Key)) {
+
+                    // Find impact coefficients for each other's regressors
+                    foreach(var secRegressor in Regressors) {
+                        // Check if it's not the same regressor and not a combined factor
+                        if (secRegressor.Key != mainRegressor.Key && !IsCombinedRegressor(secRegressor.Key)) {
+                            RegressorsImpact[mainRegressor.Key][secRegressor.Key] = new Dictionary<string, double>
+                                (GetImpactBtwRegressors(mainRegressor.Key, secRegressor.Key));
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculating correlation coefficients between all regressors
+        /// </summary>
+        private void GetCorrelationBetweenRegressors() {
+            RegressorsCorrelation = new Dictionary<string, Dictionary<string, double>>();
+
+            // Find correlation coefficients between all regressors
+            foreach(var mainRegressor in Regressors) {
+                foreach(var secRegressor in Regressors) {
+                    if (RegressorsCorrelation.ContainsKey(secRegressor.Key)) {
+                        RegressorsCorrelation[mainRegressor.Key][secRegressor.Key] =
+                            RegressorsCorrelation[secRegressor.Key][mainRegressor.Key];
+                    }
+                    else {
+                        RegressorsCorrelation[mainRegressor.Key][secRegressor.Key] =
+                            Statistics.PearsonCorrelationCoefficient(mainRegressor.Value, secRegressor.Value);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Check if regressor is combined
+        /// </summary>
+        /// <param name="regressorName">Regressor name</param>
+        /// <returns>Regressor is combined</returns>
+        public bool IsCombinedRegressor(string regressorName) {
+            return regressorName.Contains(" & ");
+        }
+
+        /// <summary>
+        /// Get coefficients (a, b) of equation of impact between two regressors
+        /// </summary>
+        /// <param name="yRegressor">Y-regressor</param>
+        /// <param name="xRegressor">X-regressor</param>
+        /// <returns>Dictionary that contains coefficients of impact between regressors</returns>
+        private Dictionary<string, double> GetImpactBtwRegressors(string yRegressor, string xRegressor) {
+
+        }
+
+        private Dictionary<string, double> ImpactCoeffsFirst
 
         /// <summary>
         /// Get model prediction
