@@ -38,6 +38,7 @@ namespace Multiple_Linear_Regression.Forms {
 
             StartSetRows();
             helpImitationContorl.ToolTipText = StepsInfo.ImitationRegressorsFromFile;
+            saveAsDataFileMenu.ToolTipText = StepsInfo.SaveImitationResults;
 
             // Run background worker for resizing components on form
             resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);

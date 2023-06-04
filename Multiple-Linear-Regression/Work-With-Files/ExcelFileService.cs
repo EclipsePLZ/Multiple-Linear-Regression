@@ -50,13 +50,23 @@ namespace Multiple_Linear_Regression.Work_WIth_Files {
                 ExcelWorksheet ws = package.Workbook.Worksheets.Add("Результат управления");
                 for (int row = 0; row < rows.Count; row++) { 
                     for (int col = 0; col < rows[row].Count; col++) {
-                        ws.Cells[row + 1, col + 1].Value = rows[row ][col];
+
+                        // Check if it is a number
+                        if (double.TryParse(rows[row][col], out _)) {
+                            ws.Cells[row + 1, col + 1].Value = Convert.ToDouble(rows[row][col]);
+                        }
+                        else {
+                            ws.Cells[row + 1, col + 1].Value = rows[row][col];
+                        }
+                        
                     }
                 }
+
+                // Rewrite file if it's already exist
                 if (File.Exists(filename)) {
                     File.Delete(filename);
                 }
-                package.Save(filename);
+                File.WriteAllBytes(filename, package.GetAsByteArray());
             }
         }
     }
