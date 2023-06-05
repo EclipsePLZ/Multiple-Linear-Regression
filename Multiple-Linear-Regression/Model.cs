@@ -52,6 +52,11 @@ namespace Multiple_Linear_Regression {
         public Dictionary<string, List<string>> ProcessFunctions { get; private set; }
 
         /// <summary>
+        /// Dictionary of non-filter process functions
+        /// </summary>
+        private Dictionary<string, List<string>> NonFilterProcessFunctions { get; set; }
+
+        /// <summary>
         /// Dictionary that contains correlation coefficient for each regressor
         /// </summary>
         public Dictionary<string, double> CorrelationCoefficient { get; private set; }
@@ -73,6 +78,7 @@ namespace Multiple_Linear_Regression {
             CorrelationCoefficient = new Dictionary<string, double>();
             StartRegressors = null;
             NonFilterStartRegressors = null;
+            NonFilterProcessFunctions = null;
 
             if (regressors is null) {
                 Regressors = null;
@@ -104,6 +110,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="regressorName">Regressor's name</param>
         private void RemoveRegressor(string regressorName) {
             StartRegressors.Remove(regressorName);
+            ProcessFunctions.Remove(regressorName);
             Regressors.Remove(regressorName);
             RegressorsNames.Remove(regressorName);
         }
@@ -122,6 +129,7 @@ namespace Multiple_Linear_Regression {
         /// Functional data preprocessing
         /// </summary>
         public void StartFunctionalPreprocessing() {
+            ProcessFunctions = new Dictionary<string, List<string>>();
             foreach(var regressor in RegressorsNames) {
                 List<string> functions = new List<string>();
                 double startCorrCoef = Statistics.PearsonCorrelationCoefficient(RegressantValues,
@@ -156,6 +164,7 @@ namespace Multiple_Linear_Regression {
                     }
                 }
             }
+            NonFilterProcessFunctions = new Dictionary<string, List<string>>(ProcessFunctions);
             NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
         }
 
@@ -199,13 +208,17 @@ namespace Multiple_Linear_Regression {
             if (NonFilterRegressors is null) {
                 NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
             }
+            if (NonFilterProcessFunctions is null && ProcessFunctions.Count > 0) {
+                NonFilterProcessFunctions = new Dictionary<string, List<string>>(ProcessFunctions);
+            }
         }
 
         /// <summary>
         /// Restoring the regressors to their pre-filter state
         /// </summary>
         public void RestoreNonFilterRegressors() {
-            NonFilterStartRegressors = new Dictionary<string, List<double>>(StartRegressors);
+            StartRegressors = new Dictionary<string, List<double>>(NonFilterStartRegressors);
+            ProcessFunctions = new Dictionary<string, List<string>>(NonFilterProcessFunctions);
             SetNewRegressors(NonFilterRegressors);
         }
 
