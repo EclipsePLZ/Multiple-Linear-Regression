@@ -33,6 +33,7 @@
             this.regressantsResultDataGrid = new System.Windows.Forms.DataGridView();
             this.labelRegressors = new System.Windows.Forms.Label();
             this.labelRegressants = new System.Windows.Forms.Label();
+            this.checkMutualImpactFactors = new System.Windows.Forms.CheckBox();
             this.menuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.regressorsSetDataGrid)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.regressantsResultDataGrid)).BeginInit();
@@ -64,7 +65,7 @@
             // loadDataFileMenu
             // 
             this.loadDataFileMenu.Name = "loadDataFileMenu";
-            this.loadDataFileMenu.Size = new System.Drawing.Size(224, 26);
+            this.loadDataFileMenu.Size = new System.Drawing.Size(150, 26);
             this.loadDataFileMenu.Text = "Открыть";
             this.loadDataFileMenu.Click += new System.EventHandler(this.loadDataFileMenu_Click);
             // 
@@ -87,14 +88,13 @@
             this.regressorsSetDataGrid.AllowUserToDeleteRows = false;
             this.regressorsSetDataGrid.AllowUserToResizeRows = false;
             this.regressorsSetDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.regressorsSetDataGrid.Location = new System.Drawing.Point(16, 57);
-            this.regressorsSetDataGrid.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.regressorsSetDataGrid.Location = new System.Drawing.Point(16, 68);
+            this.regressorsSetDataGrid.Margin = new System.Windows.Forms.Padding(4);
             this.regressorsSetDataGrid.Name = "regressorsSetDataGrid";
             this.regressorsSetDataGrid.RowHeadersWidth = 51;
-            this.regressorsSetDataGrid.Size = new System.Drawing.Size(537, 482);
+            this.regressorsSetDataGrid.Size = new System.Drawing.Size(537, 471);
             this.regressorsSetDataGrid.TabIndex = 13;
-            this.regressorsSetDataGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.regressorsSetDataGrid_CellValueChanged);
-            this.regressorsSetDataGrid.CurrentCellDirtyStateChanged += new System.EventHandler(this.regressorsSetDataGrid_CurrentCellDirtyStateChanged);
+            this.regressorsSetDataGrid.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.regressorsSetDataGrid_CellValueChanged);
             // 
             // regressantsResultDataGrid
             // 
@@ -102,19 +102,19 @@
             this.regressantsResultDataGrid.AllowUserToDeleteRows = false;
             this.regressantsResultDataGrid.AllowUserToResizeRows = false;
             this.regressantsResultDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.regressantsResultDataGrid.Location = new System.Drawing.Point(621, 57);
-            this.regressantsResultDataGrid.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.regressantsResultDataGrid.Location = new System.Drawing.Point(621, 68);
+            this.regressantsResultDataGrid.Margin = new System.Windows.Forms.Padding(4);
             this.regressantsResultDataGrid.Name = "regressantsResultDataGrid";
             this.regressantsResultDataGrid.ReadOnly = true;
             this.regressantsResultDataGrid.RowHeadersWidth = 51;
-            this.regressantsResultDataGrid.Size = new System.Drawing.Size(429, 482);
+            this.regressantsResultDataGrid.Size = new System.Drawing.Size(429, 471);
             this.regressantsResultDataGrid.TabIndex = 14;
             // 
             // labelRegressors
             // 
             this.labelRegressors.AutoSize = true;
             this.labelRegressors.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelRegressors.Location = new System.Drawing.Point(12, 34);
+            this.labelRegressors.Location = new System.Drawing.Point(13, 46);
             this.labelRegressors.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelRegressors.Name = "labelRegressors";
             this.labelRegressors.Size = new System.Drawing.Size(235, 18);
@@ -125,25 +125,36 @@
             // 
             this.labelRegressants.AutoSize = true;
             this.labelRegressants.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelRegressants.Location = new System.Drawing.Point(617, 34);
+            this.labelRegressants.Location = new System.Drawing.Point(618, 46);
             this.labelRegressants.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelRegressants.Name = "labelRegressants";
             this.labelRegressants.Size = new System.Drawing.Size(235, 18);
             this.labelRegressants.TabIndex = 16;
             this.labelRegressants.Text = "Список управляемых факторов:";
             // 
+            // checkMutualImpactFactors
+            // 
+            this.checkMutualImpactFactors.AutoSize = true;
+            this.checkMutualImpactFactors.Location = new System.Drawing.Point(346, 31);
+            this.checkMutualImpactFactors.Name = "checkMutualImpactFactors";
+            this.checkMutualImpactFactors.Size = new System.Drawing.Size(207, 36);
+            this.checkMutualImpactFactors.TabIndex = 17;
+            this.checkMutualImpactFactors.Text = "Учитывать взаимовлияние\r\nуправляющих факторов";
+            this.checkMutualImpactFactors.UseVisualStyleBackColor = true;
+            // 
             // SimulationControlForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1067, 554);
+            this.Controls.Add(this.checkMutualImpactFactors);
             this.Controls.Add(this.labelRegressants);
             this.Controls.Add(this.labelRegressors);
             this.Controls.Add(this.regressantsResultDataGrid);
             this.Controls.Add(this.regressorsSetDataGrid);
             this.Controls.Add(this.menuStrip);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "SimulationControlForm";
             this.Text = "Имитация управления";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SimulationControlForm_FormClosing);
@@ -168,5 +179,6 @@
         private System.Windows.Forms.DataGridView regressantsResultDataGrid;
         private System.Windows.Forms.Label labelRegressors;
         private System.Windows.Forms.Label labelRegressants;
+        private System.Windows.Forms.CheckBox checkMutualImpactFactors;
     }
 }
