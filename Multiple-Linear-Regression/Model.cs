@@ -259,7 +259,7 @@ namespace Multiple_Linear_Regression {
             GetEquation();
 
             // Find regressors mutual impact
-            GetRegressorsMutualImpact();
+            //GetRegressorsMutualImpact();
         }
 
         /// <summary>
@@ -280,173 +280,265 @@ namespace Multiple_Linear_Regression {
             }
         }
 
-        /// <summary>
-        /// Get a coefficient for equation that represents regressors mutual impact
-        /// </summary>
-        private void GetRegressorsMutualImpact() {
-            // Get correlation coefficients between regressors
-            GetCorrelationBetweenRegressors();
+        ///// <summary>
+        ///// Get a coefficient for equation that represents regressors mutual impact
+        ///// </summary>
+        //private void GetRegressorsMutualImpact() {
+        //    // Get correlation coefficients between regressors
+        //    GetCorrelationBetweenRegressors();
 
-            RegressorsImpact = new Dictionary<string, Dictionary<string, Dictionary<string, double>>>();
+        //    RegressorsImpact = new Dictionary<string, Dictionary<string, Dictionary<string, double>>>();
 
-            List<string> noCombinedRegressors = WithoutCombinedRegressors(RegressorsNames);
+        //    List<string> noCombinedRegressors = WithoutCombinedRegressors(RegressorsNames);
 
-            // For each regressor, find the impact on the other regressors
-            foreach (var mainRegressorName in noCombinedRegressors) {
-                List<string> unUsedRegressors = new List<string>(noCombinedRegressors);
-                List<string> firstGroupRegressors = new List<string>();
-                List<string> secondGrooupRegressors = new List<string>();
-                unUsedRegressors.Remove(mainRegressorName);
+        //    // For each regressor, find the impact on the other regressors
+        //    foreach (var mainRegressorName in noCombinedRegressors) {
+        //        Dictionary<string, Dictionary<string, double>> nextSecsRegressorsForMain = 
+        //            new Dictionary<string, Dictionary<string, double>>();
+        //        List<string> unUsedRegressors = new List<string>(noCombinedRegressors);
+        //        List<string> firstGroupRegressors = new List<string>();
+        //        List<string> secondGroupRegressors = new List<string>();
+        //        unUsedRegressors.Remove(mainRegressorName);
 
-                // Find impact coefficient for regressos in first group
-                foreach (var secRegressorName in unUsedRegressors) {
-                    if (Math.Abs(RegressorsCorrelation[mainRegressorName][secRegressorName]) > 0.7) {
-                        firstGroupRegressors.Add(secRegressorName);
-                        RegressorsImpact[mainRegressorName][secRegressorName] = 
-                            ImpactCoeffsFirstGroup(secRegressorName, mainRegressorName);
-                    }
-                }
-                unUsedRegressors = unUsedRegressors.Except(firstGroupRegressors).ToList();
-
-                // Find impact coefficient for regressors in second group
-                foreach (var secRegressorName in unUsedRegressors) {
-                    if (Math.Abs(RegressorsCorrelation[mainRegressorName][secRegressorName]) > 0.3) {
-                        secondGrooupRegressors.Add(secRegressorName);
-                        RegressorsImpact[mainRegressorName][secRegressorName] = 
-                            ImpactCoeffsSecondGroup(firstGroupRegressors, secRegressorName, mainRegressorName);
-                    }
-                }
-                unUsedRegressors = unUsedRegressors.Except(secondGrooupRegressors).ToList();
-
-                // Find impact coefficient for regressors in third group
-                foreach (var secRegressorName in unUsedRegressors) {
-                    RegressorsImpact[mainRegressorName][secRegressorName] =
-                        ImpactCoeffsThirdGroup(firstGroupRegressors, secondGrooupRegressors,
-                        secRegressorName, mainRegressorName);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Calculating correlation coefficients between all regressors
-        /// </summary>
-        private void GetCorrelationBetweenRegressors() {
-            RegressorsCorrelation = new Dictionary<string, Dictionary<string, double>>();
-
-            List<string> noCombinedRegressors = WithoutCombinedRegressors(RegressorsNames);
-
-            // Find correlation coefficients between all non-combine regressors
-            foreach(var mainRegressor in noCombinedRegressors) {
-                foreach (var secRegressor in noCombinedRegressors) {
-                    if (RegressorsCorrelation.ContainsKey(secRegressor)) {
-                        RegressorsCorrelation[mainRegressor][secRegressor] =
-                            RegressorsCorrelation[secRegressor][mainRegressor];
-                    }
-                    else {
-                        RegressorsCorrelation[mainRegressor][secRegressor] =
-                            Statistics.PearsonCorrelationCoefficient(Regressors[mainRegressor], Regressors[secRegressor]);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Return list of regressors names except the combined regressors
-        /// </summary>
-        /// <param name="regressorsNames">List of regressors names</param>
-        /// <returns>List of regressors names without combined regressors</returns>
-        private List<string> WithoutCombinedRegressors(List<string> regressorsNames) {
-            List<string> noCombinedRegressors = new List<string>();
-
-            foreach (var regressorName in regressorsNames) { 
-                if (!IsCombinedRegressor(regressorName)) {
-                    noCombinedRegressors.Add(regressorName);
-                }
-            }
-
-            return noCombinedRegressors;
-        }
-
-        /// <summary>
-        /// Check if regressor is combined
-        /// </summary>
-        /// <param name="regressorName">Regressor name</param>
-        /// <returns>Regressor is combined</returns>
-        public bool IsCombinedRegressor(string regressorName) {
-            return regressorName.Contains(" & ");
-        }
-
-        /// <summary>
-        /// Find coefficients of impact between high correlated regressors (0.7; 1]
-        /// </summary>
-        /// <param name="yRegressor">Y-regressor</param>
-        /// <param name="xRegressor">X-regressor</param>
-        /// <returns>Coefficients of impact between regressors</returns>
-        private Dictionary<string, double> ImpactCoeffsFirstGroup(string yRegressor, string xRegressor) {
-            return GetCoefficientsForImpactEquation(Statistics.PearsonCorrelationCoefficient(Regressors[yRegressor],
-                Regressors[xRegressor]), yRegressor, xRegressor);
-        }
+        //        // Find impact coefficient for regressos in first group
+        //        firstGroupRegressors = RegressorsForImpact(unUsedRegressors, mainRegressorName, 0.7);
+        //        if (firstGroupRegressors.Count > 0) {
+        //            FillFirstGroupRegressors(ref nextSecsRegressorsForMain, firstGroupRegressors, mainRegressorName);
+        //            unUsedRegressors = unUsedRegressors.Except(firstGroupRegressors).ToList();
+        //        }
 
 
-        /// <summary>
-        /// Find coefficients of impact between medium correlated regressors (0.3; 0.7]
-        /// </summary>
-        /// <param name="firstGroupRegressors">List of regressor from first group</param>
-        /// <param name="yRegressor">Y-regressor</param>
-        /// <param name="xRegressor">X-regressor</param>
-        /// <returns>Coefficients of impact between regressors</returns>
-        private Dictionary<string, double> ImpactCoeffsSecondGroup(List<string> firstGroupRegressors, 
-            string yRegressor, string xRegressor) {
-            double rValue = 0;
+        //        // Find impact coefficient for regressors in second group
+        //        secondGroupRegressors = RegressorsForImpact(unUsedRegressors, mainRegressorName, 0.3);
 
-            // Find r-value from higher group regressors
-            foreach(var firstGroupRegressor in firstGroupRegressors) {
-                rValue += RegressorsCorrelation[xRegressor][firstGroupRegressor] *
-                    RegressorsCorrelation[firstGroupRegressor][yRegressor];
-            }
+        //        if (secondGroupRegressors.Count > 0) {
+        //            if (firstGroupRegressors.Count == 0) {
+        //                FillFirstGroupRegressors(ref nextSecsRegressorsForMain, secondGroupRegressors, mainRegressorName);
+        //            }
+        //            else if (firstGroupRegressors.Count > 0) {
+        //                FillSecondGroupRegressors(ref nextSecsRegressorsForMain, secondGroupRegressors, firstGroupRegressors,
+        //                    mainRegressorName);
+        //            }
+        //            unUsedRegressors = unUsedRegressors.Except(secondGroupRegressors).ToList();
+        //        }
+                
 
-            return GetCoefficientsForImpactEquation(rValue, yRegressor, xRegressor);
-        }
 
-        /// <summary>
-        /// Find coefficients of impact between low correlated regressors (0.0; 0.3]
-        /// </summary>
-        /// <param name="firstGroupRegressors">List of regressor from first group</param>
-        /// <param name="secondGroupRegressors">List of regressors from second group</param>
-        /// <param name="yRegressor">Y-regressor</param>
-        /// <param name="xRegressor">X-regressor</param>
-        /// <returns>Coefficients of impact between regressors</returns>
-        private Dictionary<string, double> ImpactCoeffsThirdGroup(List<string> firstGroupRegressors,
-            List<string> secondGroupRegressors, string yRegressor, string xRegressor) {
-            double rValue = 0;
+        //        // Find impact coefficient for regressors in third group
+        //        if (unUsedRegressors.Count > 0) {
+        //            if (firstGroupRegressors.Count == 0 && secondGroupRegressors.Count == 0) {
+        //                FillFirstGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, mainRegressorName);
+        //            }
+        //            else if (firstGroupRegressors.Count == 0 && secondGroupRegressors.Count != 0) {
+        //                FillSecondGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, secondGroupRegressors,
+        //                    mainRegressorName);
+        //            }
+        //            else if (firstGroupRegressors.Count != 0 && secondGroupRegressors.Count == 0) {
+        //                FillSecondGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, firstGroupRegressors,
+        //                    mainRegressorName);
+        //            }
+        //            else {
+        //                FillThirdGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, firstGroupRegressors,
+        //                    secondGroupRegressors, mainRegressorName);
+        //            }
+        //        }
+                
 
-            // Find r-value from higher group regressors
-            foreach (var firstGroupRegressor in firstGroupRegressors) {
-                foreach (var secondGroupRegressor in secondGroupRegressors) {
-                    rValue += RegressorsCorrelation[xRegressor][firstGroupRegressor] *
-                        RegressorsCorrelation[firstGroupRegressor][secondGroupRegressor] *
-                        RegressorsCorrelation[secondGroupRegressor][yRegressor];
-                }
-            }
+        //        RegressorsImpact[mainRegressorName] = nextSecsRegressorsForMain;
+        //    }
+        //}
 
-            return GetCoefficientsForImpactEquation(rValue, yRegressor, xRegressor);
-        }
+        ///// <summary>
+        ///// Calculating correlation coefficients between all regressors
+        ///// </summary>
+        //private void GetCorrelationBetweenRegressors() {
+        //    RegressorsCorrelation = new Dictionary<string, Dictionary<string, double>>();
 
-        /// <summary>
-        /// Get coefficients for regressors impact equation
-        /// </summary>
-        /// <param name="r">Correlation coefficient</param>
-        /// <param name="yRegressor">Y-regressor</param>
-        /// <param name="xRegressor">X-regressor</param>
-        /// <returns>Coefficients of impact equation</returns>
-        private Dictionary<string, double> GetCoefficientsForImpactEquation(double r, string yRegressor, string xRegressor) {
-            Dictionary<string, double> coeffs = new Dictionary<string, double>();
-            coeffs["b"] = r * (Statistics.StandardDeviation(Regressors[yRegressor]) /
-                Statistics.StandardDeviation(Regressors[xRegressor]));
-            coeffs["a"] = Regressors[yRegressor].Average() - coeffs["b"] * Regressors[xRegressor].Average();
+        //    List<string> noCombinedRegressors = WithoutCombinedRegressors(RegressorsNames);
 
-            return coeffs;
-        }
+        //    // Find correlation coefficients between all non-combine regressors
+        //    foreach(var mainRegressor in noCombinedRegressors) {
+        //        Dictionary<string, double> secondsRegressorForMain = new Dictionary<string, double>();
+        //        foreach (var secRegressor in noCombinedRegressors) {
+        //            if (secRegressor != mainRegressor) {
+        //                if (RegressorsCorrelation.ContainsKey(secRegressor)) {
+        //                    secondsRegressorForMain[secRegressor] = RegressorsCorrelation[secRegressor][mainRegressor];
+        //                }
+        //                else {
+        //                    secondsRegressorForMain[secRegressor] = Statistics.PearsonCorrelationCoefficient(
+        //                        Regressors[mainRegressor], Regressors[secRegressor]);
+        //                }
+        //            }
+        //        }
+        //        RegressorsCorrelation[mainRegressor] = secondsRegressorForMain;
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Return list of regressors names except the combined regressors
+        ///// </summary>
+        ///// <param name="regressorsNames">List of regressors names</param>
+        ///// <returns>List of regressors names without combined regressors</returns>
+        //private List<string> WithoutCombinedRegressors(List<string> regressorsNames) {
+        //    List<string> noCombinedRegressors = new List<string>();
+
+        //    foreach (var regressorName in regressorsNames) { 
+        //        if (!IsCombinedRegressor(regressorName)) {
+        //            noCombinedRegressors.Add(regressorName);
+        //        }
+        //    }
+
+        //    return noCombinedRegressors;
+        //}
+
+        ///// <summary>
+        ///// Check if regressor is combined
+        ///// </summary>
+        ///// <param name="regressorName">Regressor name</param>
+        ///// <returns>Regressor is combined</returns>
+        //public bool IsCombinedRegressor(string regressorName) {
+        //    return regressorName.Contains(" & ");
+        //}
+
+        ///// <summary>
+        ///// Get regressors wich coefficient of correlation more than threshold value
+        ///// </summary>
+        ///// <param name="secRegressors">List of regressors to choose from</param>
+        ///// <param name="mainRegressor">Main regressor</param>
+        ///// <param name="thresholdCorrValue">Threshold value of correlation coefficient</param>
+        ///// <returns>List of regressors</returns>
+        //private List<string> RegressorsForImpact(List<string> secRegressors, string mainRegressor,
+        //    double thresholdCorrValue = 0) {
+        //    List<string> selectedRegressors = new List<string>();
+
+        //    foreach (var regressor in secRegressors) {
+        //        if (Math.Abs(RegressorsCorrelation[mainRegressor][regressor]) > thresholdCorrValue) {
+        //            selectedRegressors.Add(regressor);
+        //        }
+        //    }
+
+        //    return selectedRegressors;
+        //}
+
+        ///// <summary>
+        ///// Fill dictionary imact for first group of regressors
+        ///// </summary>
+        ///// <param name="regressorsForMain">Dictionary impact for main regressor</param>
+        ///// <param name="secRegressors">List of seconds regressors</param>
+        ///// <param name="mainRegressor">Main regressor</param>
+        //private void FillFirstGroupRegressors(ref Dictionary<string, Dictionary<string, double>> regressorsForMain,
+        //    List<string> secRegressors, string mainRegressor) {
+
+        //    foreach (var secRegressor in secRegressors) {
+        //        regressorsForMain[secRegressor] = ImpactCoeffsFirstGroup(secRegressor, mainRegressor);
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Fill dictionary imact for first group of regressors
+        ///// </summary>
+        ///// <param name="regressorsForMain">Dictionary impact for main regressor</param>
+        ///// <param name="secRegressors">List of seconds regressors</param>
+        ///// <param name="firstGroupRegressors">List of regressors from first impact group</param>
+        ///// <param name="mainRegressor">Main regressor</param>
+        //private void FillSecondGroupRegressors(ref Dictionary<string, Dictionary<string, double>> regressorsForMain,
+        //    List<string> secRegressors, List<string> firstGroupRegressors, string mainRegressor) {
+
+        //    foreach (var secRegressor in secRegressors) {
+        //        regressorsForMain[secRegressor] = ImpactCoeffsSecondGroup(firstGroupRegressors, secRegressor,
+        //            mainRegressor);
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Fill dictionary imact for first group of regressors
+        ///// </summary>
+        ///// <param name="regressorsForMain">Dictionary impact for main regressor</param>
+        ///// <param name="secRegressors">List of seconds regressors</param>
+        ///// <param name="firstGroupRegressors">List of regressors from first impact group</param>
+        ///// <param name="SecondGroupRegressors">List of regressors from second impact group</param>
+        ///// <param name="mainRegressor">Main regressor</param>
+        //private void FillThirdGroupRegressors(ref Dictionary<string, Dictionary<string, double>> regressorsForMain,
+        //    List<string> secRegressors, List<string> firstGroupRegressors, List<string> SecondGroupRegressors,
+        //    string mainRegressor) {
+
+        //    foreach (var secRegressor in secRegressors) {
+        //        regressorsForMain[secRegressor] = ImpactCoeffsThirdGroup(firstGroupRegressors, SecondGroupRegressors,
+        //            secRegressor, mainRegressor);
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Find coefficients of impact between high correlated regressors (0.7; 1]
+        ///// </summary>
+        ///// <param name="yRegressor">Y-regressor</param>
+        ///// <param name="xRegressor">X-regressor</param>
+        ///// <returns>Coefficients of impact between regressors</returns>
+        //private Dictionary<string, double> ImpactCoeffsFirstGroup(string yRegressor, string xRegressor) {
+        //    return GetCoefficientsForImpactEquation(Statistics.PearsonCorrelationCoefficient(Regressors[yRegressor],
+        //        Regressors[xRegressor]), yRegressor, xRegressor);
+        //}
+
+
+        ///// <summary>
+        ///// Find coefficients of impact between medium correlated regressors (0.3; 0.7]
+        ///// </summary>
+        ///// <param name="firstGroupRegressors">List of regressor from first group</param>
+        ///// <param name="yRegressor">Y-regressor</param>
+        ///// <param name="xRegressor">X-regressor</param>
+        ///// <returns>Coefficients of impact between regressors</returns>
+        //private Dictionary<string, double> ImpactCoeffsSecondGroup(List<string> firstGroupRegressors, 
+        //    string yRegressor, string xRegressor) {
+        //    double rValue = 0;
+
+        //    // Find r-value from higher group regressors
+        //    foreach(var firstGroupRegressor in firstGroupRegressors) {
+        //        rValue += RegressorsCorrelation[xRegressor][firstGroupRegressor] *
+        //            RegressorsCorrelation[firstGroupRegressor][yRegressor];
+        //    }
+
+        //    return GetCoefficientsForImpactEquation(rValue, yRegressor, xRegressor);
+        //}
+
+        ///// <summary>
+        ///// Find coefficients of impact between low correlated regressors (0.0; 0.3]
+        ///// </summary>
+        ///// <param name="firstGroupRegressors">List of regressor from first group</param>
+        ///// <param name="secondGroupRegressors">List of regressors from second group</param>
+        ///// <param name="yRegressor">Y-regressor</param>
+        ///// <param name="xRegressor">X-regressor</param>
+        ///// <returns>Coefficients of impact between regressors</returns>
+        //private Dictionary<string, double> ImpactCoeffsThirdGroup(List<string> firstGroupRegressors,
+        //    List<string> secondGroupRegressors, string yRegressor, string xRegressor) {
+        //    double rValue = 0;
+
+        //    // Find r-value from higher group regressors
+        //    foreach (var firstGroupRegressor in firstGroupRegressors) {
+        //        foreach (var secondGroupRegressor in secondGroupRegressors) {
+        //            rValue += RegressorsCorrelation[xRegressor][firstGroupRegressor] *
+        //                RegressorsCorrelation[firstGroupRegressor][secondGroupRegressor] *
+        //                RegressorsCorrelation[secondGroupRegressor][yRegressor];
+        //        }
+        //    }
+
+        //    return GetCoefficientsForImpactEquation(rValue, yRegressor, xRegressor);
+        //}
+
+        ///// <summary>
+        ///// Get coefficients for regressors impact equation
+        ///// </summary>
+        ///// <param name="r">Correlation coefficient</param>
+        ///// <param name="yRegressor">Y-regressor</param>
+        ///// <param name="xRegressor">X-regressor</param>
+        ///// <returns>Coefficients of impact equation</returns>
+        //private Dictionary<string, double> GetCoefficientsForImpactEquation(double r, string yRegressor, string xRegressor) {
+        //    Dictionary<string, double> coeffs = new Dictionary<string, double>();
+        //    coeffs["b"] = r * (Statistics.StandardDeviation(Regressors[yRegressor]) /
+        //        Statistics.StandardDeviation(Regressors[xRegressor]));
+        //    coeffs["a"] = Regressors[yRegressor].Average() - coeffs["b"] * Regressors[xRegressor].Average();
+
+        //    return coeffs;
+        //}
 
         /// <summary>
         /// Get model prediction
