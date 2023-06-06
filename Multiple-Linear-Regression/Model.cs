@@ -34,7 +34,7 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// List of regressors names
         /// </summary>
-        private List<string> RegressorsNames { get; set; }
+        public List<string> RegressorsNames { get; private set; }
 
         /// <summary>
         /// Dictionary of regressors coefficients
@@ -88,6 +88,19 @@ namespace Multiple_Linear_Regression {
             else {
                 SetNewRegressors(regressors);
             }
+        }
+
+        public Model(Model refModel) {
+            RegressantName = refModel.RegressantName;
+            RegressantValues = new List<double>(refModel.RegressantValues);
+            ProcessFunctions = new Dictionary<string, List<string>>(refModel.ProcessFunctions);
+            CorrelationCoefficient = new Dictionary<string, double>(refModel.CorrelationCoefficient);
+            StartRegressors = new Dictionary<string, List<double>>(refModel.StartRegressors);
+            NonFilterStartRegressors = new Dictionary<string, List<double>>(refModel.NonFilterStartRegressors);
+            NonFilterProcessFunctions = new Dictionary<string, List<string>>(refModel.NonFilterProcessFunctions);
+            Regressors = new Dictionary<string, List<double>>(refModel.Regressors);
+            NonFilterRegressors = new Dictionary<string, List<double>>(refModel.NonFilterRegressors);
+            RegressorsNames = new List<string>(refModel.RegressorsNames);
         }
 
         /// <summary>

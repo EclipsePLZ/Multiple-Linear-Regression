@@ -104,8 +104,8 @@ namespace Multiple_Linear_Regression {
                 List<List<string>> allRows = fileService.Open(dialogService.FilePath);
                 if (allRows.Count > 0) {
 
-                    // Clear Step1
-                    Action clear = () => ClearControlsStep1();
+                    // Clear StepLoadData
+                    Action clear = () => ClearControlsLoadData();
                     factorsData.Invoke(clear);
 
                     // Add headers to properties
@@ -216,12 +216,14 @@ namespace Multiple_Linear_Regression {
                     CreatePairwiseCombinationsOfFactors();
                 }
 
-                ClearControlsStep2();
-                ClearControlsStep3();
-                ClearControlsStep4();
+                ClearControlsGroupingFactors();
+                ClearControlsProcessData();
+                ClearControlsFilterFactors();
+                ClearControlsBuildEquations();
                 FillRegressorsForModels();
 
                 labelResultDataLoad.Visible = true;
+                formationOfControlFactorSetsTab.Enabled = true;
                 processingStatDataTab.Enabled = true;
                 removeUnimportantFactorsTab.Enabled = true;
                 buildRegrEquationsTab.Enabled = true;
@@ -303,6 +305,67 @@ namespace Multiple_Linear_Regression {
             RunBackgroundFillFilteredFactors();
         }
 
+        private void groupedRegressorsButton_Click(object sender, EventArgs e) {
+            maxCorrelBtwRegressors.Enabled = false;
+            groupedRegressorsButton.Enabled = false;
+            RunBackgroundGroupingRegressors();
+        }
+
+        private void RunBackgroundGroupingRegressors() {
+            // Background worker for grouping regressors
+            BackgroundWorker bgWorker = new BackgroundWorker();
+            bgWorker.ProgressChanged += new ProgressChangedEventHandler((sender, e) => ProgressBarChanged(sender, e, 
+                progressBarGroupingRegressors));
+            bgWorker.DoWork += new DoWorkEventHandler((sender, e) => GroupingRegressors(sender, e, bgWorker));
+            bgWorker.WorkerReportsProgress = true;
+            bgWorker.WorkerSupportsCancellation = true;
+            groupedRegressorsDataGrid.Size = new Size(groupedRegressorsDataGrid.Width, 
+                groupedRegressorsDataGrid.Height - 19);
+            progressBarGroupingRegressors.Value = 0;
+            progressBarGroupingRegressors.Visible = true;
+            bgWorker.RunWorkerAsync();
+
+            // Background worker for loading label
+            BackgroundWorker bgWorkerLoad = new BackgroundWorker();
+            bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
+                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLoad, bgWorker, labelGroupingRegressors,
+                labelGroupingRegressorsEnd));
+            bgWorkerLoad.WorkerSupportsCancellation = true;
+            bgWorkerLoad.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Grouping non-correlation regressors
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <param name="bgWorker">Background worker</param>
+        private void GroupingRegressors(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+            Dictionary<string, List<Model>> groupsOfModels = new Dictionary<string, List<Model>>();
+            double thresholdCorrCoef = Convert.ToDouble(maxCorrelBtwRegressors.Value);
+
+            foreach (var model in Models) {
+                List<List<string>> correlatedRegressors = GetCorrelatedRegressors(model, thresholdCorrCoef);
+            }
+        }
+
+        private List<List<string>> GetCorrelatedRegressors(Model model, double thresholdCorr) {
+            List<List<string>> corrRegressors = new List<List<string>>();
+
+            for (int i = 0; i < model.RegressorsNames.Count - 1; i++) {
+                List<string> corrRegressorsWithMain = new List<string>();
+                corrRegressorsWithMain.Add(model.RegressorsNames[i]);
+                for (int j = i + 1; j < model.RegressorsNames.Count; j++) {
+                    if (Math.Abs(Statistics.PearsonCorrelationCoefficient(model.Regressors[model.RegressorsNames[i]],
+                        model.Regressors[model.RegressorsNames[j]])) > thresholdCorr) {
+                        corrRegressorsWithMain.Add(model.RegressorsNames[j]);
+                    }
+                }
+                corrRegressors.Add(corrRegressorsWithMain);
+            }
+            return corrRegressors;
+        }
+
         private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
             if (BaseRegressors.Count > 0) {
                 // Show warinig form
@@ -311,9 +374,10 @@ namespace Multiple_Linear_Regression {
                 if (warningForm.AcceptAction) {
                     RunBackgroundFunctionalProcessData();
 
-                    ClearControlsStep4();
+                    ClearControlsBuildEquations();
                     buildEquationsButton.Enabled = true;
                     doFunctionalProcessButton.Enabled = false;
+                    formationOfControlFactorSetsTab.Enabled = false;
                 }
             }
             else {
@@ -415,8 +479,9 @@ namespace Multiple_Linear_Regression {
         private void acceptFilterFactorsButton_Click(object sender, EventArgs e) {
             RunBackgroundFilterRegressors();
 
-            ClearControlsStep4();
+            ClearControlsBuildEquations();
             buildEquationsButton.Enabled = true;
+            formationOfControlFactorSetsTab.Enabled = false;
         }
 
         private void RunBackgroundFilterRegressors() {
@@ -490,7 +555,7 @@ namespace Multiple_Linear_Regression {
             // Fill filtered data grid
             RunBackgroundFillFilteredFactors();
 
-            ClearControlsStep4();
+            ClearControlsBuildEquations();
             buildEquationsButton.Enabled = true;
         }
 
@@ -577,12 +642,13 @@ namespace Multiple_Linear_Regression {
         private void buildEquationsButton_Click(object sender, EventArgs e) {
             RunBackgroundFindEquations();
 
-            ClearControlsStep5();
+            ClearControlsImitationParameters();
 
             // Set models for next step
             AddModelsToList();
 
             controlSimulationTab.Enabled = true;
+            formationOfControlFactorSetsTab.Enabled = false;
         }
 
         private void RunBackgroundFindEquations() {
@@ -838,7 +904,7 @@ namespace Multiple_Linear_Regression {
         private void SetStartParameters() {
             LocksAllTabs();
             loadDataTab.Enabled = true;
-            helpAllStepsMenu.ToolTipText = StepsInfo.Step1;
+            helpAllStepsMenu.ToolTipText = StepsInfo.StepLoadData;
             percentAreaExpansion.Maximum = Decimal.MaxValue;
             symbiosisAreaRadio.Checked = true;
             percentAreaExpansion.Value = 10;
@@ -849,9 +915,9 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
-        /// Function for clear controls start with step1
+        /// Function for clear controls start with Load Data tab
         /// </summary>
-        private void ClearControlsStep1() {
+        private void ClearControlsLoadData() {
             ClearDataGV(factorsData);
             selectRegressantsButton.Enabled = false;
             selectRegressorsButton.Enabled = false;
@@ -861,15 +927,28 @@ namespace Multiple_Linear_Regression {
             regressorsList.Items.Clear();
             labelResultDataLoad.Visible = false;
 
-            ClearControlsStep2();
-            ClearControlsStep3();
-            ClearControlsStep4();
+            ClearControlsGroupingFactors();
+            ClearControlsProcessData();
+            ClearControlsFilterFactors();
+            ClearControlsBuildEquations();
         }
 
         /// <summary>
-        /// Function for clear controls on step 2
+        /// Function for clear controls on grouping regressors tab
         /// </summary>
-        private void ClearControlsStep2() {
+        private void ClearControlsGroupingFactors() {
+            ClearDataGV(groupedRegressorsDataGrid);
+            maxCorrelBtwRegressors.Value = Convert.ToDecimal(0.7);
+            maxCorrelBtwRegressors.Enabled = true;
+            groupedRegressorsButton.Enabled = true;
+            labelGroupingRegressors.Visible = false;
+            labelGroupingRegressorsEnd.Visible = false;
+        }
+
+        /// <summary>
+        /// Function for clear controls on process data tab
+        /// </summary>
+        private void ClearControlsProcessData() {
             ClearDataGV(functionsForProcessingDataGrid);
             doFunctionalProcessButton.Enabled = false;
             labelFuncPreprocess.Visible = false;
@@ -877,9 +956,9 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
-        /// Function for clear controls on step 3
+        /// Function for clear controls on filter data tab
         /// </summary>
-        private void ClearControlsStep3() {
+        private void ClearControlsFilterFactors() {
             ClearDataGV(onlyImportantFactorsDataGrid, true);
             empWayRadio.Checked = false;
             classicWayRadio.Checked = false;
@@ -892,19 +971,19 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
-        /// Function for clear controls on step 4
+        /// Function for clear controls on build equations tab
         /// </summary>
-        private void ClearControlsStep4() {
+        private void ClearControlsBuildEquations() {
             ClearDataGV(equationsDataGrid);
             labelBuildingLoad.Visible = false;
             labelBuildingFinish.Visible = false;
-            ClearControlsStep5();
+            ClearControlsImitationParameters();
         }
 
         /// <summary>
-        /// Function for clear controls on step 4
+        /// Function for clear controls on filter factors tab
         /// </summary>
-        private void ClearControlsStep5() {
+        private void ClearControlsImitationParameters() {
             listSelectedModels.Items.Clear();
             listAvailabelModels.Items.Clear();
             empDefAreaRadio.Checked = false;
@@ -1002,19 +1081,22 @@ namespace Multiple_Linear_Regression {
         private void allTabs_Selected(object sender, TabControlEventArgs e) {
             switch (allTabs.SelectedIndex) {
                 case 0:
-                    helpAllStepsMenu.ToolTipText = StepsInfo.Step1;
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepLoadData;
                     break;
                 case 1:
-                    helpAllStepsMenu.ToolTipText = StepsInfo.Step2;
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepFormationRegressorsGroup;
                     break;
                 case 2:
-                    helpAllStepsMenu.ToolTipText = StepsInfo.Step3;
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepProcessFactors;
                     break;
                 case 3:
-                    helpAllStepsMenu.ToolTipText = StepsInfo.Step4;
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepFilterFactors;
                     break;
                 case 4:
-                    helpAllStepsMenu.ToolTipText = StepsInfo.Step5;
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepBuildEquations;
+                    break;
+                case 5:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepSetImitationParameters;
                     break;
             }
         }
@@ -1059,7 +1141,7 @@ namespace Multiple_Linear_Regression {
                             new Size(regressantsList.Width, labelRegressorsList.Location.Y - regressantsList.Location.Y - 22));
 
 
-                        // Tab 1
+                        // Tab load data
                         selectRegressantsButton.Invoke(new Action<Point>((loc) => selectRegressantsButton.Location = loc),
                             new Point(selectRegressantsButton.Location.X + widthDiff, selectRegressantsButton.Location.Y));
 
@@ -1088,7 +1170,33 @@ namespace Multiple_Linear_Regression {
                             new Point(labelResultDataLoad.Location.X + widthDiff, labelResultDataLoad.Location.Y + heightDiff));
 
 
-                        // Tab 2
+                        // Tab formation group of regressors
+                        groupedRegressorsDataGrid.Invoke(new Action<Size>((size) => groupedRegressorsDataGrid.Size = size),
+                           new Size(groupedRegressorsDataGrid.Width + widthDiff, groupedRegressorsDataGrid.Height + heightDiff));
+
+                        progressBarGroupingRegressors.Invoke(new Action<Point>((loc) => progressBarGroupingRegressors.Location = loc),
+                            new Point(progressBarGroupingRegressors.Location.X, progressBarGroupingRegressors.Location.Y + heightDiff));
+
+                        progressBarGroupingRegressors.Invoke(new Action<Size>((size) => progressBarGroupingRegressors.Size = size),
+                           new Size(progressBarGroupingRegressors.Width + widthDiff, progressBarGroupingRegressors.Height));
+
+                        labelMaxCorrelBtwRegressors.Invoke(new Action<Point>((loc) => labelMaxCorrelBtwRegressors.Location = loc),
+                            new Point(labelMaxCorrelBtwRegressors.Location.X + widthDiff, labelMaxCorrelBtwRegressors.Location.Y));
+
+                        maxCorrelBtwRegressors.Invoke(new Action<Point>((loc) => maxCorrelBtwRegressors.Location = loc),
+                            new Point(maxCorrelBtwRegressors.Location.X + widthDiff, maxCorrelBtwRegressors.Location.Y));
+
+                        groupedRegressorsButton.Invoke(new Action<Point>((loc) => groupedRegressorsButton.Location = loc),
+                            new Point(groupedRegressorsButton.Location.X + widthDiff, groupedRegressorsButton.Location.Y));
+
+                        labelGroupingRegressors.Invoke(new Action<Point>((loc) => labelGroupingRegressors.Location = loc),
+                            new Point(labelGroupingRegressors.Location.X + widthDiff, labelGroupingRegressors.Location.Y + heightDiff));
+
+                        labelGroupingRegressorsEnd.Invoke(new Action<Point>((loc) => labelGroupingRegressorsEnd.Location = loc),
+                            new Point(labelGroupingRegressorsEnd.Location.X + widthDiff, labelGroupingRegressorsEnd.Location.Y + heightDiff));
+
+
+                        // Tab process data
                         functionsForProcessingDataGrid.Invoke(new Action<Size>((size) => functionsForProcessingDataGrid.Size = size),
                            new Size(functionsForProcessingDataGrid.Width + widthDiff, functionsForProcessingDataGrid.Height + heightDiff));
 
@@ -1102,7 +1210,7 @@ namespace Multiple_Linear_Regression {
                             new Point(labelFuncPreprocess.Location.X + widthDiff, labelFuncPreprocess.Location.Y + heightDiff));
 
 
-                        // Tab 3
+                        // Tab filter data
                         onlyImportantFactorsDataGrid.Invoke(new Action<Size>((size) => onlyImportantFactorsDataGrid.Size = size),
                            new Size(onlyImportantFactorsDataGrid.Width + widthDiff, onlyImportantFactorsDataGrid.Height + heightDiff));
 
@@ -1134,7 +1242,7 @@ namespace Multiple_Linear_Regression {
                             new Point(labelFilterFinish.Location.X + widthDiff, labelFilterFinish.Location.Y + heightDiff));
 
 
-                        // Tab 4
+                        // Tab buid equations
                         equationsDataGrid.Invoke(new Action<Size>((size) => equationsDataGrid.Size = size),
                            new Size(equationsDataGrid.Width + widthDiff, equationsDataGrid.Height + heightDiff));
 
@@ -1148,7 +1256,7 @@ namespace Multiple_Linear_Regression {
                             new Point(labelBuildingFinish.Location.X + widthDiff, labelBuildingFinish.Location.Y + heightDiff));
 
 
-                        // Tab 5
+                        // Tab select parameters for imitation control
                         // The height of one element in the list is 13, so for a smooth drawing of the lists
                         // will change their height to a multiple of 13
                         int heightMainTab = controlSimulationTab.Height;
@@ -1199,7 +1307,5 @@ namespace Multiple_Linear_Regression {
                 }
             }
         }
-
-        
     }
 }
