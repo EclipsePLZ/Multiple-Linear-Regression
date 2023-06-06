@@ -312,6 +312,8 @@ namespace Multiple_Linear_Regression {
         }
 
         private void RunBackgroundGroupingRegressors() {
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор" }, groupedRegressorsDataGrid, true);
+
             // Background worker for grouping regressors
             BackgroundWorker bgWorker = new BackgroundWorker();
             bgWorker.ProgressChanged += new ProgressChangedEventHandler((sender, e) => ProgressBarChanged(sender, e, 
@@ -341,29 +343,255 @@ namespace Multiple_Linear_Regression {
         /// <param name="e"></param>
         /// <param name="bgWorker">Background worker</param>
         private void GroupingRegressors(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
-            Dictionary<string, List<Model>> groupsOfModels = new Dictionary<string, List<Model>>();
-            double thresholdCorrCoef = Convert.ToDouble(maxCorrelBtwRegressors.Value);
+            // Check if bgworker has been stopped
+            if (bgWorker.CancellationPending) {
+                e.Cancel = true;
+            }
+            else {
+                double thresholdCorrCoef = Convert.ToDouble(maxCorrelBtwRegressors.Value);
 
-            foreach (var model in Models) {
-                List<List<string>> correlatedRegressors = GetCorrelatedRegressors(model, thresholdCorrCoef);
+                // Get all possible combinations
+                List<List<string>> combinationsOfRegressors = new List<List<string>>();
+                GetCombinations(GetCorrelatedRegressors(thresholdCorrCoef), 0, new List<string>(), combinationsOfRegressors);
+                if (checkPairwiseCombinations.Checked) {
+                    AddPairwiseCombinationsOfFactors(combinationsOfRegressors);
+                }
+
+                // Get all combinations of regressors with values
+                List<Dictionary<string, List<double>>> combinationOfRegressorsValues = GetCombinationRegressorsWithValues(
+                    combinationsOfRegressors);
+
+                // Fill all possible combinations for each model
+                Dictionary<string, List<Model>> groupsOfModels = CreateGroupsOfModels(combinationOfRegressorsValues);
+
+                // Find the best model for each regressant
+                FindBestModels(groupsOfModels, bgWorker);
             }
         }
 
-        private List<List<string>> GetCorrelatedRegressors(Model model, double thresholdCorr) {
-            List<List<string>> corrRegressors = new List<List<string>>();
+        /// <summary>
+        /// Get all combinations of regressors
+        /// </summary>
+        /// <param name="groupedRegressors">List of group of regressors</param>
+        /// <param name="index">Index of group</param>
+        /// <param name="state">List for keeping combination</param>
+        /// <param name="result">Result that contains all possible combinations</param>
+        private void GetCombinations(List<List<string>> groupedRegressors, int index, List<string> state,
+            List<List<string>> result) {
 
-            for (int i = 0; i < model.RegressorsNames.Count - 1; i++) {
-                List<string> corrRegressorsWithMain = new List<string>();
-                corrRegressorsWithMain.Add(model.RegressorsNames[i]);
-                for (int j = i + 1; j < model.RegressorsNames.Count; j++) {
-                    if (Math.Abs(Statistics.PearsonCorrelationCoefficient(model.Regressors[model.RegressorsNames[i]],
-                        model.Regressors[model.RegressorsNames[j]])) > thresholdCorr) {
-                        corrRegressorsWithMain.Add(model.RegressorsNames[j]);
+            if (index >= groupedRegressors.Count) {
+                result.Add(new List<string>(state));
+                return;
+            }
+            foreach(var item in groupedRegressors[index]) {
+                state.Add(item);
+                GetCombinations(groupedRegressors, index + 1, state, result);
+                state.RemoveAt(state.Count - 1);
+            }
+        }
+
+        /// <summary>
+        /// Find correlated regressors
+        /// </summary>
+        /// <param name="thresholdCorr">Threshold value for check correlation</param>
+        /// <returns></returns>
+        private List<List<string>> GetCorrelatedRegressors(double thresholdCorr) {
+            List<List<string>> corrRegressors = new List<List<string>>();
+            List<string> nonCombinedRegressors = GetNotCombinedRegressors(BaseRegressors);
+            List<string> usedRegressors = new List<string>();
+
+            // Find groups of correlated regressors
+            for (int i = 0; i < nonCombinedRegressors.Count - 1; i++) {
+                if (!usedRegressors.Contains(nonCombinedRegressors[i])) {
+                    List<string> corrRegressorsWithMain = new List<string>();
+                    corrRegressorsWithMain.Add(nonCombinedRegressors[i]);
+                    usedRegressors.Add(nonCombinedRegressors[i]);
+
+                    // Find regressors that correlate with main regressor
+                    for (int j = i + 1; j < nonCombinedRegressors.Count; j++) {
+                        if (Math.Abs(Statistics.PearsonCorrelationCoefficient(BaseRegressors[nonCombinedRegressors[i]],
+                            BaseRegressors[nonCombinedRegressors[j]])) > thresholdCorr) {
+
+                            usedRegressors.Add(nonCombinedRegressors[j]);
+                            corrRegressorsWithMain.Add(nonCombinedRegressors[j]);
+                        }
                     }
+                    corrRegressors.Add(corrRegressorsWithMain);
                 }
-                corrRegressors.Add(corrRegressorsWithMain);
             }
             return corrRegressors;
+        }
+
+        /// <summary>
+        /// Add pairwise combinations to every formed combination
+        /// </summary>
+        /// <param name="factorCombinations">Formed combinations</param>
+        private void AddPairwiseCombinationsOfFactors(List<List<string>> factorCombinations) {
+            // Get number of factors without pairwise combinations
+            int startFactorsNumber = factorCombinations[0].Count;
+
+            for (int combNum = 0; combNum < factorCombinations.Count; combNum++){
+                for (int i = 0; i < startFactorsNumber - 1; i++) {
+                    for (int j = i + 1; j < startFactorsNumber; j++) {
+                        factorCombinations[combNum].Add(factorCombinations[combNum][i] + " & "
+                            + factorCombinations[combNum][j]);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Add values of regressors to combinations of regressors
+        /// </summary>
+        /// <param name="combinedGroupOfRegressors">Combined group of regressors</param>
+        /// <returns>Combined group of regressors with values</returns>
+        private List<Dictionary<string, List<double>>> GetCombinationRegressorsWithValues(
+            List<List<string>> combinedGroupOfRegressors) {
+
+            List<Dictionary<string, List<double>>> groupOfRegressorsWithValues = new List<Dictionary<string, List<double>>>();
+
+            foreach (var combination in combinedGroupOfRegressors) {
+                Dictionary<string, List<double>> combinedRegressorsWithValues = new Dictionary<string, List<double>>();
+                foreach(var regressor in combination) {
+
+                    // If combined regressor doesn't contain regressor then try to switch regressors
+                    // in pairwise combination
+                    if (!BaseRegressors.Keys.Contains(regressor) && regressor.Contains(" & ")) {
+                        string[] regressors = regressor.Split(new string[] { " & " }, StringSplitOptions.None);
+                        string switchRegressor = regressors[1] + " & " + regressors[0];
+
+                        combinedRegressorsWithValues[switchRegressor] = new List<double>(BaseRegressors[switchRegressor]);
+                    }
+                    else {
+                        combinedRegressorsWithValues[regressor] = new List<double>(BaseRegressors[regressor]);
+                    }
+                }
+
+                groupOfRegressorsWithValues.Add(combinedRegressorsWithValues);
+            }
+
+            return groupOfRegressorsWithValues;
+        }
+
+        /// <summary>
+        /// Create all possible models for each regressant
+        /// </summary>
+        /// <param name="combinationsOfRegressors">Combinations of regressors with values</param>
+        /// <returns>All possible models for each regressant</returns>
+        private Dictionary<string, List<Model>> CreateGroupsOfModels(List<Dictionary<string, List<double>>> combinationsOfRegressors) {
+            Dictionary<string, List<Model>> groupsOfModels = new Dictionary<string, List<Model>>();
+
+            foreach (var model in Models) {
+                List<Model> variationOfRegressorsForRegressant = new List<Model>();
+
+                foreach (var combination in combinationsOfRegressors) {
+                    variationOfRegressorsForRegressant.Add(new Model(model.RegressantName, model.RegressantValues,
+                        combination));
+                }
+                groupsOfModels[model.RegressantName] = variationOfRegressorsForRegressant;
+            }
+
+            return groupsOfModels;
+        }
+
+        /// <summary>
+        /// Find best model for each regressant
+        /// </summary>
+        /// <param name="groupsOfModels">List of models for each regressant</param>
+        /// <param name="bgWorker">Background worker</param>
+        private void FindBestModels(Dictionary<string, List<Model>> groupsOfModels, BackgroundWorker bgWorker) {
+
+            List<Model> bestModels = new List<Model>();
+
+            // Find total number of models
+            int totalNumberOfModels = groupsOfModels.Count * groupsOfModels[groupsOfModels.Keys.ToList()[0]].Count;
+
+            // Create start parameters for progress bar
+            int progress = 0;
+            int step = totalNumberOfModels / 100;
+            int oneBarInProgress = 1;
+            if (totalNumberOfModels < 100) {
+                step = 1;
+                oneBarInProgress = (100 / totalNumberOfModels) + 1;
+            }
+
+            int counter = 0;
+            // For each regressant find the best model
+            foreach (var regressantModels in groupsOfModels.Values) {
+                double maxDetermCoeffForRegressant = 0;
+                Model bestModelForRegressant = regressantModels[0];
+
+                // Calc coefficient of determination for each model to select the best one
+                foreach (var model in regressantModels) {
+
+                    // Find progress
+                    if (counter % step == 0) {
+                        progress += oneBarInProgress;
+                        bgWorker.ReportProgress(progress);
+                    }
+
+                    model.BuildEquation();
+                    if (model.DetermCoeff > maxDetermCoeffForRegressant) {
+                        maxDetermCoeffForRegressant = model.DetermCoeff;
+                        bestModelForRegressant = model;
+                    }
+                    counter++;
+                }
+
+                // Add best model regressors for regressant to data grid view
+                foreach (var regressor in bestModelForRegressant.RegressorsNames) {
+                    groupedRegressorsDataGrid.Invoke(new Action<List<string>>((row) => groupedRegressorsDataGrid.Rows.Add(row.ToArray())),
+                        new List<string> { bestModelForRegressant.RegressantName, regressor });
+                }
+                bestModels.Add(bestModelForRegressant);
+            }
+
+            // Set best models
+            Models = new List<Model>(bestModels);
+
+            // Fill filter data grid
+            Action action = () => RunBackgroundFillFilteredFactors();
+            onlyImportantFactorsDataGrid.Invoke(action);
+
+            // Hide progress bar
+            progressBarGroupingRegressors.Invoke(new Action<bool>((b) =>
+                progressBarGroupingRegressors.Visible = b), false);
+
+            // Resize dataGrid
+            groupedRegressorsDataGrid.Invoke(new Action<Size>((size) => groupedRegressorsDataGrid.Size = size),
+                new Size(groupedRegressorsDataGrid.Width, groupedRegressorsDataGrid.Height + 19));
+
+            bgWorker.CancelAsync();
+        }
+
+        /// <summary>
+        /// Find total number of models
+        /// </summary>
+        /// <param name="groupsOfModels">Groups of models</param>
+        /// <returns>Total number of models</returns>
+        private int CalcTotalNumberOfModels(Dictionary<string, List<Model>> groupsOfModels) {
+            int numberOfModels = 0;
+
+            foreach(var modelsForRegressant in groupsOfModels.Values) {
+                numberOfModels += modelsForRegressant.Count;
+            }
+
+            return numberOfModels;
+        }
+
+        /// <summary>
+        /// Get list of headers of non-combined regressors
+        /// </summary>
+        /// <param name="regressors">Regressors</param>
+        /// <returns>List of headers</returns>
+        private List<string> GetNotCombinedRegressors(Dictionary<string, List<double>> regressors) {
+            List<string> nonCombinedRegressors = new List<string>();
+            foreach (var regressorName in regressors.Keys) {
+                if (!regressorName.Contains(" & ")) {
+                    nonCombinedRegressors.Add(regressorName);
+                }
+            }
+            return nonCombinedRegressors;
         }
 
         private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
@@ -681,12 +909,14 @@ namespace Multiple_Linear_Regression {
                 e.Cancel = true;
             }
             else {
-                // Build equation for each model
-                foreach(var model in Models) {
-                    model.BuildEquation();
 
+                // Build equation for each model if it's need
+                foreach (var model in Models) {
+                    if (model.IsFiltered || model.IsPreprocessed) {
+                        model.BuildEquation();
+                    }
                     equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
-                        new List<string>() { model.RegressantName, model.DetermCoeff.ToString(), model.Equation});
+                            new List<string>() { model.RegressantName, model.DetermCoeff.ToString(), model.Equation });
                 }
 
                 bgWorker.CancelAsync();
