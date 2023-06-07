@@ -26,6 +26,8 @@ namespace Multiple_Linear_Regression.Forms {
 
         private Dictionary<string, double> AllRegressors { get; set; }
 
+        private Dictionary<string, double> StartRegressors { get; set; }
+
         private Dictionary<string, List<double>> SelectedStartRegressors { get; set; }
 
         private Dictionary<string, Dictionary<string, Dictionary<string, double>>> RegressorsImpact { get; set; }
@@ -89,6 +91,8 @@ namespace Multiple_Linear_Regression.Forms {
 
             helpImitationContorl.ToolTipText = StepsInfo.ImitationOfControlForm;
             loadDataFileMenu.ToolTipText = StepsInfo.ImitationRegressorControlOpenFile;
+
+            StartRegressors = new Dictionary<string, double>(AllRegressors);
 
             GetRegressorsMutualImpact();
         }
@@ -378,7 +382,6 @@ namespace Multiple_Linear_Regression.Forms {
 
             // Fill all regressors values from file data
             for (int col = 0; col < allRows[0].Count; col++) {
-                List<double> regressorValues = new List<double>();
                 string regressorName = allRows[0][col];
                 allRegressorsFromFile.Add(regressorName, new List<double>());
 
@@ -398,10 +401,15 @@ namespace Multiple_Linear_Regression.Forms {
                     // If it's pairwise factor then multiply the factors
                     if (regressorName.Contains(" & ")) {
                         string[] pairwiseRegressors = regressorName.Split(new string[] { " & " }, StringSplitOptions.None);
-                        value = allRegressorsFromFile[pairwiseRegressors[0]][row] * allRegressorsFromFile[pairwiseRegressors[1]][row];
+                        double factor1 = allRegressorsFromFile.ContainsKey(pairwiseRegressors[0]) ? allRegressorsFromFile[pairwiseRegressors[0]][row]
+                            : StartRegressors[pairwiseRegressors[0]];
+                        double factor2 = allRegressorsFromFile.ContainsKey(pairwiseRegressors[1]) ? allRegressorsFromFile[pairwiseRegressors[1]][row]
+                            : StartRegressors[pairwiseRegressors[1]];
+                        value = factor1 * factor2;
                     }
                     else {
-                        value = allRegressorsFromFile[regressorName][row];
+                        value = allRegressorsFromFile.ContainsKey(regressorName) ? allRegressorsFromFile[regressorName][row]
+                            : StartRegressors[regressorName];
                     }
 
                     regressorsRowValues.Add(regressorName, value);

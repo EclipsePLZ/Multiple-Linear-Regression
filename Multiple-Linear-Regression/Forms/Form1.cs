@@ -561,22 +561,10 @@ namespace Multiple_Linear_Regression {
             groupedRegressorsDataGrid.Invoke(new Action<Size>((size) => groupedRegressorsDataGrid.Size = size),
                 new Size(groupedRegressorsDataGrid.Width, groupedRegressorsDataGrid.Height + 19));
 
+            // Enable cancel button
+            cancelGroupingRegressorsButton.Invoke(new Action<bool>((b) => cancelGroupingRegressorsButton.Enabled = b), true);
+
             bgWorker.CancelAsync();
-        }
-
-        /// <summary>
-        /// Find total number of models
-        /// </summary>
-        /// <param name="groupsOfModels">Groups of models</param>
-        /// <returns>Total number of models</returns>
-        private int CalcTotalNumberOfModels(Dictionary<string, List<Model>> groupsOfModels) {
-            int numberOfModels = 0;
-
-            foreach(var modelsForRegressant in groupsOfModels.Values) {
-                numberOfModels += modelsForRegressant.Count;
-            }
-
-            return numberOfModels;
         }
 
         /// <summary>
@@ -592,6 +580,22 @@ namespace Multiple_Linear_Regression {
                 }
             }
             return nonCombinedRegressors;
+        }
+
+        private void cancelGroupingRegressorsButton_Click(object sender, EventArgs e) {
+            ClearControlsGroupingFactors();
+            ClearControlsFilterFactors();
+            ClearControlsProcessData();
+            ClearControlsImitationParameters();
+            ClearControlsBuildEquations();
+
+            List<Model> startModels = new List<Model>();
+
+            foreach (var model in Models) {
+                startModels.Add(new Model(model.RegressantName, model.RegressantValues, BaseRegressors));
+            }
+
+            Models = new List<Model>(startModels);
         }
 
         private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
@@ -1173,6 +1177,7 @@ namespace Multiple_Linear_Regression {
             groupedRegressorsButton.Enabled = true;
             labelGroupingRegressors.Visible = false;
             labelGroupingRegressorsEnd.Visible = false;
+            cancelGroupingRegressorsButton.Enabled = false;
         }
 
         /// <summary>
@@ -1418,6 +1423,9 @@ namespace Multiple_Linear_Regression {
 
                         groupedRegressorsButton.Invoke(new Action<Point>((loc) => groupedRegressorsButton.Location = loc),
                             new Point(groupedRegressorsButton.Location.X + widthDiff, groupedRegressorsButton.Location.Y));
+
+                        cancelGroupingRegressorsButton.Invoke(new Action<Point>((loc) => cancelGroupingRegressorsButton.Location = loc),
+                            new Point(cancelGroupingRegressorsButton.Location.X + widthDiff, cancelGroupingRegressorsButton.Location.Y));
 
                         labelGroupingRegressors.Invoke(new Action<Point>((loc) => labelGroupingRegressors.Location = loc),
                             new Point(labelGroupingRegressors.Location.X + widthDiff, labelGroupingRegressors.Location.Y + heightDiff));
