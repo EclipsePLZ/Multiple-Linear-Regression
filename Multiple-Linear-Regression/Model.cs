@@ -71,15 +71,6 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         public double DetermCoeff { get; private set; }
 
-        /// <summary>
-        /// Property for keeping if has the preprocessing been done
-        /// </summary>
-        public bool IsPreprocessed { get; private set; }
-
-        /// <summary>
-        /// Property for keeping if has th filtering been done
-        /// </summary>
-        public bool IsFiltered { get; private set; }
         
         public Model(string regerssantName, List<double> regressantValues, Dictionary<string, List<double>> regressors = null) {
             RegressantName = regerssantName;
@@ -89,8 +80,6 @@ namespace Multiple_Linear_Regression {
             StartRegressors = null;
             NonFilterStartRegressors = null;
             NonFilterProcessFunctions = null;
-            IsPreprocessed = false;
-            IsFiltered = false;
 
             if (regressors is null) {
                 Regressors = null;
@@ -194,7 +183,6 @@ namespace Multiple_Linear_Regression {
             }
             NonFilterProcessFunctions = new Dictionary<string, List<string>>(ProcessFunctions);
             NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
-            IsPreprocessed = true;
         }
 
         /// <summary>
@@ -209,7 +197,6 @@ namespace Multiple_Linear_Regression {
                     RemoveRegressor(corrCoeff.Key);
                 }
             }
-            IsFiltered = true;
         }
 
         /// <summary>
@@ -229,7 +216,6 @@ namespace Multiple_Linear_Regression {
                     RemoveRegressor(corrCoeff.Key);
                 }
             }
-            IsFiltered = true;
         }
 
         /// <summary>
@@ -248,9 +234,12 @@ namespace Multiple_Linear_Regression {
         /// Restoring the regressors to their pre-filter state
         /// </summary>
         public void RestoreNonFilterRegressors() {
-            IsFiltered = false;
-            StartRegressors = new Dictionary<string, List<double>>(NonFilterStartRegressors);
-            ProcessFunctions = new Dictionary<string, List<string>>(NonFilterProcessFunctions);
+            if (NonFilterStartRegressors != null){
+                StartRegressors = new Dictionary<string, List<double>>(NonFilterStartRegressors);
+            }
+            if (NonFilterProcessFunctions != null) {
+                ProcessFunctions = new Dictionary<string, List<string>>(NonFilterProcessFunctions);
+            }
             SetNewRegressors(NonFilterRegressors);
         }
 

@@ -22,7 +22,9 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, int> RegressantsHeaders { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> RegressorsHeaders { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> Headers { get; set; } = new Dictionary<string, int>();
+        private Dictionary<string, string> RegressorsShortName { get; set; } = new Dictionary<string, string>();
         private Dictionary<string, List<double>> BaseRegressors { get; set; } = new Dictionary<string, List<double>>();
+        private Dictionary<string, List<Model>> ModelsForRegressants { get; set; }
 
         private List<Model> Models { get; set; } = new List<Model>();
 
@@ -195,11 +197,24 @@ namespace Multiple_Linear_Regression {
             }
 
             // Print factors to listbox
+            AddRegressorsToRegressorsList(RegressorsHeaders.Keys.ToList());
+        }
+
+        /// <summary>
+        /// Add regressors names and short version of regressors names
+        /// </summary>
+        private void AddRegressorsToRegressorsList(List<string> regressorsNames) {
             regressorsList.Items.Clear();
-            regressorsList.Items.AddRange(RegressorsHeaders.Keys.ToArray());
+            RegressorsShortName.Clear();
+
+            for (int i = 0; i < regressorsNames.Count(); i++) {
+                RegressorsShortName[regressorsNames[i]] = $"X{i + 1}";
+                regressorsList.Items.Add($"X{i + 1} - {regressorsNames[i]}");
+            }
         }
 
         private void clearSelectedFactorsButton_Click(object sender, EventArgs e) {
+            RegressorsShortName.Clear();
             regressorsList.Items.Clear();
             regressantsList.Items.Clear();
             RegressantsHeaders.Clear();
@@ -220,15 +235,16 @@ namespace Multiple_Linear_Regression {
                 ClearControlsProcessData();
                 ClearControlsFilterFactors();
                 ClearControlsBuildEquations();
+
                 FillRegressorsForModels();
 
                 labelResultDataLoad.Visible = true;
-                formationOfControlFactorSetsTab.Enabled = true;
                 processingStatDataTab.Enabled = true;
-                removeUnimportantFactorsTab.Enabled = true;
-                buildRegrEquationsTab.Enabled = true;
-                buildEquationsButton.Enabled = true;
+                formationOfControlFactorSetsTab.Enabled = false;                
+                removeUnimportantFactorsTab.Enabled = false;
+                buildRegrEquationsTab.Enabled = false;
                 doFunctionalProcessButton.Enabled = true;
+                formationOfControlFactorSetsTab.Enabled = true;
             }
             else {
                 if (RegressantsHeaders.Count == 0 && RegressorsHeaders.Count == 0) {
@@ -286,7 +302,9 @@ namespace Multiple_Linear_Regression {
                     for (int elemNum = 0; elemNum < BaseRegressors[RegressorsKeys[i]].Count; elemNum++) {
                         newRegressorFactorValues.Add(BaseRegressors[RegressorsKeys[i]][elemNum] * BaseRegressors[RegressorsKeys[j]][elemNum]);
                     }
-                    BaseRegressors[RegressorsKeys[i] + " & " + RegressorsKeys[j]] = newRegressorFactorValues;
+                    string combinedName = RegressorsKeys[i] + " & " + RegressorsKeys[j];
+                    RegressorsShortName[combinedName] = $"{RegressorsShortName[RegressorsKeys[i]]}*{RegressorsShortName[RegressorsKeys[j]]}";
+                    BaseRegressors[combinedName] = newRegressorFactorValues;
                 }
             }
         }
@@ -296,35 +314,45 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         private void FillRegressorsForModels() {
             Models.ForEach(model => model.SetNewRegressors(BaseRegressors));
-
-            // Fill filtered table headers
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
-                onlyImportantFactorsDataGrid, true, new List<int>() { 3 });
-
-            // Fill filtered dataGrid view
-            RunBackgroundFillFilteredFactors();
         }
 
         private void groupedRegressorsButton_Click(object sender, EventArgs e) {
-            maxCorrelBtwRegressors.Enabled = false;
             groupedRegressorsButton.Enabled = false;
+            ClearControlsGroupingFactors();
             RunBackgroundGroupingRegressors();
+
+            removeUnimportantFactorsTab.Enabled = true;
+            buildRegrEquationsTab.Enabled = true;
+
+            buildEquationsButton.Enabled = true;
         }
 
+        ///// <summary>
+        ///// Cancel grouping of regressors
+        ///// </summary>
+        //private void CancelGroupingRegressors() {
+        //    ClearControlsGroupingFactors();
+
+        //    List<Model> startModels = new List<Model>();
+
+        //    foreach (var model in Models) {
+        //        startModels.Add(new Model(model.RegressantName, model.RegressantValues, BaseRegressors));
+        //    }
+
+        //    Models = new List<Model>(startModels);
+        //}
+
         private void RunBackgroundGroupingRegressors() {
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор" }, groupedRegressorsDataGrid, true);
+            // Fill grouped regressors table headers
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, groupedRegressorsDataGrid, true);
+
+            // Fill filtered table headers
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, onlyImportantFactorsDataGrid, true);
 
             // Background worker for grouping regressors
             BackgroundWorker bgWorker = new BackgroundWorker();
-            bgWorker.ProgressChanged += new ProgressChangedEventHandler((sender, e) => ProgressBarChanged(sender, e, 
-                progressBarGroupingRegressors));
             bgWorker.DoWork += new DoWorkEventHandler((sender, e) => GroupingRegressors(sender, e, bgWorker));
-            bgWorker.WorkerReportsProgress = true;
             bgWorker.WorkerSupportsCancellation = true;
-            groupedRegressorsDataGrid.Size = new Size(groupedRegressorsDataGrid.Width, 
-                groupedRegressorsDataGrid.Height - 19);
-            progressBarGroupingRegressors.Value = 0;
-            progressBarGroupingRegressors.Visible = true;
             bgWorker.RunWorkerAsync();
 
             // Background worker for loading label
@@ -357,15 +385,21 @@ namespace Multiple_Linear_Regression {
                     AddPairwiseCombinationsOfFactors(combinationsOfRegressors);
                 }
 
-                // Get all combinations of regressors with values
-                List<Dictionary<string, List<double>>> combinationOfRegressorsValues = GetCombinationRegressorsWithValues(
-                    combinationsOfRegressors);
+                //// Get all combinations of regressors with values
+                //List<Dictionary<string, List<double>>> combinationOfRegressorsValues = GetCombinationRegressorsWithValues(
+                //    combinationsOfRegressors);
 
                 // Fill all possible combinations for each model
-                Dictionary<string, List<Model>> groupsOfModels = CreateGroupsOfModels(combinationOfRegressorsValues);
+                ModelsForRegressants = CreateGroupsOfModels(combinationsOfRegressors);
 
-                // Find the best model for each regressant
-                FindBestModels(groupsOfModels, bgWorker);
+                // Print regressors from all models for each regressant
+                PrintGroupedRegressors(groupedRegressorsDataGrid);
+                PrintGroupedRegressors(onlyImportantFactorsDataGrid);
+
+                // Enable accept button for grouping of regressors
+                groupedRegressorsButton.Invoke(new Action<bool>((b) => groupedRegressorsButton.Enabled = b), true);
+
+                bgWorker.CancelAsync();
             }
         }
 
@@ -440,45 +474,45 @@ namespace Multiple_Linear_Regression {
             }
         }
 
-        /// <summary>
-        /// Add values of regressors to combinations of regressors
-        /// </summary>
-        /// <param name="combinedGroupOfRegressors">Combined group of regressors</param>
-        /// <returns>Combined group of regressors with values</returns>
-        private List<Dictionary<string, List<double>>> GetCombinationRegressorsWithValues(
-            List<List<string>> combinedGroupOfRegressors) {
+        ///// <summary>
+        ///// Add values of regressors to combinations of regressors
+        ///// </summary>
+        ///// <param name="combinedGroupOfRegressors">Combined group of regressors</param>
+        ///// <returns>Combined group of regressors with values</returns>
+        //private List<Dictionary<string, List<double>>> GetCombinationRegressorsWithValues(
+        //    List<List<string>> combinedGroupOfRegressors) {
 
-            List<Dictionary<string, List<double>>> groupOfRegressorsWithValues = new List<Dictionary<string, List<double>>>();
+        //    List<Dictionary<string, List<double>>> groupOfRegressorsWithValues = new List<Dictionary<string, List<double>>>();
 
-            foreach (var combination in combinedGroupOfRegressors) {
-                Dictionary<string, List<double>> combinedRegressorsWithValues = new Dictionary<string, List<double>>();
-                foreach(var regressor in combination) {
+        //    foreach (var combination in combinedGroupOfRegressors) {
+        //        Dictionary<string, List<double>> combinedRegressorsWithValues = new Dictionary<string, List<double>>();
+        //        foreach(var regressor in combination) {
 
-                    // If combined regressor doesn't contain regressor then try to switch regressors
-                    // in pairwise combination
-                    if (!BaseRegressors.Keys.Contains(regressor) && regressor.Contains(" & ")) {
-                        string[] regressors = regressor.Split(new string[] { " & " }, StringSplitOptions.None);
-                        string switchRegressor = regressors[1] + " & " + regressors[0];
+        //            // If combined regressor doesn't contain regressor then try to switch regressors
+        //            // in pairwise combination
+        //            if (!BaseRegressors.Keys.Contains(regressor) && regressor.Contains(" & ")) {
+        //                string[] regressors = regressor.Split(new string[] { " & " }, StringSplitOptions.None);
+        //                string switchRegressor = regressors[1] + " & " + regressors[0];
 
-                        combinedRegressorsWithValues[switchRegressor] = new List<double>(BaseRegressors[switchRegressor]);
-                    }
-                    else {
-                        combinedRegressorsWithValues[regressor] = new List<double>(BaseRegressors[regressor]);
-                    }
-                }
+        //                combinedRegressorsWithValues[switchRegressor] = new List<double>(BaseRegressors[switchRegressor]);
+        //            }
+        //            else {
+        //                combinedRegressorsWithValues[regressor] = new List<double>(BaseRegressors[regressor]);
+        //            }
+        //        }
 
-                groupOfRegressorsWithValues.Add(combinedRegressorsWithValues);
-            }
+        //        groupOfRegressorsWithValues.Add(combinedRegressorsWithValues);
+        //    }
 
-            return groupOfRegressorsWithValues;
-        }
+        //    return groupOfRegressorsWithValues;
+        //}
 
         /// <summary>
         /// Create all possible models for each regressant
         /// </summary>
         /// <param name="combinationsOfRegressors">Combinations of regressors with values</param>
         /// <returns>All possible models for each regressant</returns>
-        private Dictionary<string, List<Model>> CreateGroupsOfModels(List<Dictionary<string, List<double>>> combinationsOfRegressors) {
+        private Dictionary<string, List<Model>> CreateGroupsOfModels(List<List<string>> combinationsOfRegressors) {
             Dictionary<string, List<Model>> groupsOfModels = new Dictionary<string, List<Model>>();
 
             foreach (var model in Models) {
@@ -486,12 +520,77 @@ namespace Multiple_Linear_Regression {
 
                 foreach (var combination in combinationsOfRegressors) {
                     variationOfRegressorsForRegressant.Add(new Model(model.RegressantName, model.RegressantValues,
-                        combination));
+                        GetRegressorsWithValues(model, combination)));
                 }
                 groupsOfModels[model.RegressantName] = variationOfRegressorsForRegressant;
             }
 
             return groupsOfModels;
+        }
+
+        /// <summary>
+        /// Get list of regressors from model with values
+        /// </summary>
+        /// <param name="model">Model</param>
+        /// <param name="regressors">List of regressors</param>
+        /// <returns>Regressors with values</returns>
+        private Dictionary<string, List<double>> GetRegressorsWithValues(Model model, List<string> regressors) {
+            Dictionary<string, List<double>> regressorsWithValues = new Dictionary<string, List<double>>();
+
+            foreach (var regressor in regressors) {
+
+                // Check if regressor name in models regressors else we switch parts of combine regressor
+                if (model.Regressors.ContainsKey(regressor)) {
+                    regressorsWithValues[regressor] = new List<double>(model.Regressors[regressor]);
+                }
+                else if (regressor.Contains(" & ")) {
+                    string[] combinedRegressors = regressor.Split(new string[] { " & " }, StringSplitOptions.None);
+                    string regressorName = combinedRegressors[1] + " & " + combinedRegressors[0];
+                    regressorsWithValues[regressorName] = new List<double>(model.Regressors[regressorName]);
+                }
+            }
+
+            return regressorsWithValues;
+        }
+
+        /// <summary>
+        /// For each regressant print all models as regressors in short-form
+        /// </summary>
+        /// <param name="dataGrid">DataGrid for printing grouped regressors</param>
+        private void PrintGroupedRegressors(DataGridView dataGrid) {
+            Action action = () => ClearDataGV(dataGrid, true);
+            dataGrid.Invoke(action);
+
+            foreach(var item in ModelsForRegressants) {
+                foreach(var model in item.Value) {
+                    dataGrid.Invoke(new Action<List<string>>((row) => dataGrid.Rows.Add(row.ToArray())),
+                        new List<string>() { item.Key, String.Join(", ", GetRegressorsShortNamesFromModel(model).ToArray()) });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get list of regressors in short form from model
+        /// </summary>
+        /// <param name="model">Model</param>
+        /// <returns>List of short-form regressors</returns>
+        private List<string> GetRegressorsShortNamesFromModel(Model model) {
+            List<string> shortRegressors = new List<string>();
+
+            // For each regressor in model we get its short form
+            foreach (var regressor in model.RegressorsNames) {
+                string nextRegressor = "";
+                if (RegressorsShortName.ContainsKey(regressor)) {
+                    nextRegressor = RegressorsShortName[regressor];
+                }
+                else if (regressor.Contains(" & ")) {
+                    string[] combinedRegressors = regressor.Split(new string[] { " & " }, StringSplitOptions.None);
+                    nextRegressor = RegressorsShortName[combinedRegressors[1] + " & " + combinedRegressors[0]];
+                }
+                shortRegressors.Add(nextRegressor);
+            }
+
+            return shortRegressors;
         }
 
         /// <summary>
@@ -506,16 +605,6 @@ namespace Multiple_Linear_Regression {
             // Find total number of models
             int totalNumberOfModels = groupsOfModels.Count * groupsOfModels[groupsOfModels.Keys.ToList()[0]].Count;
 
-            // Create start parameters for progress bar
-            int progress = 0;
-            int step = totalNumberOfModels / 100;
-            int oneBarInProgress = 1;
-            if (totalNumberOfModels < 100) {
-                step = 1;
-                oneBarInProgress = (100 / totalNumberOfModels) + 1;
-            }
-
-            int counter = 0;
             // For each regressant find the best model
             foreach (var regressantModels in groupsOfModels.Values) {
                 double maxDetermCoeffForRegressant = 0;
@@ -524,18 +613,11 @@ namespace Multiple_Linear_Regression {
                 // Calc coefficient of determination for each model to select the best one
                 foreach (var model in regressantModels) {
 
-                    // Find progress
-                    if (counter % step == 0) {
-                        progress += oneBarInProgress;
-                        bgWorker.ReportProgress(progress);
-                    }
-
                     model.BuildEquation();
                     if (model.DetermCoeff > maxDetermCoeffForRegressant) {
                         maxDetermCoeffForRegressant = model.DetermCoeff;
                         bestModelForRegressant = model;
                     }
-                    counter++;
                 }
 
                 // Add best model regressors for regressant to data grid view
@@ -550,19 +632,23 @@ namespace Multiple_Linear_Regression {
             Models = new List<Model>(bestModels);
 
             // Fill filter data grid
-            Action action = () => RunBackgroundFillFilteredFactors();
-            onlyImportantFactorsDataGrid.Invoke(action);
-
-            // Hide progress bar
-            progressBarGroupingRegressors.Invoke(new Action<bool>((b) =>
-                progressBarGroupingRegressors.Visible = b), false);
+            
 
             // Resize dataGrid
             groupedRegressorsDataGrid.Invoke(new Action<Size>((size) => groupedRegressorsDataGrid.Size = size),
                 new Size(groupedRegressorsDataGrid.Width, groupedRegressorsDataGrid.Height + 19));
 
-            // Enable cancel button
-            cancelGroupingRegressorsButton.Invoke(new Action<bool>((b) => cancelGroupingRegressorsButton.Enabled = b), true);
+            // Enable numeric up down for setting maximum correlation between regressors
+            maxCorrelBtwRegressors.Invoke(new Action<bool>((b) => maxCorrelBtwRegressors.Enabled = b), true);
+
+            // Enable accept button for grouping of regressors
+            groupedRegressorsButton.Invoke(new Action<bool>((b) => groupedRegressorsButton.Enabled = b), true);
+
+            // Enable empirical way radio
+            empWayRadio.Invoke(new Action<bool>((b) => empWayRadio.Enabled = b), true);
+
+            // Enable classic way radio
+            classicWayRadio.Invoke(new Action<bool>((b) => classicWayRadio.Enabled = b), true);
 
             bgWorker.CancelAsync();
         }
@@ -582,38 +668,14 @@ namespace Multiple_Linear_Regression {
             return nonCombinedRegressors;
         }
 
-        private void cancelGroupingRegressorsButton_Click(object sender, EventArgs e) {
-            ClearControlsGroupingFactors();
-            ClearControlsFilterFactors();
-            ClearControlsProcessData();
-            ClearControlsImitationParameters();
-            ClearControlsBuildEquations();
-
-            List<Model> startModels = new List<Model>();
-
-            foreach (var model in Models) {
-                startModels.Add(new Model(model.RegressantName, model.RegressantValues, BaseRegressors));
-            }
-
-            Models = new List<Model>(startModels);
-        }
-
         private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
-            if (BaseRegressors.Count > 0) {
-                // Show warinig form
-                UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
-                warningForm.ShowDialog();
-                if (warningForm.AcceptAction) {
-                    RunBackgroundFunctionalProcessData();
+            // Show warinig form
+            UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
+            warningForm.ShowDialog();
+            if (warningForm.AcceptAction) {
+                RunBackgroundFunctionalProcessData();
 
-                    ClearControlsBuildEquations();
-                    buildEquationsButton.Enabled = true;
-                    doFunctionalProcessButton.Enabled = false;
-                    formationOfControlFactorSetsTab.Enabled = false;
-                }
-            }
-            else {
-                MessageBox.Show("Вы не выбрали ни одного управляющего фактора");
+                doFunctionalProcessButton.Enabled = false;
             }
         }
 
@@ -656,16 +718,14 @@ namespace Multiple_Linear_Regression {
 
                     // Add functions and correlation coefficients to data grid view
                     foreach (var regressor in model.ProcessFunctions) {
+                        string regressorName = $"{RegressorsShortName[regressor.Key]} - {regressor.Key}";
                         // Add row of preprocess functions to data grid
                         functionsForProcessingDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingDataGrid.Rows.Add(row.ToArray())),
-                            new List<string>() { model.RegressantName, regressor.Key,
+                            new List<string>() { model.RegressantName, regressorName,
                                 String.Join(", ", regressor.Value.ToArray()),
                                 Math.Abs(model.CorrelationCoefficient[regressor.Key]).ToString() });
                     }
                 }
-                // Fill filtered data grid view
-                Action action = () => RunBackgroundFillFilteredFactors();
-                onlyImportantFactorsDataGrid.Invoke(action);
 
                 bgWorker.CancelAsync();
             }
@@ -709,13 +769,17 @@ namespace Multiple_Linear_Regression {
         }
 
         private void acceptFilterFactorsButton_Click(object sender, EventArgs e) {
+            ClearDataGV(onlyImportantFactorsDataGrid);
+
             RunBackgroundFilterRegressors();
 
             ClearControlsBuildEquations();
             buildEquationsButton.Enabled = true;
-            formationOfControlFactorSetsTab.Enabled = false;
         }
 
+        /// <summary>
+        /// Filtering regressors for each model for each regressant
+        /// </summary>
         private void RunBackgroundFilterRegressors() {
             // Background worker for filtering regressors
             BackgroundWorker bgWorker = new BackgroundWorker();
@@ -745,9 +809,8 @@ namespace Multiple_Linear_Regression {
                         EmpiricalWayToFilterRegressors();
                     }
 
-                    // Update data grid view with filtered factors
-                    Action action = () => RunBackgroundFillFilteredFactors();
-                    onlyImportantFactorsDataGrid.Invoke(action);
+                    // Print grouped regressors for each regressant
+                    PrintGroupedRegressors(onlyImportantFactorsDataGrid);
 
                     // Enable cancel filtering button
                     cancelFilterFactorsButton.Invoke(new Action<bool>((b) => cancelFilterFactorsButton.Enabled = b), true);
@@ -763,8 +826,10 @@ namespace Multiple_Linear_Regression {
         /// Filter unimportant regressors by classic way
         /// </summary>
         private void ClassicWayToFilterRegressors() {
-            foreach (var model in Models) {
-                model.ClassicWayFilterRegressors();
+            foreach (var listModels in ModelsForRegressants.Values) {
+                foreach (var model in listModels) {
+                    model.ClassicWayFilterRegressors();
+                }
             }
         }
 
@@ -774,101 +839,25 @@ namespace Multiple_Linear_Regression {
         private void EmpiricalWayToFilterRegressors() {
             double thresholdValueCorr = Convert.ToDouble(valueEmpWayCorr.Value);
 
-            foreach (var model in Models) {
-                model.EmpiricalWayFilterRegressors(thresholdValueCorr);
+            foreach (var listModels in ModelsForRegressants.Values) {
+                foreach (var model in listModels) {
+                    model.EmpiricalWayFilterRegressors(thresholdValueCorr);
+                }
             }
         }
 
         private void cancelFilterFactorsButton_Click(object sender, EventArgs e) {
-            // Restore non-filter regressors for each model
-            Models.ForEach(model => model.RestoreNonFilterRegressors());
+            // Restore non-filter regressors for each model for each regressant
+            foreach (var listModels in ModelsForRegressants.Values) {
+                listModels.ForEach(model => model.RestoreNonFilterRegressors());
+            }
             cancelFilterFactorsButton.Enabled = false;
 
-            // Fill filtered data grid
-            RunBackgroundFillFilteredFactors();
+            // Print grouped regressors for each regressant
+            PrintGroupedRegressors(onlyImportantFactorsDataGrid);
 
             ClearControlsBuildEquations();
             buildEquationsButton.Enabled = true;
-        }
-
-        /// <summary>
-        /// Run background worker for fill filtered factors data grid
-        /// </summary>
-        private void RunBackgroundFillFilteredFactors() {
-            ClearDataGV(onlyImportantFactorsDataGrid, true);
-
-            // Backgound worker for fill filtered factors in data grid view
-            BackgroundWorker bgWorker = new BackgroundWorker();
-            bgWorker.ProgressChanged += new ProgressChangedEventHandler((sender, e) => ProgressBarChanged(sender, e, progressBarFillFilteredData));
-            bgWorker.DoWork += new DoWorkEventHandler((sender, e) => FillFilteredFactors(sender, e, bgWorker));
-            bgWorker.WorkerReportsProgress = true;
-            bgWorker.WorkerSupportsCancellation = true;
-            onlyImportantFactorsDataGrid.Size = new Size(onlyImportantFactorsDataGrid.Width, onlyImportantFactorsDataGrid.Height - 19);
-            progressBarFillFilteredData.Value = 0;
-            progressBarFillFilteredData.Visible = true;
-            bgWorker.RunWorkerAsync();
-        }
-
-        /// <summary>
-        /// Fill filtered factors to dataGridView
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <param name="bgWorker">Background worker</param>
-        private void FillFilteredFactors(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
-            // Check if bgworker has been stopped
-            if (bgWorker.CancellationPending) {
-                e.Cancel = true;
-            }
-            else {
-                // Find total number of regressors
-                int totalRegressors = 0;
-                foreach (var model in Models) {
-                    totalRegressors += model.Regressors.Count;
-                }
-
-                // Create start parameters for progress bar
-                int progress = 0;
-                int step = totalRegressors / 100;
-                int oneBarInProgress = 1;
-                if (totalRegressors < 100) {
-                    step = 1;
-                    oneBarInProgress = (100 / totalRegressors) + 1;
-                }
-                int counter = 0;
-
-                foreach (var model in Models) {
-                    foreach (var regressor in model.Regressors) {
-                        // Find progress
-                        if (counter % step == 0) {
-                            progress += oneBarInProgress;
-                            bgWorker.ReportProgress(progress);
-                        }
-                        counter++;
-
-                        // Add information about regressor in data grid row
-                        string regressant = model.RegressantName;
-                        string regressorName = regressor.Key;
-                        string functions = "";
-                        if (model.ProcessFunctions.Keys.Contains(regressor.Key)) {
-                            functions = String.Join(",", model.ProcessFunctions[regressor.Key]);
-                        }
-                        string corrCoef = Math.Abs(model.CorrelationCoefficient[regressor.Key]).ToString();
-
-                        onlyImportantFactorsDataGrid.Invoke(new Action<List<string>>((row) => onlyImportantFactorsDataGrid.Rows.Add(row.ToArray())),
-                            new List<string>() { regressant, regressorName, functions, corrCoef });
-                    }
-                }
-
-                // Hide progress bar
-                progressBarFillFilteredData.Invoke(new Action<bool>((b) => progressBarFillFilteredData.Visible = b), false);
-
-                // Resize dataGrid
-                onlyImportantFactorsDataGrid.Invoke(new Action<Size>((size) => onlyImportantFactorsDataGrid.Size = size),
-                    new Size(onlyImportantFactorsDataGrid.Width, onlyImportantFactorsDataGrid.Height + 19));
-
-                bgWorker.CancelAsync();
-            }
         }
 
         private void buildEquationsButton_Click(object sender, EventArgs e) {
@@ -880,7 +869,6 @@ namespace Multiple_Linear_Regression {
             AddModelsToList();
 
             controlSimulationTab.Enabled = true;
-            formationOfControlFactorSetsTab.Enabled = false;
         }
 
         private void RunBackgroundFindEquations() {
@@ -909,6 +897,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="e"></param>
         /// <param name="bgWorker">Background worker</param>
         private void BuildEquations(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+            // Check if bgworker has been stopped
             if (bgWorker.CancellationPending) {
                 e.Cancel = true;
             }
@@ -916,9 +905,7 @@ namespace Multiple_Linear_Regression {
 
                 // Build equation for each model if it's need
                 foreach (var model in Models) {
-                    if (model.IsFiltered || model.IsPreprocessed) {
-                        model.BuildEquation();
-                    }
+                    model.BuildEquation();
                     equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
                             new List<string>() { model.RegressantName, model.DetermCoeff.ToString(), model.Equation });
                 }
@@ -937,10 +924,6 @@ namespace Multiple_Linear_Regression {
         }
 
         private void acceptControlsParametersButton_Click(object sender, EventArgs e) {
-            //Func<IEnumerable<double>, (double, double)> defAreafunc = new Func<IEnumerable<double>, (double, double)>
-            //    ((values) => Statistics.AutoEmpiricalDefinitionArea(values, 10));
-            //SimulationControlForm simulationControlForm = new SimulationControlForm(Models, defAreafunc);
-
             // Fill selected models
             List<string> selectedModelsNames = listSelectedModels.Items.Cast<String>().ToList();
             List<Model> selectedModels = new List<Model>();
@@ -1146,6 +1129,10 @@ namespace Multiple_Linear_Regression {
             toolTipSymbiosis.SetToolTip(symbiosisAreaRadio, StepsInfo.SymbiosisInfo);
             toolTipAutoProportion.SetToolTip(autoProportionRadio, StepsInfo.AutoProportionInfo);
             toolTipPercentAreaExpansion.SetToolTip(percentAreaExpansion, StepsInfo.PercentAreaExpansion);
+
+            
+
+            
         }
 
         /// <summary>
@@ -1174,10 +1161,8 @@ namespace Multiple_Linear_Regression {
             ClearDataGV(groupedRegressorsDataGrid);
             maxCorrelBtwRegressors.Value = Convert.ToDecimal(0.7);
             maxCorrelBtwRegressors.Enabled = true;
-            groupedRegressorsButton.Enabled = true;
             labelGroupingRegressors.Visible = false;
             labelGroupingRegressorsEnd.Visible = false;
-            cancelGroupingRegressorsButton.Enabled = false;
         }
 
         /// <summary>
@@ -1197,12 +1182,14 @@ namespace Multiple_Linear_Regression {
             ClearDataGV(onlyImportantFactorsDataGrid, true);
             empWayRadio.Checked = false;
             classicWayRadio.Checked = false;
+            empWayRadio.Enabled = true;
+            classicWayRadio.Enabled = true;
             valueEmpWayCorr.Value = Convert.ToDecimal(0.15);
             valueEmpWayCorr.Enabled = false;
-            acceptFilterFactorsButton.Enabled = false;
-            cancelFilterFactorsButton.Enabled = false;
             labelFilterLoad.Visible = false;
             labelFilterFinish.Visible = false;
+            acceptFilterFactorsButton.Enabled = false;
+            cancelFilterFactorsButton.Enabled = false;
         }
 
         /// <summary>
@@ -1354,7 +1341,7 @@ namespace Multiple_Linear_Regression {
             }
             else {
                 while (true) {
-                    System.Threading.Thread.Sleep(50);
+                    System.Threading.Thread.Sleep(20);
                     if (isResizeNeeded) {
                         int newWidth = this.Width - 196;
                         int newHeight = this.Height - 67;
@@ -1409,23 +1396,11 @@ namespace Multiple_Linear_Regression {
                         groupedRegressorsDataGrid.Invoke(new Action<Size>((size) => groupedRegressorsDataGrid.Size = size),
                            new Size(groupedRegressorsDataGrid.Width + widthDiff, groupedRegressorsDataGrid.Height + heightDiff));
 
-                        progressBarGroupingRegressors.Invoke(new Action<Point>((loc) => progressBarGroupingRegressors.Location = loc),
-                            new Point(progressBarGroupingRegressors.Location.X, progressBarGroupingRegressors.Location.Y + heightDiff));
-
-                        progressBarGroupingRegressors.Invoke(new Action<Size>((size) => progressBarGroupingRegressors.Size = size),
-                           new Size(progressBarGroupingRegressors.Width + widthDiff, progressBarGroupingRegressors.Height));
-
                         labelMaxCorrelBtwRegressors.Invoke(new Action<Point>((loc) => labelMaxCorrelBtwRegressors.Location = loc),
                             new Point(labelMaxCorrelBtwRegressors.Location.X + widthDiff, labelMaxCorrelBtwRegressors.Location.Y));
 
-                        maxCorrelBtwRegressors.Invoke(new Action<Point>((loc) => maxCorrelBtwRegressors.Location = loc),
-                            new Point(maxCorrelBtwRegressors.Location.X + widthDiff, maxCorrelBtwRegressors.Location.Y));
-
-                        groupedRegressorsButton.Invoke(new Action<Point>((loc) => groupedRegressorsButton.Location = loc),
-                            new Point(groupedRegressorsButton.Location.X + widthDiff, groupedRegressorsButton.Location.Y));
-
-                        cancelGroupingRegressorsButton.Invoke(new Action<Point>((loc) => cancelGroupingRegressorsButton.Location = loc),
-                            new Point(cancelGroupingRegressorsButton.Location.X + widthDiff, cancelGroupingRegressorsButton.Location.Y));
+                        groupBoxGroupedRegressors.Invoke(new Action<Point>((loc) => groupBoxGroupedRegressors.Location = loc),
+                            new Point(groupBoxGroupedRegressors.Location.X + widthDiff, groupBoxGroupedRegressors.Location.Y));
 
                         labelGroupingRegressors.Invoke(new Action<Point>((loc) => labelGroupingRegressors.Location = loc),
                             new Point(labelGroupingRegressors.Location.X + widthDiff, labelGroupingRegressors.Location.Y + heightDiff));
@@ -1452,26 +1427,8 @@ namespace Multiple_Linear_Regression {
                         onlyImportantFactorsDataGrid.Invoke(new Action<Size>((size) => onlyImportantFactorsDataGrid.Size = size),
                            new Size(onlyImportantFactorsDataGrid.Width + widthDiff, onlyImportantFactorsDataGrid.Height + heightDiff));
 
-                        progressBarFillFilteredData.Invoke(new Action<Point>((loc) => progressBarFillFilteredData.Location = loc),
-                            new Point(progressBarFillFilteredData.Location.X, progressBarFillFilteredData.Location.Y + heightDiff));
-
-                        progressBarFillFilteredData.Invoke(new Action<Size>((size) => progressBarFillFilteredData.Size = size),
-                           new Size(progressBarFillFilteredData.Width + widthDiff, progressBarFillFilteredData.Height));
-
-                        empWayRadio.Invoke(new Action<Point>((loc) => empWayRadio.Location = loc),
-                            new Point(empWayRadio.Location.X + widthDiff, empWayRadio.Location.Y));
-
-                        valueEmpWayCorr.Invoke(new Action<Point>((loc) => valueEmpWayCorr.Location = loc),
-                            new Point(valueEmpWayCorr.Location.X + widthDiff, valueEmpWayCorr.Location.Y));
-
-                        classicWayRadio.Invoke(new Action<Point>((loc) => classicWayRadio.Location = loc),
-                            new Point(classicWayRadio.Location.X + widthDiff, classicWayRadio.Location.Y));
-
-                        acceptFilterFactorsButton.Invoke(new Action<Point>((loc) => acceptFilterFactorsButton.Location = loc),
-                            new Point(acceptFilterFactorsButton.Location.X + widthDiff, acceptFilterFactorsButton.Location.Y));
-
-                        cancelFilterFactorsButton.Invoke(new Action<Point>((loc) => cancelFilterFactorsButton.Location = loc),
-                            new Point(cancelFilterFactorsButton.Location.X + widthDiff, cancelFilterFactorsButton.Location.Y));
+                        groupBoxFilterRegressors.Invoke(new Action<Point>((loc) => groupBoxFilterRegressors.Location = loc),
+                            new Point(groupBoxFilterRegressors.Location.X + widthDiff, groupBoxFilterRegressors.Location.Y));
 
                         labelFilterLoad.Invoke(new Action<Point>((loc) => labelFilterLoad.Location = loc),
                             new Point(labelFilterLoad.Location.X + widthDiff, labelFilterLoad.Location.Y + heightDiff));
