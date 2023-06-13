@@ -42,6 +42,11 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, double> RegressorsCoeffs { get; set; }
 
         /// <summary>
+        /// List of errors for model
+        /// </summary>
+        private List<double> Errors { get; set; }
+
+        /// <summary>
         /// Dictionary of non-filter regressors
         /// </summary>
         public Dictionary<string, List<double>> NonFilterRegressors { get; set; }
@@ -71,6 +76,16 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         public double DetermCoeff { get; private set; }
 
+        /// <summary>
+        /// Is the model adequate
+        /// </summary>
+        public bool isAdequate { get; private set; }
+
+        /// <summary>
+        /// Is the model significant
+        /// </summary>
+        public bool isSignificant { get; private set; }
+
         
         public Model(string regerssantName, List<double> regressantValues, Dictionary<string, List<double>> regressors = null) {
             RegressantName = regerssantName;
@@ -80,6 +95,9 @@ namespace Multiple_Linear_Regression {
             StartRegressors = null;
             NonFilterStartRegressors = null;
             NonFilterProcessFunctions = null;
+            isAdequate = false;
+            isSignificant = false;
+            Errors = null;
 
             if (regressors is null) {
                 Regressors = null;
@@ -102,6 +120,9 @@ namespace Multiple_Linear_Regression {
             Regressors = new Dictionary<string, List<double>>(refModel.Regressors);
             NonFilterRegressors = new Dictionary<string, List<double>>(refModel.NonFilterRegressors);
             RegressorsNames = new List<string>(refModel.RegressorsNames);
+            isAdequate = refModel.isAdequate;
+            isSignificant = refModel.isSignificant;
+            Errors = refModel.Errors;
         }
 
         /// <summary>
@@ -282,6 +303,8 @@ namespace Multiple_Linear_Regression {
             // Find a string representation of the equation
             GetEquation();
 
+            // Find errors for model
+            Errors = Algebra.Substract(Y, Algebra.Mult(Z, coeffs)).ToList();
         }
 
         /// <summary>
@@ -341,6 +364,85 @@ namespace Multiple_Linear_Regression {
                 processX[i] = nextValue.Last();
             }
             return processX;
+        }
+
+        /// <summary>
+        /// Check whether the model is adequate
+        /// </summary>
+        public void CheckAdequate() {
+            isAdequate = CheckWilcoxonCriterion() && CheckAsymmetryAndExcess() && CheckIntervalOfNormalDistribution();
+        }
+
+        /// <summary>
+        /// Check Wilcoxon creterion for model
+        /// </summary>
+        /// <returns>Result of Wilcoxon creterion</returns>
+        private bool CheckWilcoxonCriterion() {
+            double[] HnZ = new double[Errors.Count];
+            double[] HnZmin = new double[Errors.Count];
+            double sum = 0;
+            double[] e = Errors.ToArray();
+            Array.Sort(e);
+
+            for (int i = 0; i < Errors.Count; i++) {
+                int j = 0;
+                while (e[j] <= e[i] && j < e.Length - 1) {
+                    j++;
+                }
+                int kol = j;
+
+                j = 0;
+                while (e[j] <= -e[i] && j < e.Length - 1) {
+                    j++;
+                }
+                int kolMin = j;
+
+                HnZ[i] = Convert.ToDouble(kol) / Convert.ToDouble(Errors.Count);
+                HnZmin[i] = Convert.ToDouble(kolMin) / Convert.ToDouble(Errors.Count);
+            }
+
+            for (int i = 0; i < Errors.Count; i++) {
+                sum += Math.Pow((HnZ[i] + HnZmin[i] - 1), 2);
+            }
+
+            return sum < 2.8 && sum > 1.2;
+        }
+
+        /// <summary>
+        /// Check coefficients of asymmetry and excess
+        /// </summary>
+        /// <returns>Result of checking the asymmetry and excess requirements</returns>
+        private bool CheckAsymmetryAndExcess() {
+            return Math.Abs(Statistics.AsymmetryCoefficient(Errors)) <= 1 && Math.Abs(Statistics.ExcessCoefficient(Errors)) <= 1;
+        }
+
+        /// <summary>
+        /// Check that 99.73% of the observations are in the range of mean plus/minus three standard deviations
+        /// </summary>
+        /// <returns>Check interval for normal distribution</returns>
+        private bool CheckIntervalOfNormalDistribution() {
+            double errorsAvg = Errors.Average();
+            double errorsStd = Statistics.StandardDeviation(Errors);
+
+            double min = errorsAvg - 3 * errorsStd;
+            double max = errorsAvg + 3 * errorsStd;
+
+            int maxOutsideOfInterval = (int)Math.Truncate(Errors.Count * 0.0027);
+
+            foreach(var error in Errors) {
+                if (error <= min || error >= max) {
+                    maxOutsideOfInterval--;
+                }
+            }
+
+            return maxOutsideOfInterval >= 0;
+        }
+
+        /// <summary>
+        /// Check whether the model is significant
+        /// </summary>
+        public void CheckSignificant() {
+            
         }
     }
 }

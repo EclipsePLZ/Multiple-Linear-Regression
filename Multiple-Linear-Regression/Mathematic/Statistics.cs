@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -125,6 +126,10 @@ namespace Multiple_Linear_Regression {
         /// <param name="k">Number of model parameters</param>
         /// <returns>Adjusted coefficient of determination</returns>
         public static double AdjustedDetermCoefficient(IEnumerable<double> realValues, IEnumerable<double> predictedValues, int k) {
+            if (realValues.Count() != predictedValues.Count()) {
+                throw new Exception("Values must be the same length");
+            }
+
             int n = realValues.Count();
             double avgReal = realValues.Average();
             double rss = 0.0;
@@ -135,6 +140,28 @@ namespace Multiple_Linear_Regression {
             }
 
             return 1 - ((rss / (n - k)) / (tss / (n - 1)));
+        }
+
+        /// <summary>
+        /// Get coefficietn of determination
+        /// </summary>
+        /// <param name="realValues">Real values</param>
+        /// <param name="predictedValues">Predicted values</param>
+        /// <returns>Coefficient of determination</returns>
+        public static double DetermCoefficient(IEnumerable<double> realValues, IEnumerable<double> predictedValues) {
+            if (realValues.Count() != predictedValues.Count()) {
+                throw new Exception("Values must be the same length");
+            }
+            
+            double avgReal = realValues.Average();
+            double sst = realValues.Sum(v => Math.Pow(v - avgReal, 2));
+            double sse = 0.0;
+
+            for (int i = 0; i < realValues.Count(); i++) {
+                sse += Math.Pow(realValues.ElementAt(i) - predictedValues.ElementAt(i), 2);
+            }
+
+            return 1 - (sse / sst);
         }
 
         /// <summary>
