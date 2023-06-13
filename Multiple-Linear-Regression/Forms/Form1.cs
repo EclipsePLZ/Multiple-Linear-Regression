@@ -40,6 +40,9 @@ namespace Multiple_Linear_Regression {
 
             SetStartParameters();
 
+            Chart c1 = new Chart();
+            Console.WriteLine(c1.DataManipulator.Statistics.InverseFDistribution(.05, 2, 17));
+
             // Run background worker for resizing components on form
             resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
             resizeWorker.WorkerSupportsCancellation = true;
@@ -614,8 +617,8 @@ namespace Multiple_Linear_Regression {
                 foreach (var model in regressantModels) {
 
                     model.BuildEquation();
-                    if (model.DetermCoeff > maxDetermCoeffForRegressant) {
-                        maxDetermCoeffForRegressant = model.DetermCoeff;
+                    if (model.AdjDetermCoeff > maxDetermCoeffForRegressant) {
+                        maxDetermCoeffForRegressant = model.AdjDetermCoeff;
                         bestModelForRegressant = model;
                     }
                 }
@@ -907,7 +910,7 @@ namespace Multiple_Linear_Regression {
                 foreach (var model in Models) {
                     model.BuildEquation();
                     equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
-                            new List<string>() { model.RegressantName, model.DetermCoeff.ToString(), model.Equation });
+                            new List<string>() { model.RegressantName, model.AdjDetermCoeff.ToString(), model.Equation });
                 }
 
                 bgWorker.CancelAsync();

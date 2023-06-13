@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI.DataVisualization.Charting;
 
 namespace Multiple_Linear_Regression {
     public class Model {
@@ -74,7 +75,12 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Adjusted coefficient of determination
         /// </summary>
-        public double DetermCoeff { get; private set; }
+        public double AdjDetermCoeff { get; private set; }
+
+        /// <summary>
+        /// Coefficient of determination
+        /// </summary>
+        public double DetermCoef { get; private set; }
 
         /// <summary>
         /// Is the model adequate
@@ -298,7 +304,10 @@ namespace Multiple_Linear_Regression {
             }
 
             // Find adjusted coefficient of determination
-            DetermCoeff = Statistics.AdjustedDetermCoefficient(Y, Algebra.Mult(Z, coeffs), Regressors.Count);
+            AdjDetermCoeff = Statistics.AdjustedDetermCoefficient(Y, Algebra.Mult(Z, coeffs), Regressors.Count);
+
+            // Find coefficient of determination
+            DetermCoef = Statistics.DetermCoefficient(Y, Algebra.Mult(Z, coeffs));
 
             // Find a string representation of the equation
             GetEquation();
@@ -442,7 +451,14 @@ namespace Multiple_Linear_Regression {
         /// Check whether the model is significant
         /// </summary>
         public void CheckSignificant() {
-            
+            double f1 = Regressors.Count;
+            double f2 = RegressantValues.Count - f1 - 1;
+
+            Chart chart1 = new Chart();
+            double calcFStat = (DetermCoef / (1 - DetermCoef)) * (f2 / f1);
+            double theorFStat = chart1.DataManipulator.Statistics.InverseFDistribution(0.05, (int)f1, (int)f2);
+
+            isSignificant = calcFStat > theorFStat;
         }
     }
 }
