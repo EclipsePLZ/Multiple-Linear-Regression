@@ -25,7 +25,7 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, string> RegressorsShortName { get; set; } = new Dictionary<string, string>();
         private Dictionary<string, List<double>> BaseRegressors { get; set; } = new Dictionary<string, List<double>>();
         private Dictionary<string, List<Model>> ModelsForRegressants { get; set; }
-
+        private List<Model> BestModels { get; set; }
         private List<Model> Models { get; set; } = new List<Model>();
 
         private double[,] X { get; set; }
@@ -903,13 +903,52 @@ namespace Multiple_Linear_Regression {
             }
             else {
 
-                // Build equation for each model
+                // Build the equation for each model
                 foreach(var modelGroup in ModelsForRegressants.Values) {
                     modelGroup.ForEach(model => model.BuildEquation(RegressorsShortName));
                 }
 
+                BestModels = new List<Model>();
+
+                // Find the best model for each regressant
+                foreach (var regressant in ModelsForRegressants.Keys) {
+                    BestModels.Add(FindBestModel(regressant));
+                }
+
                 bgWorker.CancelAsync();
             }
+        }
+
+        /// <summary>
+        /// Find the best model among the built models for regressant
+        /// </summary>
+        /// <param name="regressant">Regressant name</param>
+        /// <returns>Best model for regressant</returns>
+        private Model FindBestModel(string regressant) {
+            // Get list of built models for regressant
+            List<Model> listOfModels = new List<Model>(ModelsForRegressants[regressant]);
+
+
+        }
+
+        /// <summary>
+        /// Get best model from list of models by adjusted coefficient of determination
+        /// </summary>
+        /// <param name="models">List of models</param>
+        /// <returns>Best model by adjusted coefficient of determination</returns>
+        private Model GetModelWithBestDetermCoeff(List<Model> models) {
+            double bestCoeff = 0;
+            Model bestModel = models[0];
+
+            // Find the model with the best coefficient of determination
+            foreach (var model in models) { 
+                if (model.AdjDetermCoeff > bestCoeff) {
+                    bestCoeff = model.AdjDetermCoeff;
+                    bestModel = model;
+                }
+            }
+
+            return bestModel;
         }
 
         /// <summary>
