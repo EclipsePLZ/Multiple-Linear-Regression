@@ -40,9 +40,6 @@ namespace Multiple_Linear_Regression {
 
             SetStartParameters();
 
-            Chart c1 = new Chart();
-            Console.WriteLine(c1.DataManipulator.Statistics.InverseFDistribution(.05, 2, 17));
-
             // Run background worker for resizing components on form
             resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
             resizeWorker.WorkerSupportsCancellation = true;
@@ -596,65 +593,65 @@ namespace Multiple_Linear_Regression {
             return shortRegressors;
         }
 
-        /// <summary>
-        /// Find best model for each regressant
-        /// </summary>
-        /// <param name="groupsOfModels">List of models for each regressant</param>
-        /// <param name="bgWorker">Background worker</param>
-        private void FindBestModels(Dictionary<string, List<Model>> groupsOfModels, BackgroundWorker bgWorker) {
+        ///// <summary>
+        ///// Find best model for each regressant
+        ///// </summary>
+        ///// <param name="groupsOfModels">List of models for each regressant</param>
+        ///// <param name="bgWorker">Background worker</param>
+        //private void FindBestModels(Dictionary<string, List<Model>> groupsOfModels, BackgroundWorker bgWorker) {
 
-            List<Model> bestModels = new List<Model>();
+        //    List<Model> bestModels = new List<Model>();
 
-            // Find total number of models
-            int totalNumberOfModels = groupsOfModels.Count * groupsOfModels[groupsOfModels.Keys.ToList()[0]].Count;
+        //    // Find total number of models
+        //    int totalNumberOfModels = groupsOfModels.Count * groupsOfModels[groupsOfModels.Keys.ToList()[0]].Count;
 
-            // For each regressant find the best model
-            foreach (var regressantModels in groupsOfModels.Values) {
-                double maxDetermCoeffForRegressant = 0;
-                Model bestModelForRegressant = regressantModels[0];
+        //    // For each regressant find the best model
+        //    foreach (var regressantModels in groupsOfModels.Values) {
+        //        double maxDetermCoeffForRegressant = 0;
+        //        Model bestModelForRegressant = regressantModels[0];
 
-                // Calc coefficient of determination for each model to select the best one
-                foreach (var model in regressantModels) {
+        //        // Calc coefficient of determination for each model to select the best one
+        //        foreach (var model in regressantModels) {
 
-                    model.BuildEquation();
-                    if (model.AdjDetermCoeff > maxDetermCoeffForRegressant) {
-                        maxDetermCoeffForRegressant = model.AdjDetermCoeff;
-                        bestModelForRegressant = model;
-                    }
-                }
+        //            model.BuildEquation();
+        //            if (model.AdjDetermCoeff > maxDetermCoeffForRegressant) {
+        //                maxDetermCoeffForRegressant = model.AdjDetermCoeff;
+        //                bestModelForRegressant = model;
+        //            }
+        //        }
 
-                // Add best model regressors for regressant to data grid view
-                foreach (var regressor in bestModelForRegressant.RegressorsNames) {
-                    groupedRegressorsDataGrid.Invoke(new Action<List<string>>((row) => groupedRegressorsDataGrid.Rows.Add(row.ToArray())),
-                        new List<string> { bestModelForRegressant.RegressantName, regressor });
-                }
-                bestModels.Add(bestModelForRegressant);
-            }
+        //        // Add best model regressors for regressant to data grid view
+        //        foreach (var regressor in bestModelForRegressant.RegressorsNames) {
+        //            groupedRegressorsDataGrid.Invoke(new Action<List<string>>((row) => groupedRegressorsDataGrid.Rows.Add(row.ToArray())),
+        //                new List<string> { bestModelForRegressant.RegressantName, regressor });
+        //        }
+        //        bestModels.Add(bestModelForRegressant);
+        //    }
 
-            // Set best models
-            Models = new List<Model>(bestModels);
+        //    // Set best models
+        //    Models = new List<Model>(bestModels);
 
-            // Fill filter data grid
+        //    // Fill filter data grid
             
 
-            // Resize dataGrid
-            groupedRegressorsDataGrid.Invoke(new Action<Size>((size) => groupedRegressorsDataGrid.Size = size),
-                new Size(groupedRegressorsDataGrid.Width, groupedRegressorsDataGrid.Height + 19));
+        //    // Resize dataGrid
+        //    groupedRegressorsDataGrid.Invoke(new Action<Size>((size) => groupedRegressorsDataGrid.Size = size),
+        //        new Size(groupedRegressorsDataGrid.Width, groupedRegressorsDataGrid.Height + 19));
 
-            // Enable numeric up down for setting maximum correlation between regressors
-            maxCorrelBtwRegressors.Invoke(new Action<bool>((b) => maxCorrelBtwRegressors.Enabled = b), true);
+        //    // Enable numeric up down for setting maximum correlation between regressors
+        //    maxCorrelBtwRegressors.Invoke(new Action<bool>((b) => maxCorrelBtwRegressors.Enabled = b), true);
 
-            // Enable accept button for grouping of regressors
-            groupedRegressorsButton.Invoke(new Action<bool>((b) => groupedRegressorsButton.Enabled = b), true);
+        //    // Enable accept button for grouping of regressors
+        //    groupedRegressorsButton.Invoke(new Action<bool>((b) => groupedRegressorsButton.Enabled = b), true);
 
-            // Enable empirical way radio
-            empWayRadio.Invoke(new Action<bool>((b) => empWayRadio.Enabled = b), true);
+        //    // Enable empirical way radio
+        //    empWayRadio.Invoke(new Action<bool>((b) => empWayRadio.Enabled = b), true);
 
-            // Enable classic way radio
-            classicWayRadio.Invoke(new Action<bool>((b) => classicWayRadio.Enabled = b), true);
+        //    // Enable classic way radio
+        //    classicWayRadio.Invoke(new Action<bool>((b) => classicWayRadio.Enabled = b), true);
 
-            bgWorker.CancelAsync();
-        }
+        //    bgWorker.CancelAsync();
+        //}
 
         /// <summary>
         /// Get list of headers of non-combined regressors
@@ -906,11 +903,9 @@ namespace Multiple_Linear_Regression {
             }
             else {
 
-                // Build equation for each model if it's need
-                foreach (var model in Models) {
-                    model.BuildEquation();
-                    equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
-                            new List<string>() { model.RegressantName, model.AdjDetermCoeff.ToString(), model.Equation });
+                // Build equation for each model
+                foreach(var modelGroup in ModelsForRegressants.Values) {
+                    modelGroup.ForEach(model => model.BuildEquation(RegressorsShortName));
                 }
 
                 bgWorker.CancelAsync();

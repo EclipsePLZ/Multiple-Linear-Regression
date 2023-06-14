@@ -85,12 +85,27 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Is the model adequate
         /// </summary>
-        public bool isAdequate { get; private set; }
+        public bool IsAdequate { get; private set; }
+
+        /// <summary>
+        /// Check Wilcoxon creterion rules
+        /// </summary>
+        public bool WilcoxonCreterion { get; private set; }
+
+        /// <summary>
+        /// Check rules for coefficients of assymetry and excess
+        /// </summary>
+        public bool AssymetryAndExcess { get; private set; }
+
+        /// <summary>
+        /// Check rules for normal distribution interval
+        /// </summary>
+        public bool NormalDistrInterval { get; private set; }
 
         /// <summary>
         /// Is the model significant
         /// </summary>
-        public bool isSignificant { get; private set; }
+        public bool IsSignificant { get; private set; }
 
         
         public Model(string regerssantName, List<double> regressantValues, Dictionary<string, List<double>> regressors = null) {
@@ -101,8 +116,8 @@ namespace Multiple_Linear_Regression {
             StartRegressors = null;
             NonFilterStartRegressors = null;
             NonFilterProcessFunctions = null;
-            isAdequate = false;
-            isSignificant = false;
+            IsAdequate = false;
+            IsSignificant = false;
             Errors = null;
 
             if (regressors is null) {
@@ -126,8 +141,8 @@ namespace Multiple_Linear_Regression {
             Regressors = new Dictionary<string, List<double>>(refModel.Regressors);
             NonFilterRegressors = new Dictionary<string, List<double>>(refModel.NonFilterRegressors);
             RegressorsNames = new List<string>(refModel.RegressorsNames);
-            isAdequate = refModel.isAdequate;
-            isSignificant = refModel.isSignificant;
+            IsAdequate = refModel.IsAdequate;
+            IsSignificant = refModel.IsSignificant;
             Errors = refModel.Errors;
         }
 
@@ -273,7 +288,8 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Make an equation for expressing regressants through regressors
         /// </summary>
-        public void BuildEquation() {
+        /// <param name="shortNames">Dictionary with short names of regressors</param>
+        public void BuildEquation(Dictionary<string, string> shortNames) {
             RegressorsCoeffs = new Dictionary<string, double>();
             int numberOfValues = RegressantValues.Count;
             int numberOfCoeffs = Regressors.Count + 1;
@@ -310,26 +326,45 @@ namespace Multiple_Linear_Regression {
             DetermCoef = Statistics.DetermCoefficient(Y, Algebra.Mult(Z, coeffs));
 
             // Find a string representation of the equation
-            GetEquation();
+            GetEquation(shortNames);
 
             // Find errors for model
             Errors = Algebra.Substract(Y, Algebra.Mult(Z, coeffs)).ToList();
+
+            // A test of adequacy
+            CheckAdequate();
+
+            // A test of significance
+            CheckSignificant();
         }
 
         /// <summary>
         /// Get a string representation of the equation
         /// </summary>
-        private void GetEquation() {
+        /// <param name="shortNames">Dictionary with short names of regressors</param>
+        private void GetEquation(Dictionary<string, string> shortNames) {
             Equation = "Y = " + Math.Round(RegressorsCoeffs[RegressorsCoeffs.Keys.ToList()[0]], 4).ToString();
 
-            for (int i = 1; i < RegressorsCoeffs.Count; i++) { 
+            for (int i = 1; i < RegressorsCoeffs.Count; i++) {
+                string regressorName = RegressorsNames[i - 1];
+                string regressorShortName = "";
+
+                if (shortNames.ContainsKey(regressorName)) {
+                    regressorShortName = shortNames[regressorName];
+                }
+                else {
+                    string[] combinedRegressors = regressorName.Split(new string[] { " & " }, StringSplitOptions.None);
+                    regressorShortName = shortNames[combinedRegressors[1] + " & " + combinedRegressors[0]];
+                }
+
                 if (RegressorsCoeffs[RegressorsNames[i - 1]] < 0) {
-                    Equation += " - " + Math.Abs(Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4)).ToString() 
-                        + "*X" + i.ToString();
+                    Equation += " - " + Math.Abs(Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4)).ToString()
+                        + $"*{regressorShortName}";
                     continue;
                 }
                 else {
-                    Equation += " + " + Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4).ToString() + "*X" + i.ToString();
+                    Equation += " + " + Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4).ToString() + 
+                        $"*{regressorShortName}";
                 }
             }
         }
@@ -378,8 +413,11 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Check whether the model is adequate
         /// </summary>
-        public void CheckAdequate() {
-            isAdequate = CheckWilcoxonCriterion() && CheckAsymmetryAndExcess() && CheckIntervalOfNormalDistribution();
+        private void CheckAdequate() {
+            WilcoxonCreterion = CheckWilcoxonCriterion();
+            AssymetryAndExcess = CheckAsymmetryAndExcess();
+            NormalDistrInterval = CheckIntervalOfNormalDistribution();
+            IsAdequate = WilcoxonCreterion && AssymetryAndExcess && NormalDistrInterval ;
         }
 
         /// <summary>
@@ -450,7 +488,7 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Check whether the model is significant
         /// </summary>
-        public void CheckSignificant() {
+        private void CheckSignificant() {
             double f1 = Regressors.Count;
             double f2 = RegressantValues.Count - f1 - 1;
 
@@ -458,7 +496,7 @@ namespace Multiple_Linear_Regression {
             double calcFStat = (DetermCoef / (1 - DetermCoef)) * (f2 / f1);
             double theorFStat = chart1.DataManipulator.Statistics.InverseFDistribution(0.05, (int)f1, (int)f2);
 
-            isSignificant = calcFStat > theorFStat;
+            IsSignificant = calcFStat > theorFStat;
         }
     }
 }
