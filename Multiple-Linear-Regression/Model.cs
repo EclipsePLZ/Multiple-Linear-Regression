@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI.DataVisualization.Charting;
 
 namespace Multiple_Linear_Regression {
     public class Model {
@@ -42,6 +43,11 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, double> RegressorsCoeffs { get; set; }
 
         /// <summary>
+        /// List of errors for model
+        /// </summary>
+        private List<double> Errors { get; set; }
+
+        /// <summary>
         /// Dictionary of non-filter regressors
         /// </summary>
         public Dictionary<string, List<double>> NonFilterRegressors { get; set; }
@@ -69,17 +75,48 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Adjusted coefficient of determination
         /// </summary>
-        public double DetermCoeff { get; private set; }
+        public double AdjDetermCoeff { get; private set; }
 
         /// <summary>
-        /// Property for keeping if has the preprocessing been done
+        /// Coefficient of determination
         /// </summary>
-        public bool IsPreprocessed { get; private set; }
+        public double DetermCoef { get; private set; }
 
         /// <summary>
-        /// Property for keeping if has th filtering been done
+        /// Is the model adequate
         /// </summary>
-        public bool IsFiltered { get; private set; }
+        public bool IsAdequate { get; private set; }
+
+        /// <summary>
+        /// Check Wilcoxon creterion rules
+        /// </summary>
+        public bool WilcoxonCreterion { get; private set; }
+
+        /// <summary>
+        /// Check rules for coefficients of assymetry and excess
+        /// </summary>
+        public bool AsymmetryAndExcess { get; private set; }
+
+        /// <summary>
+        /// Check rules for normal distribution interval
+        /// </summary>
+        public bool NormalDistrInterval { get; private set; }
+
+        /// <summary>
+        /// Distance to Adequacy
+        /// </summary>
+        public double DistanceToAdequate { get; private set; }
+
+        /// <summary>
+        /// Distance to Significant
+        /// </summary>
+        public double DistanceToSignificat { get; private set; }
+
+        /// <summary>
+        /// Is the model significant
+        /// </summary>
+        public bool IsSignificant { get; private set; }
+
         
         public Model(string regerssantName, List<double> regressantValues, Dictionary<string, List<double>> regressors = null) {
             RegressantName = regerssantName;
@@ -88,9 +125,10 @@ namespace Multiple_Linear_Regression {
             CorrelationCoefficient = new Dictionary<string, double>();
             StartRegressors = null;
             NonFilterStartRegressors = null;
-            NonFilterProcessFunctions = null;
-            IsPreprocessed = false;
-            IsFiltered = false;
+            NonFilterProcessFunctions = new Dictionary<string, List<string>>();
+            IsAdequate = false;
+            IsSignificant = false;
+            Errors = null;
 
             if (regressors is null) {
                 Regressors = null;
@@ -113,6 +151,11 @@ namespace Multiple_Linear_Regression {
             Regressors = new Dictionary<string, List<double>>(refModel.Regressors);
             NonFilterRegressors = new Dictionary<string, List<double>>(refModel.NonFilterRegressors);
             RegressorsNames = new List<string>(refModel.RegressorsNames);
+            IsAdequate = refModel.IsAdequate;
+            IsSignificant = refModel.IsSignificant;
+            DistanceToAdequate = refModel.DistanceToAdequate;
+            DistanceToSignificat = refModel.DistanceToSignificat;
+            Errors = refModel.Errors;
         }
 
         /// <summary>
@@ -130,6 +173,63 @@ namespace Multiple_Linear_Regression {
             Regressors = new Dictionary<string, List<double>>(regressors);
             RegressorsNames = new List<string>(Regressors.Keys);
             CalcNewCorrelationCoefficients();
+
+            List <string> removedKeys = new List<string>(StartRegressors.Keys.Except(Regressors.Keys));
+            UpdateStartRegressors(removedKeys);
+            UpdateNonFilterStartRegressors(removedKeys);
+            UpdateNonFilterRegressors(removedKeys);
+            UpdateProcessFunctions(removedKeys);
+            UpdateNonFilterProcessFunctions(removedKeys);
+        }
+
+        /// <summary>
+        /// Remove unnecessary regressors
+        /// </summary>
+        /// <param name="keys">List of unnecessary regressors names</param>
+        private void UpdateStartRegressors(List<string> keys) {
+            foreach (var key in keys) {
+                StartRegressors.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Remove unnecessary regressors
+        /// </summary>
+        /// <param name="keys">List of unnecessary regressors names</param>
+        private void UpdateNonFilterStartRegressors(List<string> keys) {
+            foreach (var key in keys) {
+                NonFilterStartRegressors.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Remove unnecessary regressors
+        /// </summary>
+        /// <param name="keys">List of unnecessary regressors names</param>
+        private void UpdateNonFilterRegressors(List<string> keys) {
+            foreach (var key in keys) {
+                NonFilterRegressors.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Remove unnecessary functions
+        /// </summary>
+        /// <param name="keys">List of unnecessary regressors names</param>
+        private void UpdateProcessFunctions(List<string> keys) {
+            foreach (var key in keys) {
+                ProcessFunctions.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Remove unnecessary functions
+        /// </summary>
+        /// <param name="keys">List of unnecessary regressors names</param>
+        private void UpdateNonFilterProcessFunctions(List<string> keys) {
+            foreach (var key in keys) {
+                NonFilterProcessFunctions.Remove(key);
+            }
         }
 
         /// <summary>
@@ -194,7 +294,6 @@ namespace Multiple_Linear_Regression {
             }
             NonFilterProcessFunctions = new Dictionary<string, List<string>>(ProcessFunctions);
             NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
-            IsPreprocessed = true;
         }
 
         /// <summary>
@@ -209,7 +308,6 @@ namespace Multiple_Linear_Regression {
                     RemoveRegressor(corrCoeff.Key);
                 }
             }
-            IsFiltered = true;
         }
 
         /// <summary>
@@ -229,7 +327,6 @@ namespace Multiple_Linear_Regression {
                     RemoveRegressor(corrCoeff.Key);
                 }
             }
-            IsFiltered = true;
         }
 
         /// <summary>
@@ -248,16 +345,20 @@ namespace Multiple_Linear_Regression {
         /// Restoring the regressors to their pre-filter state
         /// </summary>
         public void RestoreNonFilterRegressors() {
-            IsFiltered = false;
-            StartRegressors = new Dictionary<string, List<double>>(NonFilterStartRegressors);
-            ProcessFunctions = new Dictionary<string, List<string>>(NonFilterProcessFunctions);
+            if (NonFilterStartRegressors != null){
+                StartRegressors = new Dictionary<string, List<double>>(NonFilterStartRegressors);
+            }
+            if (NonFilterProcessFunctions != null) {
+                ProcessFunctions = new Dictionary<string, List<string>>(NonFilterProcessFunctions);
+            }
             SetNewRegressors(NonFilterRegressors);
         }
 
         /// <summary>
         /// Make an equation for expressing regressants through regressors
         /// </summary>
-        public void BuildEquation() {
+        /// <param name="shortNames">Dictionary with short names of regressors</param>
+        public void BuildEquation(Dictionary<string, string> shortNames) {
             RegressorsCoeffs = new Dictionary<string, double>();
             int numberOfValues = RegressantValues.Count;
             int numberOfCoeffs = Regressors.Count + 1;
@@ -288,27 +389,51 @@ namespace Multiple_Linear_Regression {
             }
 
             // Find adjusted coefficient of determination
-            DetermCoeff = Statistics.AdjustedDetermCoefficient(Y, Algebra.Mult(Z, coeffs), Regressors.Count);
+            AdjDetermCoeff = Statistics.AdjustedDetermCoefficient(Y, Algebra.Mult(Z, coeffs), Regressors.Count);
+
+            // Find coefficient of determination
+            DetermCoef = Statistics.DetermCoefficient(Y, Algebra.Mult(Z, coeffs));
 
             // Find a string representation of the equation
-            GetEquation();
+            GetEquation(shortNames);
 
+            // Find errors for model
+            Errors = Algebra.Substract(Y, Algebra.Mult(Z, coeffs)).ToList();
+
+            // A test of adequacy
+            CheckAdequate();
+
+            // A test of significance
+            CheckSignificant();
         }
 
         /// <summary>
         /// Get a string representation of the equation
         /// </summary>
-        private void GetEquation() {
+        /// <param name="shortNames">Dictionary with short names of regressors</param>
+        private void GetEquation(Dictionary<string, string> shortNames) {
             Equation = "Y = " + Math.Round(RegressorsCoeffs[RegressorsCoeffs.Keys.ToList()[0]], 4).ToString();
 
-            for (int i = 1; i < RegressorsCoeffs.Count; i++) { 
+            for (int i = 1; i < RegressorsCoeffs.Count; i++) {
+                string regressorName = RegressorsNames[i - 1];
+                string regressorShortName = "";
+
+                if (shortNames.ContainsKey(regressorName)) {
+                    regressorShortName = shortNames[regressorName];
+                }
+                else {
+                    string[] combinedRegressors = regressorName.Split(new string[] { " & " }, StringSplitOptions.None);
+                    regressorShortName = shortNames[combinedRegressors[1] + " & " + combinedRegressors[0]];
+                }
+
                 if (RegressorsCoeffs[RegressorsNames[i - 1]] < 0) {
-                    Equation += " - " + Math.Abs(Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4)).ToString() 
-                        + "*X" + i.ToString();
+                    Equation += " - " + Math.Abs(Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4)).ToString()
+                        + $"*{regressorShortName}";
                     continue;
                 }
                 else {
-                    Equation += " + " + Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4).ToString() + "*X" + i.ToString();
+                    Equation += " + " + Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4).ToString() + 
+                        $"*{regressorShortName}";
                 }
             }
         }
@@ -352,6 +477,137 @@ namespace Multiple_Linear_Regression {
                 processX[i] = nextValue.Last();
             }
             return processX;
+        }
+
+        /// <summary>
+        /// Check whether the model is adequate
+        /// </summary>
+        private void CheckAdequate() {
+            DistanceToAdequate = 0;
+            WilcoxonCreterion = CheckWilcoxonCriterion();
+            AsymmetryAndExcess = CheckAsymmetryAndExcess();
+            NormalDistrInterval = CheckIntervalOfNormalDistribution();
+            IsAdequate = WilcoxonCreterion && AsymmetryAndExcess && NormalDistrInterval ;
+        }
+
+        /// <summary>
+        /// Check Wilcoxon creterion for model
+        /// </summary>
+        /// <returns>Result of Wilcoxon creterion</returns>
+        private bool CheckWilcoxonCriterion() {
+            double[] HnZ = new double[Errors.Count];
+            double[] HnZmin = new double[Errors.Count];
+            double sum = 0;
+            double[] e = Errors.ToArray();
+            Array.Sort(e);
+
+            for (int i = 0; i < Errors.Count; i++) {
+                int j = 0;
+                while (e[j] <= e[i] && j < e.Length - 1) {
+                    j++;
+                }
+                int kol = j;
+
+                j = 0;
+                while (e[j] <= -e[i] && j < e.Length - 1) {
+                    j++;
+                }
+                int kolMin = j;
+
+                HnZ[i] = Convert.ToDouble(kol) / Convert.ToDouble(Errors.Count);
+                HnZmin[i] = Convert.ToDouble(kolMin) / Convert.ToDouble(Errors.Count);
+            }
+
+            for (int i = 0; i < Errors.Count; i++) {
+                sum += Math.Pow((HnZ[i] + HnZmin[i] - 1), 2);
+            }
+
+            // If the Wilcoxon criterion is not fulfilled, then we find the distance to the fulfillment of the criterion.
+            if (sum < 1.2 || sum > 2.8) {
+                FindDistanceToWilcoxon(sum);
+            }
+
+            return sum <= 2.8 && sum >= 1.2;
+        }
+
+        /// <summary>
+        /// Find distance to Wilcoxon creterion
+        /// </summary>
+        /// <param name="sum">Sum for Wilcoxon creterion</param>
+        private void FindDistanceToWilcoxon(double sum) {
+            if (sum < 1.2) {
+                DistanceToAdequate += (1.2 - sum) / 1.2;
+            }
+            if (sum > 2.8) {
+                DistanceToAdequate += (sum - 2.8) / 2.8;
+            }
+        }
+
+        /// <summary>
+        /// Check coefficients of asymmetry and excess
+        /// </summary>
+        /// <returns>Result of checking the asymmetry and excess requirements</returns>
+        private bool CheckAsymmetryAndExcess() {
+            double moduleAsymmetryCoeff = Math.Abs(Statistics.AsymmetryCoefficient(Errors));
+            double moduleExcessCoeff = Math.Abs(Statistics.ExcessCoefficient(Errors));
+
+            // If the coefficient conditions are not met, then find the distance to meet them
+            if (moduleAsymmetryCoeff > 1) {
+                DistanceToAdequate += moduleAsymmetryCoeff - 1;
+            }
+            if (moduleExcessCoeff > 1) {
+                DistanceToAdequate += (moduleExcessCoeff - 1);
+            }
+
+            return moduleAsymmetryCoeff <= 1 && moduleExcessCoeff <= 1;
+        }
+
+        /// <summary>
+        /// Check that 99.73% of the observations are in the range of mean plus/minus three standard deviations
+        /// </summary>
+        /// <returns>Check interval for normal distribution</returns>
+        private bool CheckIntervalOfNormalDistribution() {
+            double errorsAvg = Errors.Average();
+            double errorsStd = Statistics.StandardDeviation(Errors);
+
+            double min = errorsAvg - 3 * errorsStd;
+            double max = errorsAvg + 3 * errorsStd;
+
+
+            int maxOutsideOfIntervalStart = (int)Math.Round(Errors.Count * 0.0027);
+            int maxOutsideOfInterval = maxOutsideOfIntervalStart;
+
+            foreach(var error in Errors) {
+                if (error <= min || error >= max) {
+                    maxOutsideOfInterval--;
+                }
+            }
+
+            // If the number of values outside the interval exceeds the normal distribution, we calculate the distance to adequacy
+            if (maxOutsideOfInterval < 0) {
+                DistanceToAdequate += (double)Math.Abs(maxOutsideOfInterval) / (double)maxOutsideOfIntervalStart;
+            }
+
+            return maxOutsideOfInterval >= 0;
+        }
+
+        /// <summary>
+        /// Check whether the model is significant
+        /// </summary>
+        private void CheckSignificant() {
+            double f1 = Regressors.Count;
+            double f2 = RegressantValues.Count - f1 - 1;
+
+            Chart chart1 = new Chart();
+            double calcFStat = (DetermCoef / (1 - DetermCoef)) * (f2 / f1);
+            double theorFStat = chart1.DataManipulator.Statistics.InverseFDistribution(0.05, (int)f2, (int)f1);
+
+            // If the condition of model significance is not satisfied, we calculate the distance to significance
+            if (calcFStat < theorFStat) {
+                DistanceToSignificat = (theorFStat - calcFStat) / theorFStat;
+            }
+
+            IsSignificant = calcFStat > theorFStat;
         }
     }
 }

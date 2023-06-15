@@ -65,7 +65,7 @@ namespace Multiple_Linear_Regression {
         /// <returns>Identity matrix</returns>
         public static double[,] Ones(int n, int m) {
             if (n != m) {
-                throw new Exception("Количество строк и столбцов должны совпадать");
+                throw new Exception("The number of rows and columns must match!");
             }
 
             double[,] onesMatrix = new double[n, m];
@@ -85,7 +85,7 @@ namespace Multiple_Linear_Regression {
         /// <returns>Result matrix</returns>
         public static double[,] Mult(double[,] matrix1, double[,] matrix2) {
             if (matrix1.GetLength(1) != matrix2.GetLength(0)) {
-                throw new Exception("Такие матрицы нельзя перемножить");
+                throw new Exception("Such matrices cannot be multiplied!");
             }
 
             double[,] resultMatrix = new double[matrix1.GetLength(0), matrix2.GetLength(1)];
@@ -109,7 +109,7 @@ namespace Multiple_Linear_Regression {
         /// <returns>Result vector</returns>
         public static double[] Mult(double[,] matrix, double[] vector) {
             if (matrix.GetLength(1) != vector.Length) {
-                throw new Exception("Такую матрицу и вектор невозможно перемножить");
+                throw new Exception("Such a matrix and a vector cannot be multiplied!");
             }
 
             double[] resultVector = new double[matrix.GetLength(0)];
@@ -131,7 +131,7 @@ namespace Multiple_Linear_Regression {
         /// <returns>Result value</returns>
         public static double Mult(double[] vector1, double[] vector2) {
             if (vector1.Length != vector2.Length) {
-                throw new Exception("Длины векторов должны совпадать!");
+                throw new Exception("Vectors must be the same length!");
             }
 
             double result = 0.0;
@@ -141,6 +141,26 @@ namespace Multiple_Linear_Regression {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Substracting vector2 from vector1
+        /// </summary>
+        /// <param name="vector1">Values of vector1</param>
+        /// <param name="vector2">Values of vector2</param>
+        /// <returns>Result of substracting</returns>
+        public static double[] Substract(double[] vector1, double[] vector2) {
+            if (vector1.Length != vector2.Length) {
+                throw new Exception("Vectors must be the same length!");
+            }
+
+            double[] resultVector = new double[vector1.Length];
+
+            for (int i = 0; i < vector1.Length; i++) {
+                resultVector[i] = vector1[i] - vector2[i];
+            }
+
+            return resultVector;
         }
     }
 }

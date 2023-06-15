@@ -26,7 +26,7 @@ namespace Multiple_Linear_Regression {
         public static string StepSetImitationParameters { get; } = "На данном этапе происходит выбор моделей и настройка параметров области опередения\n" +
             "для имитации управления.";
 
-        public static string StepFormationRegressorsGroup { get; } = "Данный блок является необязательным.\n\n" +
+        public static string StepFormationRegressorsGroup { get; } = "Данный блок является обязательным.\n\n" +
             "На данном этапе для каждой модели происходит формирование наборов\n" +
             "управляющих факторов, путем разбиения коррелированных управляющих факторов на разные группы\n" +
             "и выбор наиболее эффектвной группы управляющих факторов.";
