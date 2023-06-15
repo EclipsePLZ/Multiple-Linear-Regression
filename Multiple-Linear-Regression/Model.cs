@@ -95,12 +95,22 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Check rules for coefficients of assymetry and excess
         /// </summary>
-        public bool AssymetryAndExcess { get; private set; }
+        public bool AsymmetryAndExcess { get; private set; }
 
         /// <summary>
         /// Check rules for normal distribution interval
         /// </summary>
         public bool NormalDistrInterval { get; private set; }
+
+        /// <summary>
+        /// Distance to Adequacy
+        /// </summary>
+        public double DistanceToAdequate { get; private set; }
+
+        /// <summary>
+        /// Distance to Significant
+        /// </summary>
+        public double DistanceToSignificat { get; private set; }
 
         /// <summary>
         /// Is the model significant
@@ -115,7 +125,7 @@ namespace Multiple_Linear_Regression {
             CorrelationCoefficient = new Dictionary<string, double>();
             StartRegressors = null;
             NonFilterStartRegressors = null;
-            NonFilterProcessFunctions = null;
+            NonFilterProcessFunctions = new Dictionary<string, List<string>>();
             IsAdequate = false;
             IsSignificant = false;
             Errors = null;
@@ -143,6 +153,8 @@ namespace Multiple_Linear_Regression {
             RegressorsNames = new List<string>(refModel.RegressorsNames);
             IsAdequate = refModel.IsAdequate;
             IsSignificant = refModel.IsSignificant;
+            DistanceToAdequate = refModel.DistanceToAdequate;
+            DistanceToSignificat = refModel.DistanceToSignificat;
             Errors = refModel.Errors;
         }
 
@@ -161,6 +173,63 @@ namespace Multiple_Linear_Regression {
             Regressors = new Dictionary<string, List<double>>(regressors);
             RegressorsNames = new List<string>(Regressors.Keys);
             CalcNewCorrelationCoefficients();
+
+            List <string> removedKeys = new List<string>(StartRegressors.Keys.Except(Regressors.Keys));
+            UpdateStartRegressors(removedKeys);
+            UpdateNonFilterStartRegressors(removedKeys);
+            UpdateNonFilterRegressors(removedKeys);
+            UpdateProcessFunctions(removedKeys);
+            UpdateNonFilterProcessFunctions(removedKeys);
+        }
+
+        /// <summary>
+        /// Remove unnecessary regressors
+        /// </summary>
+        /// <param name="keys">List of unnecessary regressors names</param>
+        private void UpdateStartRegressors(List<string> keys) {
+            foreach (var key in keys) {
+                StartRegressors.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Remove unnecessary regressors
+        /// </summary>
+        /// <param name="keys">List of unnecessary regressors names</param>
+        private void UpdateNonFilterStartRegressors(List<string> keys) {
+            foreach (var key in keys) {
+                NonFilterStartRegressors.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Remove unnecessary regressors
+        /// </summary>
+        /// <param name="keys">List of unnecessary regressors names</param>
+        private void UpdateNonFilterRegressors(List<string> keys) {
+            foreach (var key in keys) {
+                NonFilterRegressors.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Remove unnecessary functions
+        /// </summary>
+        /// <param name="keys">List of unnecessary regressors names</param>
+        private void UpdateProcessFunctions(List<string> keys) {
+            foreach (var key in keys) {
+                ProcessFunctions.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Remove unnecessary functions
+        /// </summary>
+        /// <param name="keys">List of unnecessary regressors names</param>
+        private void UpdateNonFilterProcessFunctions(List<string> keys) {
+            foreach (var key in keys) {
+                NonFilterProcessFunctions.Remove(key);
+            }
         }
 
         /// <summary>
@@ -414,10 +483,11 @@ namespace Multiple_Linear_Regression {
         /// Check whether the model is adequate
         /// </summary>
         private void CheckAdequate() {
+            DistanceToAdequate = 0;
             WilcoxonCreterion = CheckWilcoxonCriterion();
-            AssymetryAndExcess = CheckAsymmetryAndExcess();
+            AsymmetryAndExcess = CheckAsymmetryAndExcess();
             NormalDistrInterval = CheckIntervalOfNormalDistribution();
-            IsAdequate = WilcoxonCreterion && AssymetryAndExcess && NormalDistrInterval ;
+            IsAdequate = WilcoxonCreterion && AsymmetryAndExcess && NormalDistrInterval ;
         }
 
         /// <summary>
@@ -452,7 +522,25 @@ namespace Multiple_Linear_Regression {
                 sum += Math.Pow((HnZ[i] + HnZmin[i] - 1), 2);
             }
 
-            return sum < 2.8 && sum > 1.2;
+            // If the Wilcoxon criterion is not fulfilled, then we find the distance to the fulfillment of the criterion.
+            if (sum < 1.2 || sum > 2.8) {
+                FindDistanceToWilcoxon(sum);
+            }
+
+            return sum <= 2.8 && sum >= 1.2;
+        }
+
+        /// <summary>
+        /// Find distance to Wilcoxon creterion
+        /// </summary>
+        /// <param name="sum">Sum for Wilcoxon creterion</param>
+        private void FindDistanceToWilcoxon(double sum) {
+            if (sum < 1.2) {
+                DistanceToAdequate += (1.2 - sum) / 1.2;
+            }
+            if (sum > 2.8) {
+                DistanceToAdequate += (sum - 2.8) / 2.8;
+            }
         }
 
         /// <summary>
@@ -460,7 +548,18 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <returns>Result of checking the asymmetry and excess requirements</returns>
         private bool CheckAsymmetryAndExcess() {
-            return Math.Abs(Statistics.AsymmetryCoefficient(Errors)) <= 1 && Math.Abs(Statistics.ExcessCoefficient(Errors)) <= 1;
+            double moduleAsymmetryCoeff = Math.Abs(Statistics.AsymmetryCoefficient(Errors));
+            double moduleExcessCoeff = Math.Abs(Statistics.ExcessCoefficient(Errors));
+
+            // If the coefficient conditions are not met, then find the distance to meet them
+            if (moduleAsymmetryCoeff > 1) {
+                DistanceToAdequate += moduleAsymmetryCoeff - 1;
+            }
+            if (moduleExcessCoeff > 1) {
+                DistanceToAdequate += (moduleExcessCoeff - 1);
+            }
+
+            return moduleAsymmetryCoeff <= 1 && moduleExcessCoeff <= 1;
         }
 
         /// <summary>
@@ -474,12 +573,19 @@ namespace Multiple_Linear_Regression {
             double min = errorsAvg - 3 * errorsStd;
             double max = errorsAvg + 3 * errorsStd;
 
-            int maxOutsideOfInterval = (int)Math.Truncate(Errors.Count * 0.0027);
+
+            int maxOutsideOfIntervalStart = (int)Math.Round(Errors.Count * 0.0027);
+            int maxOutsideOfInterval = maxOutsideOfIntervalStart;
 
             foreach(var error in Errors) {
                 if (error <= min || error >= max) {
                     maxOutsideOfInterval--;
                 }
+            }
+
+            // If the number of values outside the interval exceeds the normal distribution, we calculate the distance to adequacy
+            if (maxOutsideOfInterval < 0) {
+                DistanceToAdequate += (double)Math.Abs(maxOutsideOfInterval) / (double)maxOutsideOfIntervalStart;
             }
 
             return maxOutsideOfInterval >= 0;
@@ -494,7 +600,12 @@ namespace Multiple_Linear_Regression {
 
             Chart chart1 = new Chart();
             double calcFStat = (DetermCoef / (1 - DetermCoef)) * (f2 / f1);
-            double theorFStat = chart1.DataManipulator.Statistics.InverseFDistribution(0.05, (int)f1, (int)f2);
+            double theorFStat = chart1.DataManipulator.Statistics.InverseFDistribution(0.05, (int)f2, (int)f1);
+
+            // If the condition of model significance is not satisfied, we calculate the distance to significance
+            if (calcFStat < theorFStat) {
+                DistanceToSignificat = (theorFStat - calcFStat) / theorFStat;
+            }
 
             IsSignificant = calcFStat > theorFStat;
         }
