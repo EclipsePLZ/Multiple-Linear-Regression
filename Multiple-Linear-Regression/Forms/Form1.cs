@@ -28,9 +28,6 @@ namespace Multiple_Linear_Regression {
         private List<Model> BestModels { get; set; }
         private List<Model> Models { get; set; } = new List<Model>();
 
-        private double[,] X { get; set; }
-        private double[] Y { get; set; }
-
 
         public MainForm() {
             InitializeComponent();
@@ -1194,7 +1191,14 @@ namespace Multiple_Linear_Regression {
                 }
             }
 
-            SimulationControlForm simulationForm = new SimulationControlForm(selectedModels, DetermFuncAreaDefinition());
+            // Get number group of correlated regressors
+            int numberGroupRegressors = 0;
+            if (manualNumberCorrIntervalRadio.Checked) {
+                numberGroupRegressors = (int)numberOfCorrIntervalsManual.Value;
+            }
+
+            SimulationControlForm simulationForm = new SimulationControlForm(selectedModels, DetermFuncAreaDefinition(), 
+                numberGroupRegressors);
             simulationForm.Show();
         }
 
@@ -1354,12 +1358,29 @@ namespace Multiple_Linear_Regression {
             }
         }
 
+        private void autoNumberCorrIntervalsRadio_CheckedChanged(object sender, EventArgs e) {
+            if (autoNumberCorrIntervalsRadio.Checked) {
+                manualNumberCorrIntervalRadio.Checked = false;
+                numberOfCorrIntervalsManual.Enabled = false;
+                CheckAcceptControlParameterButton();
+            }
+        }
+
+        private void manualNumberCorrIntervalRadio_CheckedChanged(object sender, EventArgs e) {
+            if (manualNumberCorrIntervalRadio.Checked) {
+                autoNumberCorrIntervalsRadio.Checked = false;
+                numberOfCorrIntervalsManual.Enabled = true;
+                CheckAcceptControlParameterButton();
+            }
+        }
+
         /// <summary>
         /// Check rule for enable accept control parameters button
         /// </summary>
         private void CheckAcceptControlParameterButton() {
             acceptControlsParametersButton.Enabled = (empDefAreaRadio.Checked || theoreticalAreaRadio.Checked ||
                 symbiosisAreaRadio.Checked) && (equallyBothWaysRadio.Checked || autoProportionRadio.Checked) &&
+                (autoNumberCorrIntervalsRadio.Checked || manualNumberCorrIntervalRadio.Checked) && 
                 (listSelectedModels.Items.Count > 0);
         }
 
@@ -1387,13 +1408,12 @@ namespace Multiple_Linear_Regression {
             symbiosisAreaRadio.Checked = true;
             percentAreaExpansion.Value = 10;
             autoProportionRadio.Checked = true;
+            numberOfCorrIntervalsManual.Value = 3;
+            autoNumberCorrIntervalsRadio.Checked = true;
+            numberOfCorrIntervalsManual.Maximum = Decimal.MaxValue;
             toolTipSymbiosis.SetToolTip(symbiosisAreaRadio, StepsInfo.SymbiosisInfo);
             toolTipAutoProportion.SetToolTip(autoProportionRadio, StepsInfo.AutoProportionInfo);
             toolTipPercentAreaExpansion.SetToolTip(percentAreaExpansion, StepsInfo.PercentAreaExpansion);
-
-            
-
-            
         }
 
         /// <summary>
@@ -1475,6 +1495,9 @@ namespace Multiple_Linear_Regression {
             percentAreaExpansion.Value = 10;
             percentAreaExpansion.Enabled = true;
             autoProportionRadio.Checked = true;
+            autoNumberCorrIntervalsRadio.Checked = true;
+            manualNumberCorrIntervalRadio.Checked = false;
+            numberOfCorrIntervalsManual.Value = 3;
             acceptControlsParametersButton.Enabled = false;
         }
 
@@ -1730,11 +1753,14 @@ namespace Multiple_Linear_Regression {
                         groupProportionOfAreaExpansion.Invoke(new Action<Point>((loc) => groupProportionOfAreaExpansion.Location = loc),
                             new Point(labelSelectDefAreaParams.Location.X, groupProportionOfAreaExpansion.Location.Y));
 
-                        acceptControlsParametersButton.Invoke(new Action<Point>((loc) => acceptControlsParametersButton.Location = loc),
-                            new Point(labelSelectDefAreaParams.Location.X + 43, acceptControlsParametersButton.Location.Y));
+                        groupNumberCorrelatedIntervals.Invoke(new Action<Point>((loc) => groupNumberCorrelatedIntervals.Location = loc),
+                            new Point(groupNumberCorrelatedIntervals.Location.X, groupNumberCorrelatedIntervals.Location.Y));
 
                         toSelectModelsList.Invoke(new Action<Point>((loc) => toSelectModelsList.Location = loc),
                            new Point(controlSimulationTab.Width / 4, toSelectModelsList.Location.Y));
+
+                        acceptControlsParametersButton.Invoke(new Action<Point>((loc) => acceptControlsParametersButton.Location = loc),
+                            new Point(toSelectModelsList.Location.X + 45, acceptControlsParametersButton.Location.Y + heightDiff));
 
                         toAvailableModelsList.Invoke(new Action<Point>((loc) => toAvailableModelsList.Location = loc),
                            new Point(controlSimulationTab.Width / 4, toAvailableModelsList.Location.Y));

@@ -38,9 +38,13 @@ namespace Multiple_Linear_Regression.Forms {
 
         private Func<IEnumerable<double>, (double, double)> GetDefinitionArea { get; }
 
-        public SimulationControlForm(List<Model> models, Func<IEnumerable<double>, (double, double)> getDefinitionAreaFunc) {
+        private int NumberGroupOfCorrelatedRegressors { get; set; }
+
+        public SimulationControlForm(List<Model> models, Func<IEnumerable<double>, (double, double)> getDefinitionAreaFunc,
+            int numberGroupOfCorrRegressors) {
             Models = models;
             GetDefinitionArea = getDefinitionAreaFunc;
+            NumberGroupOfCorrelatedRegressors = numberGroupOfCorrRegressors;
 
             InitializeComponent();
 
@@ -94,6 +98,10 @@ namespace Multiple_Linear_Regression.Forms {
 
             StartRegressors = new Dictionary<string, double>(AllRegressors);
 
+            if (NumberGroupOfCorrelatedRegressors == 0) {
+                CalcNumberGroupOfCorrelatedRegressors();
+            }
+
             GetRegressorsMutualImpact();
         }
 
@@ -116,6 +124,17 @@ namespace Multiple_Linear_Regression.Forms {
 
             // Get predicted value for regressant
             return model.Predict(xValues);
+        }
+
+        /// <summary>
+        /// Automatically find the number of groups for correlated regressors 
+        /// </summary>
+        private void CalcNumberGroupOfCorrelatedRegressors() {
+            NumberGroupOfCorrelatedRegressors = (int)(AllRegressors.Count / 5);
+
+            if (NumberGroupOfCorrelatedRegressors < 3) {
+                NumberGroupOfCorrelatedRegressors = 3;
+            }
         }
 
         /// <summary>

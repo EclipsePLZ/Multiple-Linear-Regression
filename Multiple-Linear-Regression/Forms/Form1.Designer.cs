@@ -39,6 +39,11 @@
             this.selectRegressantsButton = new System.Windows.Forms.Button();
             this.progressBarDataLoad = new System.Windows.Forms.ProgressBar();
             this.factorsData = new System.Windows.Forms.DataGridView();
+            this.processingStatDataTab = new System.Windows.Forms.TabPage();
+            this.labelPreprocessingFinish = new System.Windows.Forms.Label();
+            this.labelFuncPreprocess = new System.Windows.Forms.Label();
+            this.doFunctionalProcessButton = new System.Windows.Forms.Button();
+            this.functionsForProcessingDataGrid = new System.Windows.Forms.DataGridView();
             this.formationOfControlFactorSetsTab = new System.Windows.Forms.TabPage();
             this.groupBoxGroupedRegressors = new System.Windows.Forms.GroupBox();
             this.maxCorrelBtwRegressors = new System.Windows.Forms.NumericUpDown();
@@ -47,12 +52,13 @@
             this.labelGroupingRegressorsEnd = new System.Windows.Forms.Label();
             this.labelGroupingRegressors = new System.Windows.Forms.Label();
             this.groupedRegressorsDataGrid = new System.Windows.Forms.DataGridView();
-            this.processingStatDataTab = new System.Windows.Forms.TabPage();
-            this.labelPreprocessingFinish = new System.Windows.Forms.Label();
-            this.labelFuncPreprocess = new System.Windows.Forms.Label();
-            this.doFunctionalProcessButton = new System.Windows.Forms.Button();
-            this.functionsForProcessingDataGrid = new System.Windows.Forms.DataGridView();
             this.removeUnimportantFactorsTab = new System.Windows.Forms.TabPage();
+            this.groupBoxFilterRegressors = new System.Windows.Forms.GroupBox();
+            this.cancelFilterFactorsButton = new System.Windows.Forms.Button();
+            this.acceptFilterFactorsButton = new System.Windows.Forms.Button();
+            this.valueEmpWayCorr = new System.Windows.Forms.NumericUpDown();
+            this.classicWayRadio = new System.Windows.Forms.RadioButton();
+            this.empWayRadio = new System.Windows.Forms.RadioButton();
             this.labelFilterFinish = new System.Windows.Forms.Label();
             this.labelFilterLoad = new System.Windows.Forms.Label();
             this.onlyImportantFactorsDataGrid = new System.Windows.Forms.DataGridView();
@@ -94,22 +100,22 @@
             this.toolTipSymbiosis = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipAutoProportion = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipPercentAreaExpansion = new System.Windows.Forms.ToolTip(this.components);
-            this.groupBoxFilterRegressors = new System.Windows.Forms.GroupBox();
-            this.cancelFilterFactorsButton = new System.Windows.Forms.Button();
-            this.acceptFilterFactorsButton = new System.Windows.Forms.Button();
-            this.valueEmpWayCorr = new System.Windows.Forms.NumericUpDown();
-            this.classicWayRadio = new System.Windows.Forms.RadioButton();
-            this.empWayRadio = new System.Windows.Forms.RadioButton();
+            this.groupNumberCorrelatedIntervals = new System.Windows.Forms.GroupBox();
+            this.manualNumberCorrIntervalRadio = new System.Windows.Forms.RadioButton();
+            this.autoNumberCorrIntervalsRadio = new System.Windows.Forms.RadioButton();
+            this.numberOfCorrIntervalsManual = new System.Windows.Forms.NumericUpDown();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).BeginInit();
+            this.processingStatDataTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.functionsForProcessingDataGrid)).BeginInit();
             this.formationOfControlFactorSetsTab.SuspendLayout();
             this.groupBoxGroupedRegressors.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.maxCorrelBtwRegressors)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.groupedRegressorsDataGrid)).BeginInit();
-            this.processingStatDataTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.functionsForProcessingDataGrid)).BeginInit();
             this.removeUnimportantFactorsTab.SuspendLayout();
+            this.groupBoxFilterRegressors.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.valueEmpWayCorr)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.onlyImportantFactorsDataGrid)).BeginInit();
             this.buildRegrEquationsTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.equationsDataGrid)).BeginInit();
@@ -119,8 +125,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.percentAreaExpansion)).BeginInit();
             this.groupDefinitionAreaType.SuspendLayout();
             this.menuStrip.SuspendLayout();
-            this.groupBoxFilterRegressors.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.valueEmpWayCorr)).BeginInit();
+            this.groupNumberCorrelatedIntervals.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numberOfCorrIntervalsManual)).BeginInit();
             this.SuspendLayout();
             // 
             // WorkFileMenuItem
@@ -272,6 +278,65 @@
             this.factorsData.Size = new System.Drawing.Size(632, 381);
             this.factorsData.TabIndex = 9;
             // 
+            // processingStatDataTab
+            // 
+            this.processingStatDataTab.Controls.Add(this.labelPreprocessingFinish);
+            this.processingStatDataTab.Controls.Add(this.labelFuncPreprocess);
+            this.processingStatDataTab.Controls.Add(this.doFunctionalProcessButton);
+            this.processingStatDataTab.Controls.Add(this.functionsForProcessingDataGrid);
+            this.processingStatDataTab.Location = new System.Drawing.Point(4, 22);
+            this.processingStatDataTab.Name = "processingStatDataTab";
+            this.processingStatDataTab.Padding = new System.Windows.Forms.Padding(3);
+            this.processingStatDataTab.Size = new System.Drawing.Size(816, 390);
+            this.processingStatDataTab.TabIndex = 1;
+            this.processingStatDataTab.Text = "Обработка статистических данных";
+            this.processingStatDataTab.UseVisualStyleBackColor = true;
+            // 
+            // labelPreprocessingFinish
+            // 
+            this.labelPreprocessingFinish.AutoSize = true;
+            this.labelPreprocessingFinish.Location = new System.Drawing.Point(660, 371);
+            this.labelPreprocessingFinish.Name = "labelPreprocessingFinish";
+            this.labelPreprocessingFinish.Size = new System.Drawing.Size(145, 13);
+            this.labelPreprocessingFinish.TabIndex = 17;
+            this.labelPreprocessingFinish.Text = "Предобработка выполнена";
+            this.labelPreprocessingFinish.Visible = false;
+            // 
+            // labelFuncPreprocess
+            // 
+            this.labelFuncPreprocess.AutoSize = true;
+            this.labelFuncPreprocess.Location = new System.Drawing.Point(666, 371);
+            this.labelFuncPreprocess.Name = "labelFuncPreprocess";
+            this.labelFuncPreprocess.Size = new System.Drawing.Size(62, 13);
+            this.labelFuncPreprocess.TabIndex = 15;
+            this.labelFuncPreprocess.Text = "Обработка";
+            this.labelFuncPreprocess.Visible = false;
+            // 
+            // doFunctionalProcessButton
+            // 
+            this.doFunctionalProcessButton.Enabled = false;
+            this.doFunctionalProcessButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.doFunctionalProcessButton.Location = new System.Drawing.Point(669, 55);
+            this.doFunctionalProcessButton.Name = "doFunctionalProcessButton";
+            this.doFunctionalProcessButton.Size = new System.Drawing.Size(126, 66);
+            this.doFunctionalProcessButton.TabIndex = 14;
+            this.doFunctionalProcessButton.Text = "Выполнить функциональную предобработку";
+            this.doFunctionalProcessButton.UseVisualStyleBackColor = true;
+            this.doFunctionalProcessButton.Click += new System.EventHandler(this.doFunctionalProcessButton_Click);
+            // 
+            // functionsForProcessingDataGrid
+            // 
+            this.functionsForProcessingDataGrid.AllowUserToAddRows = false;
+            this.functionsForProcessingDataGrid.AllowUserToDeleteRows = false;
+            this.functionsForProcessingDataGrid.AllowUserToResizeRows = false;
+            this.functionsForProcessingDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.functionsForProcessingDataGrid.Location = new System.Drawing.Point(3, 3);
+            this.functionsForProcessingDataGrid.Name = "functionsForProcessingDataGrid";
+            this.functionsForProcessingDataGrid.ReadOnly = true;
+            this.functionsForProcessingDataGrid.RowHeadersWidth = 51;
+            this.functionsForProcessingDataGrid.Size = new System.Drawing.Size(632, 381);
+            this.functionsForProcessingDataGrid.TabIndex = 10;
+            // 
             // formationOfControlFactorSetsTab
             // 
             this.formationOfControlFactorSetsTab.Controls.Add(this.groupBoxGroupedRegressors);
@@ -380,65 +445,6 @@
             this.groupedRegressorsDataGrid.Size = new System.Drawing.Size(632, 381);
             this.groupedRegressorsDataGrid.TabIndex = 12;
             // 
-            // processingStatDataTab
-            // 
-            this.processingStatDataTab.Controls.Add(this.labelPreprocessingFinish);
-            this.processingStatDataTab.Controls.Add(this.labelFuncPreprocess);
-            this.processingStatDataTab.Controls.Add(this.doFunctionalProcessButton);
-            this.processingStatDataTab.Controls.Add(this.functionsForProcessingDataGrid);
-            this.processingStatDataTab.Location = new System.Drawing.Point(4, 22);
-            this.processingStatDataTab.Name = "processingStatDataTab";
-            this.processingStatDataTab.Padding = new System.Windows.Forms.Padding(3);
-            this.processingStatDataTab.Size = new System.Drawing.Size(816, 390);
-            this.processingStatDataTab.TabIndex = 1;
-            this.processingStatDataTab.Text = "Обработка статистических данных";
-            this.processingStatDataTab.UseVisualStyleBackColor = true;
-            // 
-            // labelPreprocessingFinish
-            // 
-            this.labelPreprocessingFinish.AutoSize = true;
-            this.labelPreprocessingFinish.Location = new System.Drawing.Point(660, 371);
-            this.labelPreprocessingFinish.Name = "labelPreprocessingFinish";
-            this.labelPreprocessingFinish.Size = new System.Drawing.Size(145, 13);
-            this.labelPreprocessingFinish.TabIndex = 17;
-            this.labelPreprocessingFinish.Text = "Предобработка выполнена";
-            this.labelPreprocessingFinish.Visible = false;
-            // 
-            // labelFuncPreprocess
-            // 
-            this.labelFuncPreprocess.AutoSize = true;
-            this.labelFuncPreprocess.Location = new System.Drawing.Point(666, 371);
-            this.labelFuncPreprocess.Name = "labelFuncPreprocess";
-            this.labelFuncPreprocess.Size = new System.Drawing.Size(62, 13);
-            this.labelFuncPreprocess.TabIndex = 15;
-            this.labelFuncPreprocess.Text = "Обработка";
-            this.labelFuncPreprocess.Visible = false;
-            // 
-            // doFunctionalProcessButton
-            // 
-            this.doFunctionalProcessButton.Enabled = false;
-            this.doFunctionalProcessButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.doFunctionalProcessButton.Location = new System.Drawing.Point(669, 55);
-            this.doFunctionalProcessButton.Name = "doFunctionalProcessButton";
-            this.doFunctionalProcessButton.Size = new System.Drawing.Size(126, 66);
-            this.doFunctionalProcessButton.TabIndex = 14;
-            this.doFunctionalProcessButton.Text = "Выполнить функциональную предобработку";
-            this.doFunctionalProcessButton.UseVisualStyleBackColor = true;
-            this.doFunctionalProcessButton.Click += new System.EventHandler(this.doFunctionalProcessButton_Click);
-            // 
-            // functionsForProcessingDataGrid
-            // 
-            this.functionsForProcessingDataGrid.AllowUserToAddRows = false;
-            this.functionsForProcessingDataGrid.AllowUserToDeleteRows = false;
-            this.functionsForProcessingDataGrid.AllowUserToResizeRows = false;
-            this.functionsForProcessingDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.functionsForProcessingDataGrid.Location = new System.Drawing.Point(3, 3);
-            this.functionsForProcessingDataGrid.Name = "functionsForProcessingDataGrid";
-            this.functionsForProcessingDataGrid.ReadOnly = true;
-            this.functionsForProcessingDataGrid.RowHeadersWidth = 51;
-            this.functionsForProcessingDataGrid.Size = new System.Drawing.Size(632, 381);
-            this.functionsForProcessingDataGrid.TabIndex = 10;
-            // 
             // removeUnimportantFactorsTab
             // 
             this.removeUnimportantFactorsTab.Controls.Add(this.groupBoxFilterRegressors);
@@ -451,6 +457,96 @@
             this.removeUnimportantFactorsTab.TabIndex = 2;
             this.removeUnimportantFactorsTab.Text = "Фильтрация управляющих факторов";
             this.removeUnimportantFactorsTab.UseVisualStyleBackColor = true;
+            // 
+            // groupBoxFilterRegressors
+            // 
+            this.groupBoxFilterRegressors.Controls.Add(this.cancelFilterFactorsButton);
+            this.groupBoxFilterRegressors.Controls.Add(this.acceptFilterFactorsButton);
+            this.groupBoxFilterRegressors.Controls.Add(this.valueEmpWayCorr);
+            this.groupBoxFilterRegressors.Controls.Add(this.classicWayRadio);
+            this.groupBoxFilterRegressors.Controls.Add(this.empWayRadio);
+            this.groupBoxFilterRegressors.Location = new System.Drawing.Point(641, 13);
+            this.groupBoxFilterRegressors.Name = "groupBoxFilterRegressors";
+            this.groupBoxFilterRegressors.Size = new System.Drawing.Size(170, 184);
+            this.groupBoxFilterRegressors.TabIndex = 46;
+            this.groupBoxFilterRegressors.TabStop = false;
+            this.groupBoxFilterRegressors.Text = "Фильтрация факторов";
+            // 
+            // cancelFilterFactorsButton
+            // 
+            this.cancelFilterFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.cancelFilterFactorsButton.Location = new System.Drawing.Point(42, 152);
+            this.cancelFilterFactorsButton.Name = "cancelFilterFactorsButton";
+            this.cancelFilterFactorsButton.Size = new System.Drawing.Size(85, 26);
+            this.cancelFilterFactorsButton.TabIndex = 37;
+            this.cancelFilterFactorsButton.Text = "Отменить";
+            this.cancelFilterFactorsButton.UseVisualStyleBackColor = true;
+            this.cancelFilterFactorsButton.Click += new System.EventHandler(this.cancelFilterFactorsButton_Click);
+            // 
+            // acceptFilterFactorsButton
+            // 
+            this.acceptFilterFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.acceptFilterFactorsButton.Location = new System.Drawing.Point(42, 120);
+            this.acceptFilterFactorsButton.Name = "acceptFilterFactorsButton";
+            this.acceptFilterFactorsButton.Size = new System.Drawing.Size(85, 26);
+            this.acceptFilterFactorsButton.TabIndex = 36;
+            this.acceptFilterFactorsButton.Text = "Применить";
+            this.acceptFilterFactorsButton.UseVisualStyleBackColor = true;
+            this.acceptFilterFactorsButton.Click += new System.EventHandler(this.acceptFilterFactorsButton_Click);
+            // 
+            // valueEmpWayCorr
+            // 
+            this.valueEmpWayCorr.DecimalPlaces = 2;
+            this.valueEmpWayCorr.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.valueEmpWayCorr.Location = new System.Drawing.Point(28, 48);
+            this.valueEmpWayCorr.Maximum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            65536});
+            this.valueEmpWayCorr.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.valueEmpWayCorr.Name = "valueEmpWayCorr";
+            this.valueEmpWayCorr.Size = new System.Drawing.Size(120, 20);
+            this.valueEmpWayCorr.TabIndex = 35;
+            this.valueEmpWayCorr.Value = new decimal(new int[] {
+            15,
+            0,
+            0,
+            131072});
+            // 
+            // classicWayRadio
+            // 
+            this.classicWayRadio.AutoSize = true;
+            this.classicWayRadio.Location = new System.Drawing.Point(13, 83);
+            this.classicWayRadio.Name = "classicWayRadio";
+            this.classicWayRadio.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.classicWayRadio.Size = new System.Drawing.Size(135, 17);
+            this.classicWayRadio.TabIndex = 34;
+            this.classicWayRadio.TabStop = true;
+            this.classicWayRadio.Text = "Классический подход";
+            this.classicWayRadio.UseVisualStyleBackColor = true;
+            this.classicWayRadio.CheckedChanged += new System.EventHandler(this.classicWayRadio_CheckedChanged);
+            // 
+            // empWayRadio
+            // 
+            this.empWayRadio.AutoSize = true;
+            this.empWayRadio.Location = new System.Drawing.Point(11, 25);
+            this.empWayRadio.Name = "empWayRadio";
+            this.empWayRadio.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.empWayRadio.Size = new System.Drawing.Size(137, 17);
+            this.empWayRadio.TabIndex = 33;
+            this.empWayRadio.TabStop = true;
+            this.empWayRadio.Text = "Эмпирический подход";
+            this.empWayRadio.UseVisualStyleBackColor = true;
+            this.empWayRadio.CheckedChanged += new System.EventHandler(this.empWayRadio_CheckedChanged);
             // 
             // labelFilterFinish
             // 
@@ -544,6 +640,7 @@
             // 
             // controlSimulationTab
             // 
+            this.controlSimulationTab.Controls.Add(this.groupNumberCorrelatedIntervals);
             this.controlSimulationTab.Controls.Add(this.labelAvailableModels);
             this.controlSimulationTab.Controls.Add(this.labelSelectedModels);
             this.controlSimulationTab.Controls.Add(this.acceptControlsParametersButton);
@@ -588,7 +685,7 @@
             // acceptControlsParametersButton
             // 
             this.acceptControlsParametersButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.acceptControlsParametersButton.Location = new System.Drawing.Point(553, 323);
+            this.acceptControlsParametersButton.Location = new System.Drawing.Point(157, 320);
             this.acceptControlsParametersButton.Name = "acceptControlsParametersButton";
             this.acceptControlsParametersButton.Size = new System.Drawing.Size(118, 48);
             this.acceptControlsParametersButton.TabIndex = 21;
@@ -600,9 +697,9 @@
             // 
             this.groupProportionOfAreaExpansion.Controls.Add(this.autoProportionRadio);
             this.groupProportionOfAreaExpansion.Controls.Add(this.equallyBothWaysRadio);
-            this.groupProportionOfAreaExpansion.Location = new System.Drawing.Point(510, 222);
+            this.groupProportionOfAreaExpansion.Location = new System.Drawing.Point(510, 203);
             this.groupProportionOfAreaExpansion.Name = "groupProportionOfAreaExpansion";
-            this.groupProportionOfAreaExpansion.Size = new System.Drawing.Size(200, 77);
+            this.groupProportionOfAreaExpansion.Size = new System.Drawing.Size(254, 77);
             this.groupProportionOfAreaExpansion.TabIndex = 20;
             this.groupProportionOfAreaExpansion.TabStop = false;
             this.groupProportionOfAreaExpansion.Text = "Пропорция расширения области";
@@ -634,9 +731,9 @@
             // groupPercentAreaExpansion
             // 
             this.groupPercentAreaExpansion.Controls.Add(this.percentAreaExpansion);
-            this.groupPercentAreaExpansion.Location = new System.Drawing.Point(510, 159);
+            this.groupPercentAreaExpansion.Location = new System.Drawing.Point(510, 140);
             this.groupPercentAreaExpansion.Name = "groupPercentAreaExpansion";
-            this.groupPercentAreaExpansion.Size = new System.Drawing.Size(200, 57);
+            this.groupPercentAreaExpansion.Size = new System.Drawing.Size(254, 57);
             this.groupPercentAreaExpansion.TabIndex = 19;
             this.groupPercentAreaExpansion.TabStop = false;
             this.groupPercentAreaExpansion.Text = "Процент расширения области";
@@ -664,9 +761,9 @@
             this.groupDefinitionAreaType.Controls.Add(this.symbiosisAreaRadio);
             this.groupDefinitionAreaType.Controls.Add(this.theoreticalAreaRadio);
             this.groupDefinitionAreaType.Controls.Add(this.empDefAreaRadio);
-            this.groupDefinitionAreaType.Location = new System.Drawing.Point(510, 56);
+            this.groupDefinitionAreaType.Location = new System.Drawing.Point(510, 37);
             this.groupDefinitionAreaType.Name = "groupDefinitionAreaType";
-            this.groupDefinitionAreaType.Size = new System.Drawing.Size(200, 97);
+            this.groupDefinitionAreaType.Size = new System.Drawing.Size(254, 97);
             this.groupDefinitionAreaType.TabIndex = 18;
             this.groupDefinitionAreaType.TabStop = false;
             this.groupDefinitionAreaType.Text = "Вид области определения";
@@ -711,7 +808,7 @@
             // 
             this.labelSelectDefAreaParams.AutoSize = true;
             this.labelSelectDefAreaParams.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelSelectDefAreaParams.Location = new System.Drawing.Point(507, 22);
+            this.labelSelectDefAreaParams.Location = new System.Drawing.Point(507, 13);
             this.labelSelectDefAreaParams.Name = "labelSelectDefAreaParams";
             this.labelSelectDefAreaParams.Size = new System.Drawing.Size(279, 15);
             this.labelSelectDefAreaParams.TabIndex = 17;
@@ -721,7 +818,7 @@
             // 
             this.labelSelectModelsForControl.AutoSize = true;
             this.labelSelectModelsForControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelSelectModelsForControl.Location = new System.Drawing.Point(20, 22);
+            this.labelSelectModelsForControl.Location = new System.Drawing.Point(20, 13);
             this.labelSelectModelsForControl.Name = "labelSelectModelsForControl";
             this.labelSelectModelsForControl.Size = new System.Drawing.Size(197, 15);
             this.labelSelectModelsForControl.TabIndex = 16;
@@ -868,95 +965,59 @@
             this.labelRegressorsList.TabIndex = 8;
             this.labelRegressorsList.Text = "Управляющие факторы:";
             // 
-            // groupBoxFilterRegressors
+            // groupNumberCorrelatedIntervals
             // 
-            this.groupBoxFilterRegressors.Controls.Add(this.cancelFilterFactorsButton);
-            this.groupBoxFilterRegressors.Controls.Add(this.acceptFilterFactorsButton);
-            this.groupBoxFilterRegressors.Controls.Add(this.valueEmpWayCorr);
-            this.groupBoxFilterRegressors.Controls.Add(this.classicWayRadio);
-            this.groupBoxFilterRegressors.Controls.Add(this.empWayRadio);
-            this.groupBoxFilterRegressors.Location = new System.Drawing.Point(641, 13);
-            this.groupBoxFilterRegressors.Name = "groupBoxFilterRegressors";
-            this.groupBoxFilterRegressors.Size = new System.Drawing.Size(170, 184);
-            this.groupBoxFilterRegressors.TabIndex = 46;
-            this.groupBoxFilterRegressors.TabStop = false;
-            this.groupBoxFilterRegressors.Text = "Фильтрация факторов";
+            this.groupNumberCorrelatedIntervals.Controls.Add(this.numberOfCorrIntervalsManual);
+            this.groupNumberCorrelatedIntervals.Controls.Add(this.manualNumberCorrIntervalRadio);
+            this.groupNumberCorrelatedIntervals.Controls.Add(this.autoNumberCorrIntervalsRadio);
+            this.groupNumberCorrelatedIntervals.Location = new System.Drawing.Point(510, 286);
+            this.groupNumberCorrelatedIntervals.Name = "groupNumberCorrelatedIntervals";
+            this.groupNumberCorrelatedIntervals.Size = new System.Drawing.Size(254, 104);
+            this.groupNumberCorrelatedIntervals.TabIndex = 24;
+            this.groupNumberCorrelatedIntervals.TabStop = false;
+            this.groupNumberCorrelatedIntervals.Text = "Интервалы коррелированности регрессоров";
             // 
-            // cancelFilterFactorsButton
+            // manualNumberCorrIntervalRadio
             // 
-            this.cancelFilterFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.cancelFilterFactorsButton.Location = new System.Drawing.Point(42, 152);
-            this.cancelFilterFactorsButton.Name = "cancelFilterFactorsButton";
-            this.cancelFilterFactorsButton.Size = new System.Drawing.Size(85, 26);
-            this.cancelFilterFactorsButton.TabIndex = 37;
-            this.cancelFilterFactorsButton.Text = "Отменить";
-            this.cancelFilterFactorsButton.UseVisualStyleBackColor = true;
-            this.cancelFilterFactorsButton.Click += new System.EventHandler(this.cancelFilterFactorsButton_Click);
+            this.manualNumberCorrIntervalRadio.AutoSize = true;
+            this.manualNumberCorrIntervalRadio.Location = new System.Drawing.Point(18, 55);
+            this.manualNumberCorrIntervalRadio.Name = "manualNumberCorrIntervalRadio";
+            this.manualNumberCorrIntervalRadio.Size = new System.Drawing.Size(191, 17);
+            this.manualNumberCorrIntervalRadio.TabIndex = 1;
+            this.manualNumberCorrIntervalRadio.TabStop = true;
+            this.manualNumberCorrIntervalRadio.Text = "Указать количество интервалов";
+            this.manualNumberCorrIntervalRadio.UseVisualStyleBackColor = true;
+            this.manualNumberCorrIntervalRadio.CheckedChanged += new System.EventHandler(this.manualNumberCorrIntervalRadio_CheckedChanged);
             // 
-            // acceptFilterFactorsButton
+            // autoNumberCorrIntervalsRadio
             // 
-            this.acceptFilterFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.acceptFilterFactorsButton.Location = new System.Drawing.Point(42, 120);
-            this.acceptFilterFactorsButton.Name = "acceptFilterFactorsButton";
-            this.acceptFilterFactorsButton.Size = new System.Drawing.Size(85, 26);
-            this.acceptFilterFactorsButton.TabIndex = 36;
-            this.acceptFilterFactorsButton.Text = "Применить";
-            this.acceptFilterFactorsButton.UseVisualStyleBackColor = true;
-            this.acceptFilterFactorsButton.Click += new System.EventHandler(this.acceptFilterFactorsButton_Click);
+            this.autoNumberCorrIntervalsRadio.AutoSize = true;
+            this.autoNumberCorrIntervalsRadio.Location = new System.Drawing.Point(18, 28);
+            this.autoNumberCorrIntervalsRadio.Name = "autoNumberCorrIntervalsRadio";
+            this.autoNumberCorrIntervalsRadio.Size = new System.Drawing.Size(103, 17);
+            this.autoNumberCorrIntervalsRadio.TabIndex = 0;
+            this.autoNumberCorrIntervalsRadio.TabStop = true;
+            this.autoNumberCorrIntervalsRadio.Text = "Автоматически";
+            this.autoNumberCorrIntervalsRadio.UseVisualStyleBackColor = true;
+            this.autoNumberCorrIntervalsRadio.CheckedChanged += new System.EventHandler(this.autoNumberCorrIntervalsRadio_CheckedChanged);
             // 
-            // valueEmpWayCorr
+            // numberOfCorrIntervalsManual
             // 
-            this.valueEmpWayCorr.DecimalPlaces = 2;
-            this.valueEmpWayCorr.Increment = new decimal(new int[] {
+            this.numberOfCorrIntervalsManual.Location = new System.Drawing.Point(18, 78);
+            this.numberOfCorrIntervalsManual.Minimum = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
-            this.valueEmpWayCorr.Location = new System.Drawing.Point(28, 48);
-            this.valueEmpWayCorr.Maximum = new decimal(new int[] {
+            0});
+            this.numberOfCorrIntervalsManual.Name = "numberOfCorrIntervalsManual";
+            this.numberOfCorrIntervalsManual.Size = new System.Drawing.Size(120, 20);
+            this.numberOfCorrIntervalsManual.TabIndex = 26;
+            this.numberOfCorrIntervalsManual.Value = new decimal(new int[] {
             3,
             0,
             0,
-            65536});
-            this.valueEmpWayCorr.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.valueEmpWayCorr.Name = "valueEmpWayCorr";
-            this.valueEmpWayCorr.Size = new System.Drawing.Size(120, 20);
-            this.valueEmpWayCorr.TabIndex = 35;
-            this.valueEmpWayCorr.Value = new decimal(new int[] {
-            15,
-            0,
-            0,
-            131072});
-            // 
-            // classicWayRadio
-            // 
-            this.classicWayRadio.AutoSize = true;
-            this.classicWayRadio.Location = new System.Drawing.Point(13, 83);
-            this.classicWayRadio.Name = "classicWayRadio";
-            this.classicWayRadio.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.classicWayRadio.Size = new System.Drawing.Size(135, 17);
-            this.classicWayRadio.TabIndex = 34;
-            this.classicWayRadio.TabStop = true;
-            this.classicWayRadio.Text = "Классический подход";
-            this.classicWayRadio.UseVisualStyleBackColor = true;
-            this.classicWayRadio.CheckedChanged += new System.EventHandler(this.classicWayRadio_CheckedChanged);
-            // 
-            // empWayRadio
-            // 
-            this.empWayRadio.AutoSize = true;
-            this.empWayRadio.Location = new System.Drawing.Point(11, 25);
-            this.empWayRadio.Name = "empWayRadio";
-            this.empWayRadio.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.empWayRadio.Size = new System.Drawing.Size(137, 17);
-            this.empWayRadio.TabIndex = 33;
-            this.empWayRadio.TabStop = true;
-            this.empWayRadio.Text = "Эмпирический подход";
-            this.empWayRadio.UseVisualStyleBackColor = true;
-            this.empWayRadio.CheckedChanged += new System.EventHandler(this.empWayRadio_CheckedChanged);
+            0});
+            this.numberOfCorrIntervalsManual.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ValidateKeyPressedOnlyNums);
             // 
             // MainForm
             // 
@@ -979,17 +1040,20 @@
             this.loadDataTab.ResumeLayout(false);
             this.loadDataTab.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).EndInit();
+            this.processingStatDataTab.ResumeLayout(false);
+            this.processingStatDataTab.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.functionsForProcessingDataGrid)).EndInit();
             this.formationOfControlFactorSetsTab.ResumeLayout(false);
             this.formationOfControlFactorSetsTab.PerformLayout();
             this.groupBoxGroupedRegressors.ResumeLayout(false);
             this.groupBoxGroupedRegressors.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.maxCorrelBtwRegressors)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.groupedRegressorsDataGrid)).EndInit();
-            this.processingStatDataTab.ResumeLayout(false);
-            this.processingStatDataTab.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.functionsForProcessingDataGrid)).EndInit();
             this.removeUnimportantFactorsTab.ResumeLayout(false);
             this.removeUnimportantFactorsTab.PerformLayout();
+            this.groupBoxFilterRegressors.ResumeLayout(false);
+            this.groupBoxFilterRegressors.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.valueEmpWayCorr)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.onlyImportantFactorsDataGrid)).EndInit();
             this.buildRegrEquationsTab.ResumeLayout(false);
             this.buildRegrEquationsTab.PerformLayout();
@@ -1004,9 +1068,9 @@
             this.groupDefinitionAreaType.PerformLayout();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
-            this.groupBoxFilterRegressors.ResumeLayout(false);
-            this.groupBoxFilterRegressors.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.valueEmpWayCorr)).EndInit();
+            this.groupNumberCorrelatedIntervals.ResumeLayout(false);
+            this.groupNumberCorrelatedIntervals.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numberOfCorrIntervalsManual)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1088,6 +1152,10 @@
         private System.Windows.Forms.NumericUpDown valueEmpWayCorr;
         private System.Windows.Forms.RadioButton classicWayRadio;
         private System.Windows.Forms.RadioButton empWayRadio;
+        private System.Windows.Forms.GroupBox groupNumberCorrelatedIntervals;
+        private System.Windows.Forms.NumericUpDown numberOfCorrIntervalsManual;
+        private System.Windows.Forms.RadioButton manualNumberCorrIntervalRadio;
+        private System.Windows.Forms.RadioButton autoNumberCorrIntervalsRadio;
     }
 }
 
