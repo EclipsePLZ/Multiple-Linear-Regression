@@ -518,7 +518,7 @@ namespace Multiple_Linear_Regression {
             return (FourthOrderCentralMoment(values) / Math.Pow(SecondOrderCentralMoment(values), 2));
         }
 
-        public static Dictionary<string, Func<List<double>, List<double>>> PreprocessingFunctions { get; } =
+        public static Dictionary<string, Func<List<double>, List<double>>> PreprocessingFunctionsGusev { get; } =
             new Dictionary<string, Func<List<double>, List<double>>>() {
                 { "x^2", Pow_X2},
                 { "x^3", Pow_X3},

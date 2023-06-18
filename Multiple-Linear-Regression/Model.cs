@@ -58,6 +58,11 @@ namespace Multiple_Linear_Regression {
         public Dictionary<string, List<string>> ProcessFunctions { get; private set; }
 
         /// <summary>
+        /// Dictionary with functions for process data
+        /// </summary>
+        private Dictionary<string, Func<List<double>, List<double>>> FunctionsDict { get; set; }
+
+        /// <summary>
         /// Dictionary of non-filter process functions
         /// </summary>
         private Dictionary<string, List<string>> NonFilterProcessFunctions { get; set; }
@@ -256,7 +261,8 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Functional data preprocessing
         /// </summary>
-        public void StartFunctionalPreprocessing() {
+        public void StartFunctionalPreprocessing(Dictionary<string, Func<List<double>, List<double>>> funcs) {
+            FunctionsDict = new Dictionary<string, Func<List<double>, List<double>>>(funcs);
             ProcessFunctions = new Dictionary<string, List<string>>();
             foreach(var regressor in RegressorsNames) {
                 List<string> functions = new List<string>();
@@ -270,7 +276,7 @@ namespace Multiple_Linear_Regression {
                     Regressors[regressor] = Statistics.ConvertValuesToInterval(2.0, 102.0, Regressors[regressor]);
 
                     // For each function we find the correlation coefficient with the regressant
-                    foreach (var func in Statistics.PreprocessingFunctions) {
+                    foreach (var func in FunctionsDict) {
                         double funcCorr = Statistics.PearsonCorrelationCoefficient(RegressantValues, func.Value(Regressors[regressor]));
 
                         // Find the function with the maximum correlation coefficient
@@ -283,7 +289,7 @@ namespace Multiple_Linear_Regression {
                     if (Math.Abs(maxFuncCorrCoeff) > Math.Abs(startCorrCoef) + 0.01) {
                         functions.Add(maxFuncName);
                         startCorrCoef = maxFuncCorrCoeff;
-                        Regressors[regressor] = Statistics.PreprocessingFunctions[maxFuncName](Regressors[regressor]);
+                        Regressors[regressor] = FunctionsDict[maxFuncName](Regressors[regressor]);
                     }
                     else {
                         ProcessFunctions.Add(regressor, functions);
@@ -471,7 +477,7 @@ namespace Multiple_Linear_Regression {
                 nextValue.Add(x[i]);
                 foreach(var funcName in ProcessFunctions[RegressorsNames[i]]) {
                     nextValue = Statistics.ConvertValuesToInterval(2, 102, nextValue);
-                    nextValue = Statistics.PreprocessingFunctions[funcName](nextValue);
+                    nextValue = FunctionsDict[funcName](nextValue);
                 }
                 nextValue = Statistics.ConvertValuesToInterval(2, 102, nextValue);
                 processX[i] = nextValue.Last();
