@@ -323,13 +323,13 @@ namespace Multiple_Linear_Regression {
             foreach (var regressor in RegressorsNames) {
                 List<string> functions = new List<string>();
                 double startCorrCoef = Statistics.PearsonCorrelationCoefficient(RegressantValues,
-                    Statistics.ConvertValuesToInterval(2.0, 102.0, Regressors[regressor]));
+                    Statistics.ConvertValuesToInterval(-1.0, 1.0, Regressors[regressor]));
                 double maxFuncCorrCoeff = 0;
                 string maxFuncName = "";
 
                 while (true) {
-                    // Convert values to interval [2, 102]
-                    Regressors[regressor] = Statistics.ConvertValuesToInterval(2.0, 102.0, Regressors[regressor]);
+                    // Convert values to interval [-1, 1]
+                    Regressors[regressor] = Statistics.ConvertValuesToInterval(-1.0, 1.0, Regressors[regressor]);
 
                     // For each function we find the correlation coefficient with the regressant
                     foreach (var func in FunctionPreprocess.PreprocessingFunctionsOkunev) {
@@ -530,6 +530,10 @@ namespace Multiple_Linear_Regression {
                 return ProcessValuesByGusev(x);
             }
 
+            if (IsOkunevMethod) {
+                return ProcessValuesByOkunev(x);
+            }
+
             // Exceptional situation
             return null;
         }
@@ -550,6 +554,28 @@ namespace Multiple_Linear_Regression {
                     nextValue = FunctionPreprocess.PreprocessingFunctionsGusev[funcName](nextValue);
                 }
                 nextValue = Statistics.ConvertValuesToInterval(2, 102, nextValue);
+                processX[i] = nextValue.Last();
+            }
+
+            return processX;
+        }
+
+        /// <summary>
+        /// Apply the functions by Okunev method to the new values of the regressors
+        /// </summary>
+        /// <param name="x">New regressors values</param>
+        /// <returns>Processed regressors values</returns>
+        private double[] ProcessValuesByOkunev(double[] x) {
+            double[] processX = new double[x.Length];
+
+            for (int i = 0; i < ProcessFunctions.Count; i++) {
+                List<double> nextValue = new List<double>(StartRegressors[RegressorsNames[i]]);
+                nextValue.Add(x[i]);
+                foreach (var funcName in ProcessFunctions[RegressorsNames[i]]) {
+                    nextValue = Statistics.ConvertValuesToInterval(-1.0, 1.0, nextValue);
+                    nextValue = FunctionPreprocess.PreprocessingFunctionsOkunev[funcName](nextValue);
+                }
+                nextValue = Statistics.ConvertValuesToInterval(-1.0, 1.0, nextValue);
                 processX[i] = nextValue.Last();
             }
 
