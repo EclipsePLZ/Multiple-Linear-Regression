@@ -604,7 +604,7 @@ namespace Multiple_Linear_Regression {
             else {
                 // Find best functions for each regressors for each model
                 foreach(var model in Models) {
-                    model.StartFunctionalPreprocessing(FunctionPreprocess.PreprocessingFunctionsGusev);
+                    model.StartGusevFunctionalPreprocessing(FunctionPreprocess.PreprocessingFunctionsGusev);
 
                     // Add functions and correlation coefficients to data grid view
                     foreach (var regressor in model.ProcessFunctions) {

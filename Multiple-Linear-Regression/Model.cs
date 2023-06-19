@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Multiple_Linear_Regression.Mathematic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -56,11 +57,6 @@ namespace Multiple_Linear_Regression {
         /// Dictionary of functions that were used in preprocessing data
         /// </summary>
         public Dictionary<string, List<string>> ProcessFunctions { get; private set; }
-
-        /// <summary>
-        /// Dictionary with functions for process data
-        /// </summary>
-        private Dictionary<string, Func<List<double>, List<double>>> FunctionsDict { get; set; }
 
         /// <summary>
         /// Dictionary of non-filter process functions
@@ -122,6 +118,16 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         public bool IsSignificant { get; private set; }
 
+        /// <summary>
+        /// The Gusev method was used for functional preprocessing
+        /// </summary>
+        public bool IsGusevMethod { get; private set; }
+
+        /// <summary>
+        /// The Okunev method was used for functional preprocessing
+        /// </summary>
+        public bool IsOkunevMethod { get; private set; }
+
         
         public Model(string regerssantName, List<double> regressantValues, Dictionary<string, List<double>> regressors = null) {
             RegressantName = regerssantName;
@@ -133,6 +139,8 @@ namespace Multiple_Linear_Regression {
             NonFilterProcessFunctions = new Dictionary<string, List<string>>();
             IsAdequate = false;
             IsSignificant = false;
+            IsGusevMethod = false;
+            IsOkunevMethod = false;
             Errors = null;
 
             if (regressors is null) {
@@ -161,6 +169,8 @@ namespace Multiple_Linear_Regression {
             DistanceToAdequate = refModel.DistanceToAdequate;
             DistanceToSignificat = refModel.DistanceToSignificat;
             Errors = refModel.Errors;
+            IsGusevMethod = refModel.IsGusevMethod;
+            IsOkunevMethod = refModel.IsOkunevMethod;
         }
 
         /// <summary>
@@ -259,10 +269,11 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
-        /// Functional data preprocessing
+        /// Functional data preprocessing by Gusev method
         /// </summary>
-        public void StartFunctionalPreprocessing(Dictionary<string, Func<List<double>, List<double>>> funcs) {
-            FunctionsDict = new Dictionary<string, Func<List<double>, List<double>>>(funcs);
+        public void StartGusevFunctionalPreprocessing() {
+            IsGusevMethod = true;
+            IsOkunevMethod = false;
             ProcessFunctions = new Dictionary<string, List<string>>();
             foreach(var regressor in RegressorsNames) {
                 List<string> functions = new List<string>();
@@ -276,7 +287,7 @@ namespace Multiple_Linear_Regression {
                     Regressors[regressor] = Statistics.ConvertValuesToInterval(2.0, 102.0, Regressors[regressor]);
 
                     // For each function we find the correlation coefficient with the regressant
-                    foreach (var func in FunctionsDict) {
+                    foreach (var func in FunctionPreprocess.PreprocessingFunctionsGusev) {
                         double funcCorr = Statistics.PearsonCorrelationCoefficient(RegressantValues, func.Value(Regressors[regressor]));
 
                         // Find the function with the maximum correlation coefficient
@@ -289,7 +300,52 @@ namespace Multiple_Linear_Regression {
                     if (Math.Abs(maxFuncCorrCoeff) > Math.Abs(startCorrCoef) + 0.01) {
                         functions.Add(maxFuncName);
                         startCorrCoef = maxFuncCorrCoeff;
-                        Regressors[regressor] = FunctionsDict[maxFuncName](Regressors[regressor]);
+                        Regressors[regressor] = FunctionPreprocess.PreprocessingFunctionsGusev[maxFuncName](Regressors[regressor]);
+                    }
+                    else {
+                        ProcessFunctions.Add(regressor, functions);
+                        CorrelationCoefficient[regressor] = startCorrCoef;
+                        break;
+                    }
+                }
+            }
+            NonFilterProcessFunctions = new Dictionary<string, List<string>>(ProcessFunctions);
+            NonFilterRegressors = new Dictionary<string, List<double>>(Regressors);
+        }
+
+        /// <summary>
+        /// Functional data preprocessing by Okunev method
+        /// </summary>
+        public void StartOkunevFunctionalPreprocessing() {
+            IsGusevMethod = false;
+            IsOkunevMethod = true;
+            ProcessFunctions = new Dictionary<string, List<string>>();
+            foreach (var regressor in RegressorsNames) {
+                List<string> functions = new List<string>();
+                double startCorrCoef = Statistics.PearsonCorrelationCoefficient(RegressantValues,
+                    Statistics.ConvertValuesToInterval(2.0, 102.0, Regressors[regressor]));
+                double maxFuncCorrCoeff = 0;
+                string maxFuncName = "";
+
+                while (true) {
+                    // Convert values to interval [2, 102]
+                    Regressors[regressor] = Statistics.ConvertValuesToInterval(2.0, 102.0, Regressors[regressor]);
+
+                    // For each function we find the correlation coefficient with the regressant
+                    foreach (var func in FunctionPreprocess.PreprocessingFunctionsOkunev) {
+                        double funcCorr = Statistics.PearsonCorrelationCoefficient(RegressantValues, func.Value(Regressors[regressor]));
+
+                        // Find the function with the maximum correlation coefficient
+                        if (Math.Abs(funcCorr) > Math.Abs(maxFuncCorrCoeff)) {
+                            maxFuncCorrCoeff = funcCorr;
+                            maxFuncName = func.Key;
+                        }
+                    }
+                    // Check if the application of this function makes sense
+                    if (Math.Abs(maxFuncCorrCoeff) > Math.Abs(startCorrCoef) + 0.01) {
+                        functions.Add(maxFuncName);
+                        startCorrCoef = maxFuncCorrCoeff;
+                        Regressors[regressor] = FunctionPreprocess.PreprocessingFunctionsOkunev[maxFuncName](Regressors[regressor]);
                     }
                     else {
                         ProcessFunctions.Add(regressor, functions);
@@ -470,18 +526,33 @@ namespace Multiple_Linear_Regression {
         /// <param name="x">New regressors values</param>
         /// <returns>Processed regressors values</returns>
         private double[] ProcessValues(double[] x) {
+            if (IsGusevMethod) {
+                return ProcessValuesByGusev(x);
+            }
+
+            // Exceptional situation
+            return null;
+        }
+
+        /// <summary>
+        /// Apply the functions by Gusev method to the new values of the regressors
+        /// </summary>
+        /// <param name="x">New regressors values</param>
+        /// <returns>Processed regressors values</returns>
+        private double[] ProcessValuesByGusev(double[] x) {
             double[] processX = new double[x.Length];
 
             for (int i = 0; i < ProcessFunctions.Count; i++) {
                 List<double> nextValue = new List<double>(StartRegressors[RegressorsNames[i]]);
                 nextValue.Add(x[i]);
-                foreach(var funcName in ProcessFunctions[RegressorsNames[i]]) {
+                foreach (var funcName in ProcessFunctions[RegressorsNames[i]]) {
                     nextValue = Statistics.ConvertValuesToInterval(2, 102, nextValue);
-                    nextValue = FunctionsDict[funcName](nextValue);
+                    nextValue = FunctionPreprocess.PreprocessingFunctionsGusev[funcName](nextValue);
                 }
                 nextValue = Statistics.ConvertValuesToInterval(2, 102, nextValue);
                 processX[i] = nextValue.Last();
             }
+
             return processX;
         }
 
