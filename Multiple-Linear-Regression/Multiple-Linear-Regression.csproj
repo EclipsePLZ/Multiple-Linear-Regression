@@ -120,6 +120,7 @@
     <Compile Include="Forms\UserWarning.Designer.cs">
       <DependentUpon>UserWarning.cs</DependentUpon>
     </Compile>
+    <Compile Include="Mathematic\FunctionPreprocess.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="Forms\SelectParametersForm.cs">
       <SubType>Form</SubType>

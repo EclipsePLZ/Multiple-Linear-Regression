@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Multiple_Linear_Regression.Mathematic;
 
 namespace Multiple_Linear_Regression {
     public partial class MainForm : Form {
@@ -27,9 +28,6 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, List<Model>> ModelsForRegressants { get; set; }
         private List<Model> BestModels { get; set; }
         private List<Model> Models { get; set; } = new List<Model>();
-
-        private double[,] X { get; set; }
-        private double[] Y { get; set; }
 
 
         public MainForm() {
@@ -232,18 +230,20 @@ namespace Multiple_Linear_Regression {
                 }
 
                 ClearControlsGroupingFactors();
-                ClearControlsProcessData();
+                ClearControlsProcessDataGusev();
+                ClearControlsProcessDataOkunev();
                 ClearControlsFilterFactors();
                 ClearControlsBuildEquations();
 
                 FillRegressorsForModels();
 
                 labelResultDataLoad.Visible = true;
-                processingStatDataTab.Enabled = true;
-                formationOfControlFactorSetsTab.Enabled = false;                
+                processingStatDataTabGusev.Enabled = true;
+                processingStatDataTabOkunev.Enabled = true;
                 removeUnimportantFactorsTab.Enabled = false;
                 buildRegrEquationsTab.Enabled = false;
-                doFunctionalProcessButton.Enabled = true;
+                doFunctionalProcessGusevButton.Enabled = true;
+                doFunctionalProcessOkunevButton.Enabled = true;
                 formationOfControlFactorSetsTab.Enabled = true;
             }
             else {
@@ -560,45 +560,46 @@ namespace Multiple_Linear_Regression {
             return nonCombinedRegressors;
         }
 
-        private void doFunctionalProcessButton_Click(object sender, EventArgs e) {
+        private void doFunctionalProcessGusevButton_Click(object sender, EventArgs e) {
             // Show warinig form
             UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
             warningForm.ShowDialog();
             if (warningForm.AcceptAction) {
-                RunBackgroundFunctionalProcessData();
+                doFunctionalProcessOkunevButton.Enabled = false;
+                RunBackgroundFunctionalProcessGusevData();
 
-                doFunctionalProcessButton.Enabled = false;
+                doFunctionalProcessGusevButton.Enabled = false;
             }
         }
 
         /// <summary>
-        /// Run background worker for functional process data
+        /// Run background worker for functional process data by Gusev method
         /// </summary>
-        private void RunBackgroundFunctionalProcessData() {
+        private void RunBackgroundFunctionalProcessGusevData() {
             SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
-                functionsForProcessingDataGrid, true, new List<int>() { 3 });
+                functionsForProcessingGusevDataGrid, true, new List<int>() { 3 });
 
             // Background worker for function preprocessing
             BackgroundWorker bgWorkerFunc = new BackgroundWorker();
-            bgWorkerFunc.DoWork += new DoWorkEventHandler((sender, e) => FunctionProcessing(sender, e, bgWorkerFunc));
+            bgWorkerFunc.DoWork += new DoWorkEventHandler((sender, e) => FunctionProcessingGusev(sender, e, bgWorkerFunc));
             bgWorkerFunc.WorkerSupportsCancellation = true;
             bgWorkerFunc.RunWorkerAsync();
 
             // Backgound worker for loading label
             BackgroundWorker bgWorkerLabel = new BackgroundWorker();
             bgWorkerLabel.DoWork += new DoWorkEventHandler((sender, e) =>
-                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLabel, bgWorkerFunc, labelFuncPreprocess, labelPreprocessingFinish));
+                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLabel, bgWorkerFunc, labelFuncPreprocessGusev, labelPreprocessingGusevFinish));
             bgWorkerLabel.WorkerSupportsCancellation = true;
             bgWorkerLabel.RunWorkerAsync();
         }
 
         /// <summary>
-        /// Find the functions that maximize the Pearson coefficient between regressors and regressants factors
+        /// Find the functions that maximize the Pearson coefficient between regressors and regressants factors by Gusev method
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <param name="bgWorker">Background worker</param>
-        private void FunctionProcessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+        private void FunctionProcessingGusev(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
             // Check if mainBgWorker has been stopped
             if (bgWorker.CancellationPending) {
                 e.Cancel = true;
@@ -606,13 +607,77 @@ namespace Multiple_Linear_Regression {
             else {
                 // Find best functions for each regressors for each model
                 foreach(var model in Models) {
-                    model.StartFunctionalPreprocessing();
+                    model.StartGusevFunctionalPreprocessing();
 
                     // Add functions and correlation coefficients to data grid view
                     foreach (var regressor in model.ProcessFunctions) {
                         string regressorName = $"{RegressorsShortName[regressor.Key]} - {regressor.Key}";
                         // Add row of preprocess functions to data grid
-                        functionsForProcessingDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingDataGrid.Rows.Add(row.ToArray())),
+                        functionsForProcessingGusevDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingGusevDataGrid.Rows.Add(row.ToArray())),
+                            new List<string>() { model.RegressantName, regressorName,
+                                String.Join(", ", regressor.Value.ToArray()),
+                                Math.Abs(model.CorrelationCoefficient[regressor.Key]).ToString() });
+                    }
+                }
+
+                bgWorker.CancelAsync();
+            }
+        }
+
+        private void doFunctionalProcessOkunevButton_Click(object sender, EventArgs e) {
+            // Show warinig form
+            UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
+            warningForm.ShowDialog();
+            if (warningForm.AcceptAction) {
+                doFunctionalProcessGusevButton.Enabled = false;
+                RunBackgroundFunctionalProcessOkunevData();
+
+                doFunctionalProcessOkunevButton.Enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Run background worker for functional process data by Okunev method
+        /// </summary>
+        private void RunBackgroundFunctionalProcessOkunevData() {
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
+                functionsForProcessingOkunevDataGrid, true, new List<int>() { 3 });
+
+            // Background worker for function preprocessing
+            BackgroundWorker bgWorkerFunc = new BackgroundWorker();
+            bgWorkerFunc.DoWork += new DoWorkEventHandler((sender, e) => FunctionProcessingOkunev(sender, e, bgWorkerFunc));
+            bgWorkerFunc.WorkerSupportsCancellation = true;
+            bgWorkerFunc.RunWorkerAsync();
+
+            // Backgound worker for loading label
+            BackgroundWorker bgWorkerLabel = new BackgroundWorker();
+            bgWorkerLabel.DoWork += new DoWorkEventHandler((sender, e) =>
+                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLabel, bgWorkerFunc, labelFuncPreprocessOkunev, labelPreprocessingOkunevFinish));
+            bgWorkerLabel.WorkerSupportsCancellation = true;
+            bgWorkerLabel.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Find the functions that maximize the Pearson coefficient between regressors and regressants factors by Okunev method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <param name="bgWorker">Background worker</param>
+        private void FunctionProcessingOkunev(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+            // Check if mainBgWorker has been stopped
+            if (bgWorker.CancellationPending) {
+                e.Cancel = true;
+            }
+            else {
+                // Find best functions for each regressors for each model
+                foreach (var model in Models) {
+                    model.StartOkunevFunctionalPreprocessing();
+
+                    // Add functions and correlation coefficients to data grid view
+                    foreach (var regressor in model.ProcessFunctions) {
+                        string regressorName = $"{RegressorsShortName[regressor.Key]} - {regressor.Key}";
+                        // Add row of preprocess functions to data grid
+                        functionsForProcessingOkunevDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingOkunevDataGrid.Rows.Add(row.ToArray())),
                             new List<string>() { model.RegressantName, regressorName,
                                 String.Join(", ", regressor.Value.ToArray()),
                                 Math.Abs(model.CorrelationCoefficient[regressor.Key]).ToString() });
@@ -1194,7 +1259,14 @@ namespace Multiple_Linear_Regression {
                 }
             }
 
-            SimulationControlForm simulationForm = new SimulationControlForm(selectedModels, DetermFuncAreaDefinition());
+            // Get number group of correlated regressors
+            int numberGroupRegressors = 0;
+            if (manualNumberCorrIntervalRadio.Checked) {
+                numberGroupRegressors = (int)numberOfCorrIntervalsManual.Value;
+            }
+
+            SimulationControlForm simulationForm = new SimulationControlForm(selectedModels, DetermFuncAreaDefinition(), 
+                numberGroupRegressors);
             simulationForm.Show();
         }
 
@@ -1354,12 +1426,29 @@ namespace Multiple_Linear_Regression {
             }
         }
 
+        private void autoNumberCorrIntervalsRadio_CheckedChanged(object sender, EventArgs e) {
+            if (autoNumberCorrIntervalsRadio.Checked) {
+                manualNumberCorrIntervalRadio.Checked = false;
+                numberOfCorrIntervalsManual.Enabled = false;
+                CheckAcceptControlParameterButton();
+            }
+        }
+
+        private void manualNumberCorrIntervalRadio_CheckedChanged(object sender, EventArgs e) {
+            if (manualNumberCorrIntervalRadio.Checked) {
+                autoNumberCorrIntervalsRadio.Checked = false;
+                numberOfCorrIntervalsManual.Enabled = true;
+                CheckAcceptControlParameterButton();
+            }
+        }
+
         /// <summary>
         /// Check rule for enable accept control parameters button
         /// </summary>
         private void CheckAcceptControlParameterButton() {
             acceptControlsParametersButton.Enabled = (empDefAreaRadio.Checked || theoreticalAreaRadio.Checked ||
                 symbiosisAreaRadio.Checked) && (equallyBothWaysRadio.Checked || autoProportionRadio.Checked) &&
+                (autoNumberCorrIntervalsRadio.Checked || manualNumberCorrIntervalRadio.Checked) && 
                 (listSelectedModels.Items.Count > 0);
         }
 
@@ -1387,13 +1476,12 @@ namespace Multiple_Linear_Regression {
             symbiosisAreaRadio.Checked = true;
             percentAreaExpansion.Value = 10;
             autoProportionRadio.Checked = true;
+            numberOfCorrIntervalsManual.Value = 3;
+            autoNumberCorrIntervalsRadio.Checked = true;
+            numberOfCorrIntervalsManual.Maximum = Decimal.MaxValue;
             toolTipSymbiosis.SetToolTip(symbiosisAreaRadio, StepsInfo.SymbiosisInfo);
             toolTipAutoProportion.SetToolTip(autoProportionRadio, StepsInfo.AutoProportionInfo);
             toolTipPercentAreaExpansion.SetToolTip(percentAreaExpansion, StepsInfo.PercentAreaExpansion);
-
-            
-
-            
         }
 
         /// <summary>
@@ -1410,7 +1498,8 @@ namespace Multiple_Linear_Regression {
             labelResultDataLoad.Visible = false;
 
             ClearControlsGroupingFactors();
-            ClearControlsProcessData();
+            ClearControlsProcessDataGusev();
+            ClearControlsProcessDataOkunev();
             ClearControlsFilterFactors();
             ClearControlsBuildEquations();
         }
@@ -1429,11 +1518,21 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Function for clear controls on process data tab
         /// </summary>
-        private void ClearControlsProcessData() {
-            ClearDataGV(functionsForProcessingDataGrid);
-            doFunctionalProcessButton.Enabled = false;
-            labelFuncPreprocess.Visible = false;
-            labelPreprocessingFinish.Visible = false;
+        private void ClearControlsProcessDataGusev() {
+            ClearDataGV(functionsForProcessingGusevDataGrid);
+            doFunctionalProcessGusevButton.Enabled = false;
+            labelFuncPreprocessGusev.Visible = false;
+            labelPreprocessingGusevFinish.Visible = false;
+        }
+
+        /// <summary>
+        /// Function for clear controls on process data tab
+        /// </summary>
+        private void ClearControlsProcessDataOkunev() {
+            ClearDataGV(functionsForProcessingOkunevDataGrid);
+            doFunctionalProcessOkunevButton.Enabled = false;
+            labelFuncPreprocessOkunev.Visible = false;
+            labelPreprocessingOkunevFinish.Visible = false;
         }
 
         /// <summary>
@@ -1475,6 +1574,9 @@ namespace Multiple_Linear_Regression {
             percentAreaExpansion.Value = 10;
             percentAreaExpansion.Enabled = true;
             autoProportionRadio.Checked = true;
+            autoNumberCorrIntervalsRadio.Checked = true;
+            manualNumberCorrIntervalRadio.Checked = false;
+            numberOfCorrIntervalsManual.Value = 3;
             acceptControlsParametersButton.Enabled = false;
         }
 
@@ -1566,25 +1668,32 @@ namespace Multiple_Linear_Regression {
                 case 0:
                     helpAllStepsMenu.ToolTipText = StepsInfo.StepLoadData;
                     break;
-                case 2:
-                    helpAllStepsMenu.ToolTipText = StepsInfo.StepFormationRegressorsGroup;
-                    break;
                 case 1:
-                    helpAllStepsMenu.ToolTipText = StepsInfo.StepProcessFactors;
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepProcessFactorsGusev;
+                    break;
+                case 2:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepProcessFactorsOkunev;
                     break;
                 case 3:
-                    helpAllStepsMenu.ToolTipText = StepsInfo.StepFilterFactors;
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepFormationRegressorsGroup;
                     break;
                 case 4:
-                    helpAllStepsMenu.ToolTipText = StepsInfo.StepBuildEquations;
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepFilterFactors;
                     break;
                 case 5:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepBuildEquations;
+                    break;
+                case 6:
                     helpAllStepsMenu.ToolTipText = StepsInfo.StepSetImitationParameters;
                     break;
             }
         }
 
         private void MainForm_Resize(object sender, EventArgs e) {
+            isResizeNeeded = true;
+        }
+
+        private void MainForm_ResizeEnd(object sender, EventArgs e) {
             isResizeNeeded = true;
         }
 
@@ -1602,7 +1711,7 @@ namespace Multiple_Linear_Regression {
             }
             else {
                 while (true) {
-                    System.Threading.Thread.Sleep(20);
+                    System.Threading.Thread.Sleep(50);
                     if (isResizeNeeded) {
                         int newWidth = this.Width - 196;
                         int newHeight = this.Height - 67;
@@ -1670,18 +1779,32 @@ namespace Multiple_Linear_Regression {
                             new Point(labelGroupingRegressorsEnd.Location.X + widthDiff, labelGroupingRegressorsEnd.Location.Y + heightDiff));
 
 
-                        // Tab process data
-                        functionsForProcessingDataGrid.Invoke(new Action<Size>((size) => functionsForProcessingDataGrid.Size = size),
-                           new Size(functionsForProcessingDataGrid.Width + widthDiff, functionsForProcessingDataGrid.Height + heightDiff));
+                        // Tab process data Gusev
+                        functionsForProcessingGusevDataGrid.Invoke(new Action<Size>((size) => functionsForProcessingGusevDataGrid.Size = size),
+                           new Size(functionsForProcessingGusevDataGrid.Width + widthDiff, functionsForProcessingGusevDataGrid.Height + heightDiff));
 
-                        doFunctionalProcessButton.Invoke(new Action<Point>((loc) => doFunctionalProcessButton.Location = loc),
-                            new Point(doFunctionalProcessButton.Location.X + widthDiff, doFunctionalProcessButton.Location.Y));
+                        doFunctionalProcessGusevButton.Invoke(new Action<Point>((loc) => doFunctionalProcessGusevButton.Location = loc),
+                            new Point(doFunctionalProcessGusevButton.Location.X + widthDiff, doFunctionalProcessGusevButton.Location.Y));
 
-                        labelPreprocessingFinish.Invoke(new Action<Point>((loc) => labelPreprocessingFinish.Location = loc),
-                            new Point(labelPreprocessingFinish.Location.X + widthDiff, labelPreprocessingFinish.Location.Y + heightDiff));
+                        labelPreprocessingGusevFinish.Invoke(new Action<Point>((loc) => labelPreprocessingGusevFinish.Location = loc),
+                            new Point(labelPreprocessingGusevFinish.Location.X + widthDiff, labelPreprocessingGusevFinish.Location.Y + heightDiff));
 
-                        labelFuncPreprocess.Invoke(new Action<Point>((loc) => labelFuncPreprocess.Location = loc),
-                            new Point(labelFuncPreprocess.Location.X + widthDiff, labelFuncPreprocess.Location.Y + heightDiff));
+                        labelFuncPreprocessGusev.Invoke(new Action<Point>((loc) => labelFuncPreprocessGusev.Location = loc),
+                            new Point(labelFuncPreprocessGusev.Location.X + widthDiff, labelFuncPreprocessGusev.Location.Y + heightDiff));
+
+
+                        // Tab process data Okunev
+                        functionsForProcessingOkunevDataGrid.Invoke(new Action<Size>((size) => functionsForProcessingOkunevDataGrid.Size = size),
+                           new Size(functionsForProcessingOkunevDataGrid.Width + widthDiff, functionsForProcessingOkunevDataGrid.Height + heightDiff));
+
+                        doFunctionalProcessOkunevButton.Invoke(new Action<Point>((loc) => doFunctionalProcessOkunevButton.Location = loc),
+                            new Point(doFunctionalProcessOkunevButton.Location.X + widthDiff, doFunctionalProcessOkunevButton.Location.Y));
+
+                        labelPreprocessingOkunevFinish.Invoke(new Action<Point>((loc) => labelPreprocessingOkunevFinish.Location = loc),
+                            new Point(labelPreprocessingOkunevFinish.Location.X + widthDiff, labelPreprocessingOkunevFinish.Location.Y + heightDiff));
+
+                        labelFuncPreprocessOkunev.Invoke(new Action<Point>((loc) => labelFuncPreprocessOkunev.Location = loc),
+                            new Point(labelFuncPreprocessOkunev.Location.X + widthDiff, labelFuncPreprocessOkunev.Location.Y + heightDiff));
 
 
                         // Tab filter data
@@ -1716,10 +1839,10 @@ namespace Multiple_Linear_Regression {
                         // The height of one element in the list is 13, so for a smooth drawing of the lists
                         // will change their height to a multiple of 13
                         int heightMainTab = controlSimulationTab.Height;
-                        int listsHeight = ((heightMainTab - 152 - 17) / 13) * 13 + 17;
+                        int listsHeight = ((heightMainTab - 74 - 17) / 13) * 13 + 17;
 
                         labelSelectDefAreaParams.Invoke(new Action<Point>((loc) => labelSelectDefAreaParams.Location = loc),
-                            new Point(controlSimulationTab.Width / 8 * 5, labelSelectDefAreaParams.Location.Y));
+                            new Point(controlSimulationTab.Width / 8 * 5 + 20, labelSelectDefAreaParams.Location.Y));
 
                         groupDefinitionAreaType.Invoke(new Action<Point>((loc) => groupDefinitionAreaType.Location = loc),
                             new Point(labelSelectDefAreaParams.Location.X, groupDefinitionAreaType.Location.Y));
@@ -1730,8 +1853,8 @@ namespace Multiple_Linear_Regression {
                         groupProportionOfAreaExpansion.Invoke(new Action<Point>((loc) => groupProportionOfAreaExpansion.Location = loc),
                             new Point(labelSelectDefAreaParams.Location.X, groupProportionOfAreaExpansion.Location.Y));
 
-                        acceptControlsParametersButton.Invoke(new Action<Point>((loc) => acceptControlsParametersButton.Location = loc),
-                            new Point(labelSelectDefAreaParams.Location.X + 43, acceptControlsParametersButton.Location.Y));
+                        groupNumberCorrelatedIntervals.Invoke(new Action<Point>((loc) => groupNumberCorrelatedIntervals.Location = loc),
+                            new Point(labelSelectDefAreaParams.Location.X, groupNumberCorrelatedIntervals.Location.Y));
 
                         toSelectModelsList.Invoke(new Action<Point>((loc) => toSelectModelsList.Location = loc),
                            new Point(controlSimulationTab.Width / 4, toSelectModelsList.Location.Y));
@@ -1750,6 +1873,13 @@ namespace Multiple_Linear_Regression {
 
                         listAvailabelModels.Invoke(new Action<Point>((loc) => listAvailabelModels.Location = loc),
                             new Point(toSelectModelsList.Location.X + 49, listAvailabelModels.Location.Y));
+
+                        int acceptButtonSpace = (groupProportionOfAreaExpansion.Location.X - (listAvailabelModels.Location.X
+                            + listAvailabelModels.Width)) / 2 - acceptControlsParametersButton.Width / 2;
+
+                        acceptControlsParametersButton.Invoke(new Action<Point>((loc) => acceptControlsParametersButton.Location = loc),
+                            new Point(listAvailabelModels.Location.X + listAvailabelModels.Width + acceptButtonSpace,
+                            acceptControlsParametersButton.Location.Y));
 
                         labelAvailableModels.Invoke(new Action<Point>((loc) => labelAvailableModels.Location = loc),
                             new Point(listAvailabelModels.Location.X - 3, labelAvailableModels.Location.Y));
