@@ -1693,6 +1693,10 @@ namespace Multiple_Linear_Regression {
             isResizeNeeded = true;
         }
 
+        private void MainForm_ResizeEnd(object sender, EventArgs e) {
+            isResizeNeeded = true;
+        }
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
             resizeWorker.CancelAsync();
         }
@@ -1707,7 +1711,7 @@ namespace Multiple_Linear_Regression {
             }
             else {
                 while (true) {
-                    System.Threading.Thread.Sleep(20);
+                    System.Threading.Thread.Sleep(50);
                     if (isResizeNeeded) {
                         int newWidth = this.Width - 196;
                         int newHeight = this.Height - 67;
@@ -1855,9 +1859,6 @@ namespace Multiple_Linear_Regression {
                         toSelectModelsList.Invoke(new Action<Point>((loc) => toSelectModelsList.Location = loc),
                            new Point(controlSimulationTab.Width / 4, toSelectModelsList.Location.Y));
 
-                        acceptControlsParametersButton.Invoke(new Action<Point>((loc) => acceptControlsParametersButton.Location = loc),
-                            new Point(groupProportionOfAreaExpansion.Location.X - 107, acceptControlsParametersButton.Location.Y));
-
                         toAvailableModelsList.Invoke(new Action<Point>((loc) => toAvailableModelsList.Location = loc),
                            new Point(controlSimulationTab.Width / 4, toAvailableModelsList.Location.Y));
 
@@ -1872,6 +1873,13 @@ namespace Multiple_Linear_Regression {
 
                         listAvailabelModels.Invoke(new Action<Point>((loc) => listAvailabelModels.Location = loc),
                             new Point(toSelectModelsList.Location.X + 49, listAvailabelModels.Location.Y));
+
+                        int acceptButtonSpace = (groupProportionOfAreaExpansion.Location.X - (listAvailabelModels.Location.X
+                            + listAvailabelModels.Width)) / 2 - acceptControlsParametersButton.Width / 2;
+
+                        acceptControlsParametersButton.Invoke(new Action<Point>((loc) => acceptControlsParametersButton.Location = loc),
+                            new Point(listAvailabelModels.Location.X + listAvailabelModels.Width + acceptButtonSpace,
+                            acceptControlsParametersButton.Location.Y));
 
                         labelAvailableModels.Invoke(new Action<Point>((loc) => labelAvailableModels.Location = loc),
                             new Point(listAvailabelModels.Location.X - 3, labelAvailableModels.Location.Y));

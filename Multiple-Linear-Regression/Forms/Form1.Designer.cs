@@ -1101,6 +1101,7 @@
             this.Name = "MainForm";
             this.Text = "Многомерная Линейная Регрессия";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.ResizeEnd += new System.EventHandler(this.MainForm_ResizeEnd);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.allTabs.ResumeLayout(false);
             this.loadDataTab.ResumeLayout(false);

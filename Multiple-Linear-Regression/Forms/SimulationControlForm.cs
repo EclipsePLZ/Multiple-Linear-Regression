@@ -682,6 +682,10 @@ namespace Multiple_Linear_Regression.Forms {
             isResizeNeeded = true;
         }
 
+        private void SimulationControlForm_ResizeEnd(object sender, EventArgs e) {
+            isResizeNeeded = true;
+        }
+
         private void exitFormMenuItem_Click(object sender, EventArgs e) {
             this.Close();
         }
