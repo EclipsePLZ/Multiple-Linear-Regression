@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static OfficeOpenXml.ExcelErrorValue;
 
 namespace Multiple_Linear_Regression.Forms {
     public partial class SimulationControlForm : Form {
@@ -146,14 +147,31 @@ namespace Multiple_Linear_Regression.Forms {
 
             RegressorsImpact = new Dictionary<string, Dictionary<string, Dictionary<string, double>>>();
 
+            // Find threshold correlation coefficients
+            List<double> corrIntervals = GetCorrIntervals();
+
             // For each regressor, find the impact on the other regressors
             foreach (var mainRegressorName in SelectedStartRegressors.Keys) {
                 Dictionary<string, Dictionary<string, double>> nextSecsRegressorsForMain =
                     new Dictionary<string, Dictionary<string, double>>();
                 List<string> unUsedRegressors = new List<string>(SelectedStartRegressors.Keys);
+                List<List<string>> groupsRegressors = new List<List<string>>();
+
                 List<string> firstGroupRegressors = new List<string>();
                 List<string> secondGroupRegressors = new List<string>();
                 unUsedRegressors.Remove(mainRegressorName);
+
+                // Fill second regressors for main regressor
+                foreach (var corrLevel in corrIntervals) {
+
+                    // Find regressors for next correlation level
+                    List<string> nextGroupRegressors = RegressorsForImpact(unUsedRegressors, mainRegressorName, corrLevel);
+                    
+                    if (nextGroupRegressors.Count > 0) {
+                        groupsRegressors.Add(nextGroupRegressors);
+                        FillNextGroupRegressors(ref nextSecsRegressorsForMain, groupsRegressors, mainRegressorName);
+                    }
+                }
 
                 // Find impact coefficient for regressos in first group
                 firstGroupRegressors = RegressorsForImpact(unUsedRegressors, mainRegressorName, 0.7);
@@ -227,6 +245,24 @@ namespace Multiple_Linear_Regression.Forms {
         }
 
         /// <summary>
+        /// Get threshold values for find correlation group of regressors
+        /// </summary>
+        /// <returns>List of threshold values</returns>
+        private List<double> GetCorrIntervals() {
+            List<double> thresholdValues = new List<double>();
+            double oneStep = 1.0 / NumberGroupOfCorrelatedRegressors;
+
+            // Find next threshold value
+            for (int i = 0; i < NumberGroupOfCorrelatedRegressors; i++) {
+                thresholdValues.Add(oneStep * i);
+            }
+
+             thresholdValues.Reverse();
+
+            return thresholdValues;
+        }
+
+        /// <summary>
         /// Get regressors wich coefficient of correlation more than threshold value
         /// </summary>
         /// <param name="secRegressors">List of regressors to choose from</param>
@@ -244,6 +280,44 @@ namespace Multiple_Linear_Regression.Forms {
             }
 
             return selectedRegressors;
+        }
+
+        /// <summary>
+        /// Fill dictionary impact for group of regressors
+        /// </summary>
+        /// <param name="regressorsForMain">Dictionary impact for main regressor</param>
+        /// <param name="groupsOfRegressors"></param>
+        /// <param name="mainRegressor"></param>
+        private void FillNextGroupRegressors(ref Dictionary<string, Dictionary<string, double>> regressorsForMain,
+            List<List<string>> groupsOfRegressors, string mainRegressor) {
+
+            foreach (var secRegressor in groupsOfRegressors[-1]) {
+                regressorsForMain[secRegressor] = ImpactCoefficientsGroup(secRegressor, mainRegressor,
+                    groupsOfRegressors.GetRange(0, groupsOfRegressors.Count() - 1));
+            }
+        }
+
+        /// <summary>
+        /// Find coefficients of impact between correlated regressors
+        /// </summary>
+        /// <param name="yRegressor">Y-regressor</param>
+        /// <param name="xRegressor">X-regressor</param>
+        /// <param name="prevGroupsRegressors">Groups of regressors with a high correlation coefficient</param>
+        /// <returns>Coefficients of impact between regressors</returns>
+        private Dictionary<string, double> ImpactCoefficientsGroup(string yRegressor, string xRegressor, 
+            List<List<string>> prevGroupsRegressors) {
+
+            double rValue = 0;
+
+            if (prevGroupsRegressors.Count > 0) { 
+
+            }
+            else {
+                rValue = Statistics.PearsonCorrelationCoefficient(SelectedStartRegressors[yRegressor],
+                SelectedStartRegressors[xRegressor]);
+            }
+
+            return GetCoefficientsForImpactEquation(rValue, yRegressor, xRegressor);
         }
 
         /// <summary>
