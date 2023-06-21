@@ -173,48 +173,48 @@ namespace Multiple_Linear_Regression.Forms {
                     }
                 }
 
-                // Find impact coefficient for regressos in first group
-                firstGroupRegressors = RegressorsForImpact(unUsedRegressors, mainRegressorName, 0.7);
-                if (firstGroupRegressors.Count > 0) {
-                    FillFirstGroupRegressors(ref nextSecsRegressorsForMain, firstGroupRegressors, mainRegressorName);
-                    unUsedRegressors = unUsedRegressors.Except(firstGroupRegressors).ToList();
-                }
+                //// Find impact coefficient for regressos in first group
+                //firstGroupRegressors = RegressorsForImpact(unUsedRegressors, mainRegressorName, 0.7);
+                //if (firstGroupRegressors.Count > 0) {
+                //    FillFirstGroupRegressors(ref nextSecsRegressorsForMain, firstGroupRegressors, mainRegressorName);
+                //    unUsedRegressors = unUsedRegressors.Except(firstGroupRegressors).ToList();
+                //}
 
 
-                // Find impact coefficient for regressors in second group
-                secondGroupRegressors = RegressorsForImpact(unUsedRegressors, mainRegressorName, 0.3);
+                //// Find impact coefficient for regressors in second group
+                //secondGroupRegressors = RegressorsForImpact(unUsedRegressors, mainRegressorName, 0.3);
 
-                if (secondGroupRegressors.Count > 0) {
-                    if (firstGroupRegressors.Count == 0) {
-                        FillFirstGroupRegressors(ref nextSecsRegressorsForMain, secondGroupRegressors, mainRegressorName);
-                    }
-                    else if (firstGroupRegressors.Count > 0) {
-                        FillSecondGroupRegressors(ref nextSecsRegressorsForMain, secondGroupRegressors, firstGroupRegressors,
-                            mainRegressorName);
-                    }
-                    unUsedRegressors = unUsedRegressors.Except(secondGroupRegressors).ToList();
-                }
+                //if (secondGroupRegressors.Count > 0) {
+                //    if (firstGroupRegressors.Count == 0) {
+                //        FillFirstGroupRegressors(ref nextSecsRegressorsForMain, secondGroupRegressors, mainRegressorName);
+                //    }
+                //    else if (firstGroupRegressors.Count > 0) {
+                //        FillSecondGroupRegressors(ref nextSecsRegressorsForMain, secondGroupRegressors, firstGroupRegressors,
+                //            mainRegressorName);
+                //    }
+                //    unUsedRegressors = unUsedRegressors.Except(secondGroupRegressors).ToList();
+                //}
 
 
 
-                // Find impact coefficient for regressors in third group
-                if (unUsedRegressors.Count > 0) {
-                    if (firstGroupRegressors.Count == 0 && secondGroupRegressors.Count == 0) {
-                        FillFirstGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, mainRegressorName);
-                    }
-                    else if (firstGroupRegressors.Count == 0 && secondGroupRegressors.Count != 0) {
-                        FillSecondGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, secondGroupRegressors,
-                            mainRegressorName);
-                    }
-                    else if (firstGroupRegressors.Count != 0 && secondGroupRegressors.Count == 0) {
-                        FillSecondGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, firstGroupRegressors,
-                            mainRegressorName);
-                    }
-                    else {
-                        FillThirdGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, firstGroupRegressors,
-                            secondGroupRegressors, mainRegressorName);
-                    }
-                }
+                //// Find impact coefficient for regressors in third group
+                //if (unUsedRegressors.Count > 0) {
+                //    if (firstGroupRegressors.Count == 0 && secondGroupRegressors.Count == 0) {
+                //        FillFirstGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, mainRegressorName);
+                //    }
+                //    else if (firstGroupRegressors.Count == 0 && secondGroupRegressors.Count != 0) {
+                //        FillSecondGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, secondGroupRegressors,
+                //            mainRegressorName);
+                //    }
+                //    else if (firstGroupRegressors.Count != 0 && secondGroupRegressors.Count == 0) {
+                //        FillSecondGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, firstGroupRegressors,
+                //            mainRegressorName);
+                //    }
+                //    else {
+                //        FillThirdGroupRegressors(ref nextSecsRegressorsForMain, unUsedRegressors, firstGroupRegressors,
+                //            secondGroupRegressors, mainRegressorName);
+                //    }
+                //}
 
                 RegressorsImpact[mainRegressorName] = nextSecsRegressorsForMain;
             }
@@ -309,15 +309,59 @@ namespace Multiple_Linear_Regression.Forms {
 
             double rValue = 0;
 
-            if (prevGroupsRegressors.Count > 0) { 
+            if (prevGroupsRegressors.Count > 0) {
+                List<int> indexesOfRegressors = Enumerable.Repeat(0, prevGroupsRegressors.Count).ToList();
 
+                // Find rValue
+                while (true) {
+
+                    // Check if we have used all regressors
+                    if (indexesOfRegressors[0] >= prevGroupsRegressors[0].Count) {
+                        break;
+                    }
+
+                    double nextCoeff = 1;
+                    string leftRegressor = xRegressor;
+                    string rightRegressor = "";
+
+                    // Find next multiple of correlation coefficients for r-value
+                    for (int i = 0; i < indexesOfRegressors.Count; i++) {
+                        rightRegressor = prevGroupsRegressors[0][indexesOfRegressors[i]];
+                        nextCoeff *= RegressorsCorrelation[leftRegressor][rightRegressor];
+                        leftRegressor = rightRegressor;
+                    }
+
+                    rValue += nextCoeff;
+                    CalcIndexesOfNextRegressors(ref indexesOfRegressors, prevGroupsRegressors,
+                        indexesOfRegressors.Count - 1);
+                }
             }
             else {
-                rValue = Statistics.PearsonCorrelationCoefficient(SelectedStartRegressors[yRegressor],
-                SelectedStartRegressors[xRegressor]);
+                rValue = RegressorsCorrelation[yRegressor][xRegressor];
+                //rValue = Statistics.PearsonCorrelationCoefficient(SelectedStartRegressors[yRegressor],
+                //SelectedStartRegressors[xRegressor]);
             }
 
             return GetCoefficientsForImpactEquation(rValue, yRegressor, xRegressor);
+        }
+
+        /// <summary>
+        /// Finding regressor indexes to calculate the next term in the r-value
+        /// </summary>
+        /// <param name="indexesOfRegressors">List with indexes for next coeff in r-value</param>
+        /// <param name="prevGroupsRegressors">Groups of more correlated regressors</param>
+        /// <param name="position">Variable regressor position</param>
+        private void CalcIndexesOfNextRegressors(ref List<int> indexesOfRegressors, 
+            List<List<string>> prevGroupsRegressors, int position) {
+
+            if (position >= 0 && indexesOfRegressors[position] == prevGroupsRegressors.Count - 1) {
+                indexesOfRegressors[position] = 0;
+                CalcIndexesOfNextRegressors(ref indexesOfRegressors, prevGroupsRegressors, position - 1);
+            }
+            else if (position < 0) {
+                indexesOfRegressors[0]++;
+            }
+            indexesOfRegressors[position]++;
         }
 
         /// <summary>
