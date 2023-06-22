@@ -131,7 +131,7 @@ namespace Multiple_Linear_Regression.Forms {
         /// Automatically find the number of groups for correlated regressors 
         /// </summary>
         private void CalcNumberGroupOfCorrelatedRegressors() {
-            NumberGroupOfCorrelatedRegressors = (int)(AllRegressors.Count / 5);
+            NumberGroupOfCorrelatedRegressors = (int)Math.Log(2,AllRegressors.Count);
 
             if (NumberGroupOfCorrelatedRegressors < 3) {
                 NumberGroupOfCorrelatedRegressors = 3;

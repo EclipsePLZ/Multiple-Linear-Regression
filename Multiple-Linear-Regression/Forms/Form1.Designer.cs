@@ -109,6 +109,12 @@
             this.toolTipSymbiosis = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipAutoProportion = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipPercentAreaExpansion = new System.Windows.Forms.ToolTip(this.components);
+            this.groupTaskType = new System.Windows.Forms.GroupBox();
+            this.radioControlTask = new System.Windows.Forms.RadioButton();
+            this.radioPredictionTask = new System.Windows.Forms.RadioButton();
+            this.predictionTab = new System.Windows.Forms.TabPage();
+            this.realPredictValuesDataGrid = new System.Windows.Forms.DataGridView();
+            this.predictionMetricsDataGrid = new System.Windows.Forms.DataGridView();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).BeginInit();
@@ -134,6 +140,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.percentAreaExpansion)).BeginInit();
             this.groupDefinitionAreaType.SuspendLayout();
             this.menuStrip.SuspendLayout();
+            this.groupTaskType.SuspendLayout();
+            this.predictionTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.realPredictValuesDataGrid)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.predictionMetricsDataGrid)).BeginInit();
             this.SuspendLayout();
             // 
             // WorkFileMenuItem
@@ -169,6 +179,7 @@
             this.allTabs.Controls.Add(this.removeUnimportantFactorsTab);
             this.allTabs.Controls.Add(this.buildRegrEquationsTab);
             this.allTabs.Controls.Add(this.controlSimulationTab);
+            this.allTabs.Controls.Add(this.predictionTab);
             this.allTabs.Location = new System.Drawing.Point(177, 27);
             this.allTabs.Name = "allTabs";
             this.allTabs.SelectedIndex = 0;
@@ -178,6 +189,7 @@
             // 
             // loadDataTab
             // 
+            this.loadDataTab.Controls.Add(this.groupTaskType);
             this.loadDataTab.Controls.Add(this.labelResultDataLoad);
             this.loadDataTab.Controls.Add(this.checkPairwiseCombinations);
             this.loadDataTab.Controls.Add(this.clearSelectedFactorsButton);
@@ -220,7 +232,7 @@
             // 
             this.clearSelectedFactorsButton.Enabled = false;
             this.clearSelectedFactorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.clearSelectedFactorsButton.Location = new System.Drawing.Point(663, 203);
+            this.clearSelectedFactorsButton.Location = new System.Drawing.Point(663, 143);
             this.clearSelectedFactorsButton.Name = "clearSelectedFactorsButton";
             this.clearSelectedFactorsButton.Size = new System.Drawing.Size(138, 28);
             this.clearSelectedFactorsButton.TabIndex = 14;
@@ -244,7 +256,7 @@
             // 
             this.selectRegressorsButton.Enabled = false;
             this.selectRegressorsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.selectRegressorsButton.Location = new System.Drawing.Point(663, 107);
+            this.selectRegressorsButton.Location = new System.Drawing.Point(663, 72);
             this.selectRegressorsButton.Name = "selectRegressorsButton";
             this.selectRegressorsButton.Size = new System.Drawing.Size(138, 49);
             this.selectRegressorsButton.TabIndex = 12;
@@ -256,7 +268,7 @@
             // 
             this.selectRegressantsButton.Enabled = false;
             this.selectRegressantsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.selectRegressantsButton.Location = new System.Drawing.Point(663, 35);
+            this.selectRegressantsButton.Location = new System.Drawing.Point(663, 16);
             this.selectRegressantsButton.Name = "selectRegressantsButton";
             this.selectRegressantsButton.Size = new System.Drawing.Size(138, 49);
             this.selectRegressantsButton.TabIndex = 11;
@@ -1085,6 +1097,78 @@
             this.labelRegressorsList.TabIndex = 8;
             this.labelRegressorsList.Text = "Управляющие факторы:";
             // 
+            // groupTaskType
+            // 
+            this.groupTaskType.Controls.Add(this.radioPredictionTask);
+            this.groupTaskType.Controls.Add(this.radioControlTask);
+            this.groupTaskType.Location = new System.Drawing.Point(663, 196);
+            this.groupTaskType.Name = "groupTaskType";
+            this.groupTaskType.Size = new System.Drawing.Size(138, 69);
+            this.groupTaskType.TabIndex = 17;
+            this.groupTaskType.TabStop = false;
+            this.groupTaskType.Text = "Тип задачи";
+            // 
+            // radioControlTask
+            // 
+            this.radioControlTask.AutoSize = true;
+            this.radioControlTask.Location = new System.Drawing.Point(6, 23);
+            this.radioControlTask.Name = "radioControlTask";
+            this.radioControlTask.Size = new System.Drawing.Size(87, 17);
+            this.radioControlTask.TabIndex = 0;
+            this.radioControlTask.TabStop = true;
+            this.radioControlTask.Text = "Управление";
+            this.radioControlTask.UseVisualStyleBackColor = true;
+            this.radioControlTask.CheckedChanged += new System.EventHandler(this.radioControlTask_CheckedChanged);
+            // 
+            // radioPredictionTask
+            // 
+            this.radioPredictionTask.AutoSize = true;
+            this.radioPredictionTask.Location = new System.Drawing.Point(6, 46);
+            this.radioPredictionTask.Name = "radioPredictionTask";
+            this.radioPredictionTask.Size = new System.Drawing.Size(116, 17);
+            this.radioPredictionTask.TabIndex = 1;
+            this.radioPredictionTask.TabStop = true;
+            this.radioPredictionTask.Text = "Прогнозирование";
+            this.radioPredictionTask.UseVisualStyleBackColor = true;
+            this.radioPredictionTask.CheckedChanged += new System.EventHandler(this.radioPredictionTask_CheckedChanged);
+            // 
+            // predictionTab
+            // 
+            this.predictionTab.Controls.Add(this.predictionMetricsDataGrid);
+            this.predictionTab.Controls.Add(this.realPredictValuesDataGrid);
+            this.predictionTab.Location = new System.Drawing.Point(4, 22);
+            this.predictionTab.Name = "predictionTab";
+            this.predictionTab.Size = new System.Drawing.Size(816, 390);
+            this.predictionTab.TabIndex = 7;
+            this.predictionTab.Text = "Прогнозирование";
+            this.predictionTab.UseVisualStyleBackColor = true;
+            // 
+            // realPredictValuesDataGrid
+            // 
+            this.realPredictValuesDataGrid.AllowUserToAddRows = false;
+            this.realPredictValuesDataGrid.AllowUserToDeleteRows = false;
+            this.realPredictValuesDataGrid.AllowUserToResizeRows = false;
+            this.realPredictValuesDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.realPredictValuesDataGrid.Location = new System.Drawing.Point(3, 3);
+            this.realPredictValuesDataGrid.Name = "realPredictValuesDataGrid";
+            this.realPredictValuesDataGrid.ReadOnly = true;
+            this.realPredictValuesDataGrid.RowHeadersWidth = 51;
+            this.realPredictValuesDataGrid.Size = new System.Drawing.Size(632, 265);
+            this.realPredictValuesDataGrid.TabIndex = 13;
+            // 
+            // predictionMetricsDataGrid
+            // 
+            this.predictionMetricsDataGrid.AllowUserToAddRows = false;
+            this.predictionMetricsDataGrid.AllowUserToDeleteRows = false;
+            this.predictionMetricsDataGrid.AllowUserToResizeRows = false;
+            this.predictionMetricsDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.predictionMetricsDataGrid.Location = new System.Drawing.Point(3, 274);
+            this.predictionMetricsDataGrid.Name = "predictionMetricsDataGrid";
+            this.predictionMetricsDataGrid.ReadOnly = true;
+            this.predictionMetricsDataGrid.RowHeadersWidth = 51;
+            this.predictionMetricsDataGrid.Size = new System.Drawing.Size(632, 113);
+            this.predictionMetricsDataGrid.TabIndex = 14;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1141,6 +1225,11 @@
             this.groupDefinitionAreaType.PerformLayout();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
+            this.groupTaskType.ResumeLayout(false);
+            this.groupTaskType.PerformLayout();
+            this.predictionTab.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.realPredictValuesDataGrid)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.predictionMetricsDataGrid)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1231,6 +1320,12 @@
         private System.Windows.Forms.Label labelFuncPreprocessOkunev;
         private System.Windows.Forms.Button doFunctionalProcessOkunevButton;
         private System.Windows.Forms.DataGridView functionsForProcessingOkunevDataGrid;
+        private System.Windows.Forms.GroupBox groupTaskType;
+        private System.Windows.Forms.RadioButton radioPredictionTask;
+        private System.Windows.Forms.RadioButton radioControlTask;
+        private System.Windows.Forms.TabPage predictionTab;
+        private System.Windows.Forms.DataGridView predictionMetricsDataGrid;
+        private System.Windows.Forms.DataGridView realPredictValuesDataGrid;
     }
 }
 

@@ -101,6 +101,12 @@
     <Compile Include="Forms\FileRegressors.Designer.cs">
       <DependentUpon>FileRegressors.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\PredictionParametersFrom.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\PredictionParametersFrom.Designer.cs">
+      <DependentUpon>PredictionParametersFrom.cs</DependentUpon>
+    </Compile>
     <Compile Include="Mathematic\Algebra.cs" />
     <Compile Include="Forms\ExitForm.cs">
       <SubType>Form</SubType>
@@ -150,6 +156,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\PredictionParametersFrom.resx">
+      <DependentUpon>PredictionParametersFrom.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SimulationControlForm.resx">
       <DependentUpon>SimulationControlForm.cs</DependentUpon>

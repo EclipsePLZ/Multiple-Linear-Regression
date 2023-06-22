@@ -25,7 +25,10 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, int> Headers { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, string> RegressorsShortName { get; set; } = new Dictionary<string, string>();
         private Dictionary<string, List<double>> BaseRegressors { get; set; } = new Dictionary<string, List<double>>();
+        private Dictionary<string, List<double>> BaseRegressants { get; set; } = new Dictionary<string, List<double>>();
         private Dictionary<string, List<Model>> ModelsForRegressants { get; set; }
+        private bool IsPredictionTask { get; set; }
+        private bool IsControlTask { get; set; }
         private List<Model> BestModels { get; set; }
         private List<Model> Models { get; set; } = new List<Model>();
 
@@ -221,8 +224,11 @@ namespace Multiple_Linear_Regression {
         }
 
         private void acceptFactorsButton_Click(object sender, EventArgs e) {
-            if (RegressorsHeaders.Count > 0 && RegressantsHeaders.Count > 0) {
+            if (RegressorsHeaders.Count > 0 && RegressantsHeaders.Count > 0 && (radioPredictionTask.Checked || radioControlTask.Checked)) {
                 LoadValuesForFactors();
+
+                IsControlTask = radioControlTask.Checked;
+                IsPredictionTask = radioPredictionTask.Checked;
 
                 // Create pairwise combinations of factors if it's needed
                 if (checkPairwiseCombinations.Checked) {
@@ -234,6 +240,11 @@ namespace Multiple_Linear_Regression {
                 ClearControlsProcessDataOkunev();
                 ClearControlsFilterFactors();
                 ClearControlsBuildEquations();
+
+                // Change value factor if prediction task was choosen
+                if (radioPredictionTask.Checked) {
+                    ChangeFactorsValuesForPrediction();
+                }
 
                 FillRegressorsForModels();
 
@@ -253,8 +264,11 @@ namespace Multiple_Linear_Regression {
                 else if (RegressantsHeaders.Count == 0) {
                     MessageBox.Show("Вы не выбрали управляемые факторы для исследования");
                 }
-                else {
+                else if (RegressorsHeaders.Count == 0) {
                     MessageBox.Show("Вы не выбрали управляющие факторы для исследования");
+                }
+                else if (!radioControlTask.Checked && !radioPredictionTask.Checked) {
+                    MessageBox.Show("Вы не выбрали тип решаемой задачи");
                 }
             }
         }
@@ -263,7 +277,7 @@ namespace Multiple_Linear_Regression {
         /// Load values for selected factors from data grid view
         /// </summary>
         private void LoadValuesForFactors() {
-            Models.Clear();
+            BaseRegressants.Clear();
             BaseRegressors.Clear();
             
             // Load regressants
@@ -273,7 +287,7 @@ namespace Multiple_Linear_Regression {
                 for (int row = 0; row < factorsData.Rows.Count; row++) {
                     regressantValues.Add(Convert.ToDouble(factorsData[factor.Value, row].Value));
                 }
-                Models.Add(new Model(factor.Key, regressantValues));
+                BaseRegressants[factor.Key] = regressantValues;
             }
 
             // Load regressors
@@ -310,10 +324,36 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
+        /// Perform a time lag shift for the prediction task
+        /// </summary>
+        private void ChangeFactorsValuesForPrediction() {
+            int valuesCount = BaseRegressants[BaseRegressants.Keys.First()].Count;
+            // Show form for set parameters for prediction task
+            PredictionParametersFrom form = new PredictionParametersFrom(valuesCount);
+            form.Show();
+
+            int numberOfValuesForDelete = form.LagValue * form.NumberObserInOneTimeInterval;
+            int newNumberOfValues = valuesCount - numberOfValuesForDelete;
+
+            // Perform a shift of the defining indicators
+            foreach (var regressorName in BaseRegressors.Keys) {
+                BaseRegressors[regressorName] = BaseRegressors[regressorName].GetRange(0, newNumberOfValues);
+            }
+
+            // Perform a shift of the forecast indicators
+            foreach (var regressantName in BaseRegressants.Keys) {
+                BaseRegressants[regressantName] = BaseRegressants[regressantName].GetRange(numberOfValuesForDelete, newNumberOfValues);
+            }
+        }
+
+        /// <summary>
         /// Set regressors and regressors names for each model
         /// </summary>
         private void FillRegressorsForModels() {
-            Models.ForEach(model => model.SetNewRegressors(BaseRegressors));
+            Models.Clear();
+            foreach (var regressant in BaseRegressants) {
+                Models.Add(new Model(regressant.Key, regressant.Value, BaseRegressors));
+            }
         }
 
         private void groupedRegressorsButton_Click(object sender, EventArgs e) {
@@ -822,7 +862,14 @@ namespace Multiple_Linear_Regression {
 
             ClearControlsImitationParameters();
 
-            controlSimulationTab.Enabled = true;
+            FillPredictionTab();
+
+            if (IsPredictionTask) {
+                predictionTab.Enabled = true;
+            }
+            else if (IsControlTask) {
+                controlSimulationTab.Enabled = true;
+            }
         }
 
         /// <summary>
@@ -1249,6 +1296,10 @@ namespace Multiple_Linear_Regression {
             return bestModel;
         }
 
+        private void FillPredictionTab() {
+
+        }
+
         private void acceptControlsParametersButton_Click(object sender, EventArgs e) {
             // Fill selected models
             List<string> selectedModelsNames = listSelectedModels.Items.Cast<String>().ToList();
@@ -1452,6 +1503,18 @@ namespace Multiple_Linear_Regression {
                 (listSelectedModels.Items.Count > 0);
         }
 
+        private void radioControlTask_CheckedChanged(object sender, EventArgs e) {
+            if (radioControlTask.Checked) {
+                radioPredictionTask.Checked = false;
+            }
+        }
+
+        private void radioPredictionTask_CheckedChanged(object sender, EventArgs e) {
+            if (radioPredictionTask.Checked) {
+                radioControlTask.Checked = false;
+            }
+        }
+
         private void ValidateKeyPressedOnlyNums(object sender, KeyPressEventArgs e) {
             e.Handled = CheckNumericIntValue(e);
         }
@@ -1496,6 +1559,8 @@ namespace Multiple_Linear_Regression {
             regressantsList.Items.Clear();
             regressorsList.Items.Clear();
             labelResultDataLoad.Visible = false;
+            radioControlTask.Checked = true;
+            radioPredictionTask.Checked = false;
 
             ClearControlsGroupingFactors();
             ClearControlsProcessDataGusev();
@@ -1578,6 +1643,14 @@ namespace Multiple_Linear_Regression {
             manualNumberCorrIntervalRadio.Checked = false;
             numberOfCorrIntervalsManual.Value = 3;
             acceptControlsParametersButton.Enabled = false;
+        }
+
+        /// <summary>
+        /// Function for clear controls on prediction tab
+        /// </summary>
+        private void ClearPredictionTab() {
+            ClearDataGV(realPredictValuesDataGrid);
+            ClearDataGV(predictionMetricsDataGrid);
         }
 
         /// <summary>
@@ -1760,6 +1833,9 @@ namespace Multiple_Linear_Regression {
 
                         labelResultDataLoad.Invoke(new Action<Point>((loc) => labelResultDataLoad.Location = loc),
                             new Point(labelResultDataLoad.Location.X + widthDiff, labelResultDataLoad.Location.Y + heightDiff));
+
+                        groupTaskType.Invoke(new Action<Point>((loc) => groupTaskType.Location = loc),
+                            new Point(groupTaskType.Location.X + widthDiff, groupTaskType.Location.Y + heightDiff));
 
 
                         // Tab formation group of regressors

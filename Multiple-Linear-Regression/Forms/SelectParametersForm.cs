@@ -29,7 +29,6 @@ namespace Multiple_Linear_Regression {
             resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
             resizeWorker.WorkerSupportsCancellation = true;
             resizeWorker.RunWorkerAsync();
-            // Добавить перерисовку элементов и сделать остановку воркера при закрытии формы
         }
 
         private void listSelectedFactors_DoubleClick(object sender, EventArgs e) {
