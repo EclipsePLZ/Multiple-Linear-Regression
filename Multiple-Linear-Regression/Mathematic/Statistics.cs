@@ -493,5 +493,15 @@ namespace Multiple_Linear_Regression {
         public static double Kurtosis(IEnumerable<double> values) { 
             return (FourthOrderCentralMoment(values) / Math.Pow(SecondOrderCentralMoment(values), 2));
         }
+
+        /// <summary>
+        /// Get predict error
+        /// </summary>
+        /// <param name="realValue">Real value</param>
+        /// <param name="predictValue">Predicted value</param>
+        /// <returns>Prediction error</returns>
+        public static double PredictError(double realValue, double predictValue) {
+            return (Math.Abs(realValue - predictValue) / realValue) * 100;
+        }
     }
 }

@@ -26,6 +26,7 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, string> RegressorsShortName { get; set; } = new Dictionary<string, string>();
         private Dictionary<string, List<double>> BaseRegressors { get; set; } = new Dictionary<string, List<double>>();
         private Dictionary<string, List<double>> BaseRegressants { get; set; } = new Dictionary<string, List<double>>();
+        private List<string> AllRegressorsNamesFromModels { get; set; } = new List<string>();
         private Dictionary<string, List<Model>> ModelsForRegressants { get; set; }
         private bool IsPredictionTask { get; set; }
         private bool IsControlTask { get; set; }
@@ -330,18 +331,20 @@ namespace Multiple_Linear_Regression {
             int valuesCount = BaseRegressants[BaseRegressants.Keys.First()].Count;
             // Show form for set parameters for prediction task
             PredictionParametersFrom form = new PredictionParametersFrom(valuesCount);
-            form.Show();
+            form.ShowDialog();
 
             int numberOfValuesForDelete = form.LagValue * form.NumberObserInOneTimeInterval;
             int newNumberOfValues = valuesCount - numberOfValuesForDelete;
+            List<string> regressorsNames = new List<string>(BaseRegressors.Keys);
+            List<string> regressantsName = new List<string>(BaseRegressants.Keys);
 
             // Perform a shift of the defining indicators
-            foreach (var regressorName in BaseRegressors.Keys) {
+            foreach (var regressorName in regressorsNames) {
                 BaseRegressors[regressorName] = BaseRegressors[regressorName].GetRange(0, newNumberOfValues);
             }
 
             // Perform a shift of the forecast indicators
-            foreach (var regressantName in BaseRegressants.Keys) {
+            foreach (var regressantName in regressantsName) {
                 BaseRegressants[regressantName] = BaseRegressants[regressantName].GetRange(numberOfValuesForDelete, newNumberOfValues);
             }
         }
@@ -593,6 +596,21 @@ namespace Multiple_Linear_Regression {
         private List<string> GetNotCombinedRegressors(Dictionary<string, List<double>> regressors) {
             List<string> nonCombinedRegressors = new List<string>();
             foreach (var regressorName in regressors.Keys) {
+                if (!regressorName.Contains(" & ")) {
+                    nonCombinedRegressors.Add(regressorName);
+                }
+            }
+            return nonCombinedRegressors;
+        }
+
+        /// <summary>
+        /// Get list of headers of non-combined regressors
+        /// </summary>
+        /// <param name="regressors">Regressors</param>
+        /// <returns>List of headers</returns>
+        private List<string> GetNotCombinedRegressors(List<string> regressors) {
+            List<string> nonCombinedRegressors = new List<string>();
+            foreach (var regressorName in regressors) {
                 if (!regressorName.Contains(" & ")) {
                     nonCombinedRegressors.Add(regressorName);
                 }
@@ -1296,8 +1314,98 @@ namespace Multiple_Linear_Regression {
             return bestModel;
         }
 
+        /// <summary>
+        /// Fill tab with predict values for prediction factors
+        /// </summary>
         private void FillPredictionTab() {
+            AllRegressorsNamesFromModels = GetNotCombinedRegressors(GetAllRegressorsFromModels());
 
+            // Fill all regressors from models with values 
+            Dictionary<string, List<double>> allRegressors = new Dictionary<string, List<double>>();
+            foreach (var regressorName in AllRegressorsNamesFromModels) {
+                allRegressors[regressorName] = new List<double>(BaseRegressors[regressorName]);
+            }
+
+            // Set headers for data grid views in predict tab
+            SetHeadersInPredictTab(AllRegressorsNamesFromModels);
+
+            FillValuesInPredictTab(allRegressors);
+        }
+
+        /// <summary>
+        /// Get all regressors names from models
+        /// </summary>
+        /// <returns>List of all regressors</returns>
+        private List<string> GetAllRegressorsFromModels() {
+            List<string> allRegressorsNames = new List<string>();
+
+            // Get all names of defining factors
+            foreach (var model in BestModels) {
+                allRegressorsNames = allRegressorsNames.Union(model.RegressorsNames).ToList();
+            }
+
+            return allRegressorsNames;
+        }
+
+        /// <summary>
+        /// Set headers for data grid views in predict tab
+        /// </summary>
+        /// <param name="regressorsNames">List of regressors names</param>
+        private void SetHeadersInPredictTab(List<string> regressorsNames) {
+            List<string> headers = new List<string>(regressorsNames);
+
+            // Get all names of predicting factors
+            foreach (var model in BestModels) {
+                headers.Add($"{model.RegressantName} (Реальное)");
+                headers.Add($"{model.RegressantName} (Предсказанное)");
+                headers.Add("Прогнозная ошибка");
+            }
+
+            SetDataGVColumnHeaders(headers, realPredictValuesDataGrid, false);
+            SetDataGVColumnHeaders(new List<string>() { "Управляющий показатель", "Среднее значени прогнозной ошибки" },
+                predictionMetricsDataGrid, false);
+        }
+
+        /// <summary>
+        /// Calc predict values for each model and fill data grid view in predict tab
+        /// </summary>
+        /// <param name="regressorsValues">Dict with values for regressors</param>
+        private void FillValuesInPredictTab(Dictionary<string, List<double>> regressorsValues) {
+            int numOfValues = regressorsValues[AllRegressorsNamesFromModels[0]].Count;
+
+            Dictionary<string, List<double>> modelsPredictionErrors = new Dictionary<string, List<double>>();
+            foreach (var model in BestModels) {
+                modelsPredictionErrors[model.RegressantName] = new List<double>();
+            }
+
+            // Fill real/predict values in data grid view
+            for (int i = 0; i < numOfValues; i++) {
+                List<string> nextRow = new List<string>();
+                
+                // Add regressors values to row
+                foreach(var regressor in regressorsValues) {
+                    nextRow.Add(regressor.Value[i].ToString());
+                }
+
+                // Add regressant values to row
+                foreach (var model in BestModels) {
+                    nextRow.Add(model.RegressantValues[i].ToString());
+                    nextRow.Add(model.PredictedValues[i].ToString());
+
+                    // Calc predict error for regressant
+                    double predictError = Statistics.PredictError(model.RegressantValues[i], model.PredictedValues[i]);
+                    nextRow.Add(predictError.ToString());
+
+                    modelsPredictionErrors[model.RegressantName].Add(predictError);
+                }
+
+                realPredictValuesDataGrid.Rows.Add(nextRow.ToArray());
+            }
+
+            // Fill prediction metric data grid view
+            foreach (var regressantErrors in modelsPredictionErrors) {
+                realPredictValuesDataGrid.Rows.Add(new string[] { regressantErrors.Key, regressantErrors.Value.Average().ToString() });
+            }
         }
 
         private void acceptControlsParametersButton_Click(object sender, EventArgs e) {
@@ -1758,6 +1866,9 @@ namespace Multiple_Linear_Regression {
                     break;
                 case 6:
                     helpAllStepsMenu.ToolTipText = StepsInfo.StepSetImitationParameters;
+                    break;
+                case 7:
+                    helpAllStepsMenu.ToolTipText = StepsInfo.StepPredictValues;
                     break;
             }
         }
