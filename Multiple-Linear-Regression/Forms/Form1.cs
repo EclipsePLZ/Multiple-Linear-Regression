@@ -2202,6 +2202,9 @@ namespace Multiple_Linear_Regression {
                         predictionMetricsDataGrid.Invoke(new Action<Point>((loc) => predictionMetricsDataGrid.Location = loc),
                             new Point(predictionMetricsDataGrid.Location.X, predictionMetricsDataGrid.Location.Y + heightDiff));
 
+                        loadDataForPredictButton.Invoke(new Action<Point>((loc) => loadDataForPredictButton.Location = loc),
+                            new Point(loadDataForPredictButton.Location.X + widthDiff, loadDataForPredictButton.Location.Y));
+
 
                         isResizeNeeded = false;
                     }
