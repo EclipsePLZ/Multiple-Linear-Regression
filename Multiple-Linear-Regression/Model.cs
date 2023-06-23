@@ -49,6 +49,11 @@ namespace Multiple_Linear_Regression {
         private List<double> Errors { get; set; }
 
         /// <summary>
+        /// List fo predicted values of regressant
+        /// </summary>
+        public List<double> PredictedValues { get; private set; }
+
+        /// <summary>
         /// Dictionary of non-filter regressors
         /// </summary>
         public Dictionary<string, List<double>> NonFilterRegressors { get; set; }
@@ -142,6 +147,7 @@ namespace Multiple_Linear_Regression {
             IsGusevMethod = false;
             IsOkunevMethod = false;
             Errors = null;
+            PredictedValues = null;
 
             if (regressors is null) {
                 Regressors = null;
@@ -169,6 +175,7 @@ namespace Multiple_Linear_Regression {
             DistanceToAdequate = refModel.DistanceToAdequate;
             DistanceToSignificat = refModel.DistanceToSignificat;
             Errors = refModel.Errors;
+            PredictedValues = refModel.PredictedValues;
             IsGusevMethod = refModel.IsGusevMethod;
             IsOkunevMethod = refModel.IsOkunevMethod;
         }
@@ -453,14 +460,17 @@ namespace Multiple_Linear_Regression {
             // Find adjusted coefficient of determination
             AdjDetermCoeff = Statistics.AdjustedDetermCoefficient(Y, Algebra.Mult(Z, coeffs), Regressors.Count);
 
+            // Find predicted values
+            PredictedValues = Algebra.Mult(Z, coeffs).ToList();
+
             // Find coefficient of determination
-            DetermCoef = Statistics.DetermCoefficient(Y, Algebra.Mult(Z, coeffs));
+            DetermCoef = Statistics.DetermCoefficient(Y, PredictedValues);
 
             // Find a string representation of the equation
             GetEquation(shortNames);
 
             // Find errors for model
-            Errors = Algebra.Substract(Y, Algebra.Mult(Z, coeffs)).ToList();
+            Errors = Algebra.Substract(Y, PredictedValues.ToArray()).ToList();
 
             // A test of adequacy
             CheckAdequate();
