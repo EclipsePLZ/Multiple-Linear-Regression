@@ -27,7 +27,7 @@ namespace Multiple_Linear_Regression.Forms {
 
         private const int SIZE_DIFF_GV_FORM_HEIGHT = 99;
 
-        public FileRegressors(List<List<string>> rows) {
+        public FileRegressors(List<List<string>> rows, string formName, string infoForForm) {
             AllRows = new List<List<string>>(rows);
 
             fileService = new ExcelFileService();
@@ -36,8 +36,10 @@ namespace Multiple_Linear_Regression.Forms {
             InitializeComponent();
             this.CenterToScreen();
 
+            this.Text = formName;
+
             StartSetRows();
-            helpImitationContorl.ToolTipText = StepsInfo.ImitationRegressorsFromFile;
+            helpImitationContorl.ToolTipText = infoForForm;
             saveAsDataFileMenu.ToolTipText = StepsInfo.SaveImitationResults;
 
             // Run background worker for resizing components on form

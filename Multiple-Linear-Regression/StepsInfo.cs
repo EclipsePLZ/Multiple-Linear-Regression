@@ -67,10 +67,14 @@ namespace Multiple_Linear_Regression {
             "для набора параметров, считанных из файла.\n\n" +
             "Вы можете сохранить результаты имитации управления в файл.";
 
+        public static string PredictRegressorsFromFile { get; } = "На данной форме представлены результаты прогноза\n" +
+            "для набора параметров, считанных из файла.\n\n" +
+            "Вы можете сохранить результаты прогноза в файл.";
+
         public static string ImitationRegressorControlOpenFile { get; } = "Для имитации управления вы можете загрузить значения\n" +
             "управляющих факторов из файла.";
 
-        public static string SaveImitationResults { get; } = "Вы можете сохранить результаты управления в файл";
+        public static string SaveImitationResults { get; } = "Вы можете сохранить результаты в файл";
 
         public static string LagValueInfo { get; } = "Временной лаг - количество интервалов времени, на которое\n" +
             "будет сдвигаться прогнозируемый показатель для реализации задачи прогноза.";

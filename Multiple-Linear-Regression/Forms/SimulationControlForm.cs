@@ -110,6 +110,7 @@ namespace Multiple_Linear_Regression.Forms {
         /// Calculate the predicted value for regressant of the model
         /// </summary>
         /// <param name="model">Model</param>
+        /// <param name="regressors">Dictionary of regressors with values</param>
         /// <returns>Predicted value</returns>
         private double CalcModelValue(Model model, Dictionary<string, double> regressors = null) {
             if (regressors is null) {
@@ -423,8 +424,9 @@ namespace Multiple_Linear_Regression.Forms {
             }
 
             // Show predicted regressants with regressors values
-            FileRegressors fileRegressorsForm = new FileRegressors(predictedRegressants);
-            fileRegressorsForm.Show();
+            FileRegressors fileRegressorsForm = new FileRegressors(predictedRegressants, "Имитация управления",
+                StepsInfo.ImitationRegressorsFromFile);
+            fileRegressorsForm.ShowDialog();
         }
 
         /// <summary>

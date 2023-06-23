@@ -115,6 +115,7 @@
             this.predictionTab = new System.Windows.Forms.TabPage();
             this.realPredictValuesDataGrid = new System.Windows.Forms.DataGridView();
             this.predictionMetricsDataGrid = new System.Windows.Forms.DataGridView();
+            this.loadDataForPredictButton = new System.Windows.Forms.Button();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).BeginInit();
@@ -1134,6 +1135,7 @@
             // 
             // predictionTab
             // 
+            this.predictionTab.Controls.Add(this.loadDataForPredictButton);
             this.predictionTab.Controls.Add(this.predictionMetricsDataGrid);
             this.predictionTab.Controls.Add(this.realPredictValuesDataGrid);
             this.predictionTab.Location = new System.Drawing.Point(4, 22);
@@ -1168,6 +1170,17 @@
             this.predictionMetricsDataGrid.RowHeadersWidth = 51;
             this.predictionMetricsDataGrid.Size = new System.Drawing.Size(632, 113);
             this.predictionMetricsDataGrid.TabIndex = 14;
+            // 
+            // loadDataForPredictButton
+            // 
+            this.loadDataForPredictButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.loadDataForPredictButton.Location = new System.Drawing.Point(669, 55);
+            this.loadDataForPredictButton.Name = "loadDataForPredictButton";
+            this.loadDataForPredictButton.Size = new System.Drawing.Size(124, 66);
+            this.loadDataForPredictButton.TabIndex = 15;
+            this.loadDataForPredictButton.Text = "Загрузить данные для прогноза";
+            this.loadDataForPredictButton.UseVisualStyleBackColor = true;
+            this.loadDataForPredictButton.Click += new System.EventHandler(this.loadDataForPredictButton_Click);
             // 
             // MainForm
             // 
@@ -1326,6 +1339,7 @@
         private System.Windows.Forms.TabPage predictionTab;
         private System.Windows.Forms.DataGridView predictionMetricsDataGrid;
         private System.Windows.Forms.DataGridView realPredictValuesDataGrid;
+        private System.Windows.Forms.Button loadDataForPredictButton;
     }
 }
 

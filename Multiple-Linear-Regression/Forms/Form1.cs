@@ -26,6 +26,7 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, string> RegressorsShortName { get; set; } = new Dictionary<string, string>();
         private Dictionary<string, List<double>> BaseRegressors { get; set; } = new Dictionary<string, List<double>>();
         private Dictionary<string, List<double>> BaseRegressants { get; set; } = new Dictionary<string, List<double>>();
+        private List<string> AllNotCombinedRegressorsNamesFromModels { get; set; } = new List<string>();
         private List<string> AllRegressorsNamesFromModels { get; set; } = new List<string>();
         private Dictionary<string, List<Model>> ModelsForRegressants { get; set; }
         private bool IsPredictionTask { get; set; }
@@ -226,6 +227,8 @@ namespace Multiple_Linear_Regression {
 
         private void acceptFactorsButton_Click(object sender, EventArgs e) {
             if (RegressorsHeaders.Count > 0 && RegressantsHeaders.Count > 0 && (radioPredictionTask.Checked || radioControlTask.Checked)) {
+                labelResultDataLoad.Visible = false;
+
                 LoadValuesForFactors();
 
                 IsControlTask = radioControlTask.Checked;
@@ -330,7 +333,7 @@ namespace Multiple_Linear_Regression {
         private void ChangeFactorsValuesForPrediction() {
             int valuesCount = BaseRegressants[BaseRegressants.Keys.First()].Count;
             // Show form for set parameters for prediction task
-            PredictionParametersFrom form = new PredictionParametersFrom(valuesCount);
+            PredictionParametersForm form = new PredictionParametersForm(valuesCount);
             form.ShowDialog();
 
             int numberOfValuesForDelete = form.LagValue * form.NumberObserInOneTimeInterval;
@@ -879,15 +882,10 @@ namespace Multiple_Linear_Regression {
             RunBackgroundFindEquations();
 
             ClearControlsImitationParameters();
+            ClearPredictionTab();
 
-            FillPredictionTab();
-
-            if (IsPredictionTask) {
-                predictionTab.Enabled = true;
-            }
-            else if (IsControlTask) {
-                controlSimulationTab.Enabled = true;
-            }
+            predictionTab.Enabled = IsPredictionTask;
+            controlSimulationTab.Enabled = IsControlTask;
         }
 
         /// <summary>
@@ -936,10 +934,17 @@ namespace Multiple_Linear_Regression {
 
                     equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
                         new List<string>() { regressant, nextBestModel.AdjDetermCoeff.ToString(), nextBestModel.Equation });
+                }
 
-                    // Add model for the next step
-                    listAvailabelModels.Invoke(new Action<string>((regrName) => listAvailabelModels.Items.Add(regrName)),
-                        regressant);
+                if (IsControlTask) {
+                    // Add model for the imitation step
+                    listAvailabelModels.Invoke(new Action<List<string>>((regrName) => listAvailabelModels.Items.AddRange(regrName.ToArray())),
+                        ModelsForRegressants.Keys.ToList());
+                }
+
+                if (IsPredictionTask) {
+                    // Fill prediction tab
+                    FillPredictionTab();
                 }
 
                 bgWorker.CancelAsync();
@@ -1318,18 +1323,22 @@ namespace Multiple_Linear_Regression {
         /// Fill tab with predict values for prediction factors
         /// </summary>
         private void FillPredictionTab() {
-            AllRegressorsNamesFromModels = GetNotCombinedRegressors(GetAllRegressorsFromModels());
+            AllRegressorsNamesFromModels = GetAllRegressorsFromModels();
+            AllNotCombinedRegressorsNamesFromModels = GetNotCombinedRegressors(AllRegressorsNamesFromModels);
 
             // Fill all regressors from models with values 
             Dictionary<string, List<double>> allRegressors = new Dictionary<string, List<double>>();
-            foreach (var regressorName in AllRegressorsNamesFromModels) {
+            foreach (var regressorName in AllNotCombinedRegressorsNamesFromModels) {
                 allRegressors[regressorName] = new List<double>(BaseRegressors[regressorName]);
             }
 
             // Set headers for data grid views in predict tab
-            SetHeadersInPredictTab(AllRegressorsNamesFromModels);
+            SetHeadersInPredictTab(AllNotCombinedRegressorsNamesFromModels);
 
+            // Fill values for data grid view in predict tab
             FillValuesInPredictTab(allRegressors);
+
+            loadDataForPredictButton.Invoke(new Action<bool>((enab) => loadDataForPredictButton.Enabled = enab), true);
         }
 
         /// <summary>
@@ -1361,9 +1370,12 @@ namespace Multiple_Linear_Regression {
                 headers.Add("Прогнозная ошибка");
             }
 
-            SetDataGVColumnHeaders(headers, realPredictValuesDataGrid, false);
-            SetDataGVColumnHeaders(new List<string>() { "Управляющий показатель", "Среднее значени прогнозной ошибки" },
-                predictionMetricsDataGrid, false);
+            Action setHeadersRealPredict = () => SetDataGVColumnHeaders(headers, realPredictValuesDataGrid, false);
+            Action setHeadersPredictionMetrics = () => SetDataGVColumnHeaders(new List<string>() { "Управляющий показатель", 
+                "Среднее значение прогнозной ошибки" }, predictionMetricsDataGrid, true);
+
+            realPredictValuesDataGrid.Invoke(setHeadersRealPredict);
+            predictionMetricsDataGrid.Invoke(setHeadersPredictionMetrics);
         }
 
         /// <summary>
@@ -1371,7 +1383,7 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="regressorsValues">Dict with values for regressors</param>
         private void FillValuesInPredictTab(Dictionary<string, List<double>> regressorsValues) {
-            int numOfValues = regressorsValues[AllRegressorsNamesFromModels[0]].Count;
+            int numOfValues = regressorsValues[AllNotCombinedRegressorsNamesFromModels[0]].Count;
 
             Dictionary<string, List<double>> modelsPredictionErrors = new Dictionary<string, List<double>>();
             foreach (var model in BestModels) {
@@ -1398,13 +1410,14 @@ namespace Multiple_Linear_Regression {
 
                     modelsPredictionErrors[model.RegressantName].Add(predictError);
                 }
-
-                realPredictValuesDataGrid.Rows.Add(nextRow.ToArray());
+                realPredictValuesDataGrid.Invoke(new Action<List<string>>((row) => realPredictValuesDataGrid.Rows.Add(row.ToArray())),
+                    nextRow);
             }
 
             // Fill prediction metric data grid view
             foreach (var regressantErrors in modelsPredictionErrors) {
-                realPredictValuesDataGrid.Rows.Add(new string[] { regressantErrors.Key, regressantErrors.Value.Average().ToString() });
+                predictionMetricsDataGrid.Invoke(new Action<List<string>>((row) => predictionMetricsDataGrid.Rows.Add(row.ToArray())),
+                    new List<string>() { regressantErrors.Key, regressantErrors.Value.Average().ToString() });
             }
         }
 
@@ -1458,6 +1471,111 @@ namespace Multiple_Linear_Regression {
 
             // Default function
             return (values) => Statistics.AutoSymbiosisDefinitionArea(values, 10);
+        }
+
+        private void loadDataForPredictButton_Click(object sender, EventArgs e) {
+            try {
+                if (dialogService.OpenFileDialog() == true) {
+                    fileService = GetFileService(dialogService.FilePath);
+
+                    LoadFactorsForPredict();
+                }
+            }
+            catch (Exception ex) {
+                dialogService.ShowMessage(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Loading factors from file for calc predict
+        /// </summary>
+        private void LoadFactorsForPredict() {
+            List<List<string>> allRows = fileService.Open(dialogService.FilePath);
+            List<List<string>> predictedRegressants = new List<List<string>>();
+
+            // Create headers row
+            List<string> headers = new List<string>(AllRegressorsNamesFromModels);
+            foreach (var model in Models) {
+                headers.Add(model.RegressantName);
+            }
+            predictedRegressants.Add(headers);
+
+            Dictionary<string, List<double>> allRegressorsFromFile = new Dictionary<string, List<double>>();
+
+            // Fill all regressors values from file data
+            for (int col = 0; col < allRows[0].Count; col++) {
+                string regressorName = allRows[0][col];
+                allRegressorsFromFile.Add(regressorName, new List<double>());
+
+                for (int row = 1; row < allRows.Count; row++) {
+                    allRegressorsFromFile[regressorName].Add(Convert.ToDouble(allRows[row][col]));
+                }
+            }
+
+            // Find predict for each row of regressors from file
+            for (int row = 0; row < allRows.Count - 1; row++) {
+                List<string> nextRow = new List<string>();
+                Dictionary<string, double> regressorsRowValues = new Dictionary<string, double>();
+
+                foreach (var regressorName in AllRegressorsNamesFromModels) {
+                    double value = 0;
+
+                    // If it's pairwise factor then multiply the factors
+                    if (regressorName.Contains(" & ")) {
+                        string[] pairwiseRegressors = regressorName.Split(new string[] { " & " }, StringSplitOptions.None);
+                        double factor1 = allRegressorsFromFile.ContainsKey(pairwiseRegressors[0]) ? allRegressorsFromFile[pairwiseRegressors[0]][row]
+                            : BaseRegressors[pairwiseRegressors[0]].Last();
+                        double factor2 = allRegressorsFromFile.ContainsKey(pairwiseRegressors[1]) ? allRegressorsFromFile[pairwiseRegressors[1]][row]
+                            : BaseRegressors[pairwiseRegressors[1]].Last();
+                        value = factor1 * factor2;
+                    }
+                    else {
+                        value = allRegressorsFromFile.ContainsKey(regressorName) ? allRegressorsFromFile[regressorName][row]
+                        : BaseRegressors[regressorName].Last();
+                    }
+
+                    regressorsRowValues.Add(regressorName, value);
+                }
+
+                // Add regressors values to next Row
+                foreach (var regressorValue in regressorsRowValues.Values) {
+                    nextRow.Add(regressorValue.ToString());
+                }
+
+                // For each model add regressant value to next Row
+                foreach (var model in BestModels) {
+                    nextRow.Add(CalcModelValue(model, regressorsRowValues).ToString());
+                }
+
+                predictedRegressants.Add(nextRow);
+            }
+
+            // Show predicted regressants with regressors values
+            FileRegressors fileRegressorsForm = new FileRegressors(predictedRegressants, "Прогнозирование",
+                StepsInfo.PredictRegressorsFromFile);
+            fileRegressorsForm.ShowDialog();
+
+        }
+
+        /// <summary>
+        /// Calculate the predicted value for regressant of the model
+        /// </summary>
+        /// <param name="model">Model</param>
+        /// <param name="regressors">Dictionary of regressors with values</param>
+        /// <returns>Predicted value</returns>
+        private double CalcModelValue(Model model, Dictionary<string, double> regressors) {
+
+            // Fill new X values for model
+            double[] xValues = new double[model.Regressors.Count];
+            int position = 0;
+
+            foreach (var regressor in model.Regressors) {
+                xValues[position] = regressors[regressor.Key];
+                position++;
+            }
+
+            // Get predicted value for regressant
+            return model.Predict(xValues);
         }
 
         private void empWayRadio_CheckedChanged(object sender, EventArgs e) {
@@ -1759,6 +1877,7 @@ namespace Multiple_Linear_Regression {
         private void ClearPredictionTab() {
             ClearDataGV(realPredictValuesDataGrid);
             ClearDataGV(predictionMetricsDataGrid);
+            loadDataForPredictButton.Enabled = false;
         }
 
         /// <summary>
@@ -1946,15 +2065,12 @@ namespace Multiple_Linear_Regression {
                             new Point(labelResultDataLoad.Location.X + widthDiff, labelResultDataLoad.Location.Y + heightDiff));
 
                         groupTaskType.Invoke(new Action<Point>((loc) => groupTaskType.Location = loc),
-                            new Point(groupTaskType.Location.X + widthDiff, groupTaskType.Location.Y + heightDiff));
+                            new Point(groupTaskType.Location.X + widthDiff, groupTaskType.Location.Y));
 
 
                         // Tab formation group of regressors
                         groupedRegressorsDataGrid.Invoke(new Action<Size>((size) => groupedRegressorsDataGrid.Size = size),
                            new Size(groupedRegressorsDataGrid.Width + widthDiff, groupedRegressorsDataGrid.Height + heightDiff));
-
-                        labelMaxCorrelBtwRegressors.Invoke(new Action<Point>((loc) => labelMaxCorrelBtwRegressors.Location = loc),
-                            new Point(labelMaxCorrelBtwRegressors.Location.X + widthDiff, labelMaxCorrelBtwRegressors.Location.Y));
 
                         groupBoxGroupedRegressors.Invoke(new Action<Point>((loc) => groupBoxGroupedRegressors.Location = loc),
                             new Point(groupBoxGroupedRegressors.Location.X + widthDiff, groupBoxGroupedRegressors.Location.Y));
@@ -2025,11 +2141,12 @@ namespace Multiple_Linear_Regression {
                         // Tab select parameters for imitation control
                         // The height of one element in the list is 13, so for a smooth drawing of the lists
                         // will change their height to a multiple of 13
-                        int heightMainTab = controlSimulationTab.Height;
+                        int heightMainTab = allTabs.Height - 26;
+                        int widthMainTab = allTabs.Width - 8;
                         int listsHeight = ((heightMainTab - 74 - 17) / 13) * 13 + 17;
 
                         labelSelectDefAreaParams.Invoke(new Action<Point>((loc) => labelSelectDefAreaParams.Location = loc),
-                            new Point(controlSimulationTab.Width / 8 * 5 + 20, labelSelectDefAreaParams.Location.Y));
+                            new Point(widthMainTab / 8 * 5 + 20, labelSelectDefAreaParams.Location.Y));
 
                         groupDefinitionAreaType.Invoke(new Action<Point>((loc) => groupDefinitionAreaType.Location = loc),
                             new Point(labelSelectDefAreaParams.Location.X, groupDefinitionAreaType.Location.Y));
@@ -2044,22 +2161,28 @@ namespace Multiple_Linear_Regression {
                             new Point(labelSelectDefAreaParams.Location.X, groupNumberCorrelatedIntervals.Location.Y));
 
                         toSelectModelsList.Invoke(new Action<Point>((loc) => toSelectModelsList.Location = loc),
-                           new Point(controlSimulationTab.Width / 4, toSelectModelsList.Location.Y));
+                           new Point(widthMainTab / 4, toSelectModelsList.Location.Y));
 
                         toAvailableModelsList.Invoke(new Action<Point>((loc) => toAvailableModelsList.Location = loc),
-                           new Point(controlSimulationTab.Width / 4, toAvailableModelsList.Location.Y));
+                           new Point(widthMainTab / 4, toAvailableModelsList.Location.Y));
 
                         allToAvailableModelsList.Invoke(new Action<Point>((loc) => allToAvailableModelsList.Location = loc),
-                           new Point(controlSimulationTab.Width / 4, allToAvailableModelsList.Location.Y));
+                           new Point(widthMainTab / 4, allToAvailableModelsList.Location.Y));
 
                         allToSelectModelsList.Invoke(new Action<Point>((loc) => allToSelectModelsList.Location = loc),
-                           new Point(controlSimulationTab.Width / 4, allToSelectModelsList.Location.Y));
+                           new Point(widthMainTab / 4, allToSelectModelsList.Location.Y));
 
                         listSelectedModels.Invoke(new Action<Size>((size) => listSelectedModels.Size = size),
                             new Size(toSelectModelsList.Location.X - 44, listsHeight));
 
                         listAvailabelModels.Invoke(new Action<Point>((loc) => listAvailabelModels.Location = loc),
                             new Point(toSelectModelsList.Location.X + 49, listAvailabelModels.Location.Y));
+
+                        labelAvailableModels.Invoke(new Action<Point>((loc) => labelAvailableModels.Location = loc),
+                            new Point(listAvailabelModels.Location.X - 3, labelAvailableModels.Location.Y));
+
+                        listAvailabelModels.Invoke(new Action<Size>((size) => listAvailabelModels.Size = size),
+                            new Size(listSelectedModels.Width, listsHeight));
 
                         int acceptButtonSpace = (groupProportionOfAreaExpansion.Location.X - (listAvailabelModels.Location.X
                             + listAvailabelModels.Width)) / 2 - acceptControlsParametersButton.Width / 2;
@@ -2068,11 +2191,16 @@ namespace Multiple_Linear_Regression {
                             new Point(listAvailabelModels.Location.X + listAvailabelModels.Width + acceptButtonSpace,
                             acceptControlsParametersButton.Location.Y));
 
-                        labelAvailableModels.Invoke(new Action<Point>((loc) => labelAvailableModels.Location = loc),
-                            new Point(listAvailabelModels.Location.X - 3, labelAvailableModels.Location.Y));
 
-                        listAvailabelModels.Invoke(new Action<Size>((size) => listAvailabelModels.Size = size),
-                            new Size(listSelectedModels.Width, listsHeight));
+                        // Prediction tab
+                        realPredictValuesDataGrid.Invoke(new Action<Size>((size) => realPredictValuesDataGrid.Size = size),
+                           new Size(realPredictValuesDataGrid.Width + widthDiff, realPredictValuesDataGrid.Height + heightDiff));
+
+                        predictionMetricsDataGrid.Invoke(new Action<Size>((size) => predictionMetricsDataGrid.Size = size),
+                           new Size(predictionMetricsDataGrid.Width + widthDiff, predictionMetricsDataGrid.Height));
+
+                        predictionMetricsDataGrid.Invoke(new Action<Point>((loc) => predictionMetricsDataGrid.Location = loc),
+                            new Point(predictionMetricsDataGrid.Location.X, predictionMetricsDataGrid.Location.Y + heightDiff));
 
 
                         isResizeNeeded = false;

@@ -1,5 +1,5 @@
 ﻿namespace Multiple_Linear_Regression.Forms {
-    partial class PredictionParametersFrom {
+    partial class PredictionParametersForm {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -24,7 +24,7 @@
         /// </summary>
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PredictionParametersFrom));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PredictionParametersForm));
             this.labelValuesCount = new System.Windows.Forms.Label();
             this.totalValuesCount = new System.Windows.Forms.TextBox();
             this.labelObserCountInTimeInterval = new System.Windows.Forms.Label();

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Multiple_Linear_Regression.Forms {
-    public partial class PredictionParametersFrom : Form {
+    public partial class PredictionParametersForm : Form {
 
         /// <summary>
         /// Number of observations in one time interval
@@ -23,7 +23,7 @@ namespace Multiple_Linear_Regression.Forms {
 
         private int TotalValuesCount { get; }
 
-        public PredictionParametersFrom(int valuesCount) {
+        public PredictionParametersForm(int valuesCount) {
             InitializeComponent();
             this.CenterToParent();
 
