@@ -31,6 +31,9 @@
             this.helpAllSteps = new System.Windows.Forms.ToolStripMenuItem();
             this.allTabs = new System.Windows.Forms.TabControl();
             this.loadDataTab = new System.Windows.Forms.TabPage();
+            this.groupTaskType = new System.Windows.Forms.GroupBox();
+            this.radioPredictionTask = new System.Windows.Forms.RadioButton();
+            this.radioControlTask = new System.Windows.Forms.RadioButton();
             this.labelResultDataLoad = new System.Windows.Forms.Label();
             this.checkPairwiseCombinations = new System.Windows.Forms.CheckBox();
             this.clearSelectedFactorsButton = new System.Windows.Forms.Button();
@@ -97,6 +100,10 @@
             this.toSelectModelsList = new System.Windows.Forms.Button();
             this.listAvailabelModels = new System.Windows.Forms.ListBox();
             this.listSelectedModels = new System.Windows.Forms.ListBox();
+            this.predictionTab = new System.Windows.Forms.TabPage();
+            this.loadDataForPredictButton = new System.Windows.Forms.Button();
+            this.predictionMetricsDataGrid = new System.Windows.Forms.DataGridView();
+            this.realPredictValuesDataGrid = new System.Windows.Forms.DataGridView();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.WorkFileMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenFileMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -109,15 +116,9 @@
             this.toolTipSymbiosis = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipAutoProportion = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipPercentAreaExpansion = new System.Windows.Forms.ToolTip(this.components);
-            this.groupTaskType = new System.Windows.Forms.GroupBox();
-            this.radioControlTask = new System.Windows.Forms.RadioButton();
-            this.radioPredictionTask = new System.Windows.Forms.RadioButton();
-            this.predictionTab = new System.Windows.Forms.TabPage();
-            this.realPredictValuesDataGrid = new System.Windows.Forms.DataGridView();
-            this.predictionMetricsDataGrid = new System.Windows.Forms.DataGridView();
-            this.loadDataForPredictButton = new System.Windows.Forms.Button();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
+            this.groupTaskType.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).BeginInit();
             this.processingStatDataTabGusev.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.functionsForProcessingGusevDataGrid)).BeginInit();
@@ -140,11 +141,10 @@
             this.groupPercentAreaExpansion.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.percentAreaExpansion)).BeginInit();
             this.groupDefinitionAreaType.SuspendLayout();
-            this.menuStrip.SuspendLayout();
-            this.groupTaskType.SuspendLayout();
             this.predictionTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.realPredictValuesDataGrid)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.predictionMetricsDataGrid)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.realPredictValuesDataGrid)).BeginInit();
+            this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // WorkFileMenuItem
@@ -206,6 +206,41 @@
             this.loadDataTab.TabIndex = 0;
             this.loadDataTab.Text = "Загрузка данных";
             this.loadDataTab.UseVisualStyleBackColor = true;
+            // 
+            // groupTaskType
+            // 
+            this.groupTaskType.Controls.Add(this.radioPredictionTask);
+            this.groupTaskType.Controls.Add(this.radioControlTask);
+            this.groupTaskType.Location = new System.Drawing.Point(663, 196);
+            this.groupTaskType.Name = "groupTaskType";
+            this.groupTaskType.Size = new System.Drawing.Size(138, 69);
+            this.groupTaskType.TabIndex = 17;
+            this.groupTaskType.TabStop = false;
+            this.groupTaskType.Text = "Тип задачи";
+            // 
+            // radioPredictionTask
+            // 
+            this.radioPredictionTask.AutoSize = true;
+            this.radioPredictionTask.Location = new System.Drawing.Point(6, 46);
+            this.radioPredictionTask.Name = "radioPredictionTask";
+            this.radioPredictionTask.Size = new System.Drawing.Size(116, 17);
+            this.radioPredictionTask.TabIndex = 1;
+            this.radioPredictionTask.TabStop = true;
+            this.radioPredictionTask.Text = "Прогнозирование";
+            this.radioPredictionTask.UseVisualStyleBackColor = true;
+            this.radioPredictionTask.CheckedChanged += new System.EventHandler(this.radioPredictionTask_CheckedChanged);
+            // 
+            // radioControlTask
+            // 
+            this.radioControlTask.AutoSize = true;
+            this.radioControlTask.Location = new System.Drawing.Point(6, 23);
+            this.radioControlTask.Name = "radioControlTask";
+            this.radioControlTask.Size = new System.Drawing.Size(87, 17);
+            this.radioControlTask.TabIndex = 0;
+            this.radioControlTask.TabStop = true;
+            this.radioControlTask.Text = "Управление";
+            this.radioControlTask.UseVisualStyleBackColor = true;
+            this.radioControlTask.CheckedChanged += new System.EventHandler(this.radioControlTask_CheckedChanged);
             // 
             // labelResultDataLoad
             // 
@@ -596,10 +631,10 @@
             this.valueEmpWayCorr.Size = new System.Drawing.Size(120, 20);
             this.valueEmpWayCorr.TabIndex = 35;
             this.valueEmpWayCorr.Value = new decimal(new int[] {
-            15,
+            1,
             0,
             0,
-            131072});
+            65536});
             // 
             // classicWayRadio
             // 
@@ -1019,6 +1054,55 @@
             this.listSelectedModels.TabIndex = 2;
             this.listSelectedModels.DoubleClick += new System.EventHandler(this.listSelectedModels_DoubleClick);
             // 
+            // predictionTab
+            // 
+            this.predictionTab.Controls.Add(this.loadDataForPredictButton);
+            this.predictionTab.Controls.Add(this.predictionMetricsDataGrid);
+            this.predictionTab.Controls.Add(this.realPredictValuesDataGrid);
+            this.predictionTab.Location = new System.Drawing.Point(4, 22);
+            this.predictionTab.Name = "predictionTab";
+            this.predictionTab.Size = new System.Drawing.Size(816, 390);
+            this.predictionTab.TabIndex = 7;
+            this.predictionTab.Text = "Прогнозирование";
+            this.predictionTab.UseVisualStyleBackColor = true;
+            // 
+            // loadDataForPredictButton
+            // 
+            this.loadDataForPredictButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.loadDataForPredictButton.Location = new System.Drawing.Point(669, 55);
+            this.loadDataForPredictButton.Name = "loadDataForPredictButton";
+            this.loadDataForPredictButton.Size = new System.Drawing.Size(124, 66);
+            this.loadDataForPredictButton.TabIndex = 15;
+            this.loadDataForPredictButton.Text = "Загрузить данные для прогноза";
+            this.loadDataForPredictButton.UseVisualStyleBackColor = true;
+            this.loadDataForPredictButton.Click += new System.EventHandler(this.loadDataForPredictButton_Click);
+            // 
+            // predictionMetricsDataGrid
+            // 
+            this.predictionMetricsDataGrid.AllowUserToAddRows = false;
+            this.predictionMetricsDataGrid.AllowUserToDeleteRows = false;
+            this.predictionMetricsDataGrid.AllowUserToResizeRows = false;
+            this.predictionMetricsDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.predictionMetricsDataGrid.Location = new System.Drawing.Point(3, 274);
+            this.predictionMetricsDataGrid.Name = "predictionMetricsDataGrid";
+            this.predictionMetricsDataGrid.ReadOnly = true;
+            this.predictionMetricsDataGrid.RowHeadersWidth = 51;
+            this.predictionMetricsDataGrid.Size = new System.Drawing.Size(632, 113);
+            this.predictionMetricsDataGrid.TabIndex = 14;
+            // 
+            // realPredictValuesDataGrid
+            // 
+            this.realPredictValuesDataGrid.AllowUserToAddRows = false;
+            this.realPredictValuesDataGrid.AllowUserToDeleteRows = false;
+            this.realPredictValuesDataGrid.AllowUserToResizeRows = false;
+            this.realPredictValuesDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.realPredictValuesDataGrid.Location = new System.Drawing.Point(3, 3);
+            this.realPredictValuesDataGrid.Name = "realPredictValuesDataGrid";
+            this.realPredictValuesDataGrid.ReadOnly = true;
+            this.realPredictValuesDataGrid.RowHeadersWidth = 51;
+            this.realPredictValuesDataGrid.Size = new System.Drawing.Size(632, 265);
+            this.realPredictValuesDataGrid.TabIndex = 13;
+            // 
             // menuStrip
             // 
             this.menuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -1098,90 +1182,6 @@
             this.labelRegressorsList.TabIndex = 8;
             this.labelRegressorsList.Text = "Управляющие факторы:";
             // 
-            // groupTaskType
-            // 
-            this.groupTaskType.Controls.Add(this.radioPredictionTask);
-            this.groupTaskType.Controls.Add(this.radioControlTask);
-            this.groupTaskType.Location = new System.Drawing.Point(663, 196);
-            this.groupTaskType.Name = "groupTaskType";
-            this.groupTaskType.Size = new System.Drawing.Size(138, 69);
-            this.groupTaskType.TabIndex = 17;
-            this.groupTaskType.TabStop = false;
-            this.groupTaskType.Text = "Тип задачи";
-            // 
-            // radioControlTask
-            // 
-            this.radioControlTask.AutoSize = true;
-            this.radioControlTask.Location = new System.Drawing.Point(6, 23);
-            this.radioControlTask.Name = "radioControlTask";
-            this.radioControlTask.Size = new System.Drawing.Size(87, 17);
-            this.radioControlTask.TabIndex = 0;
-            this.radioControlTask.TabStop = true;
-            this.radioControlTask.Text = "Управление";
-            this.radioControlTask.UseVisualStyleBackColor = true;
-            this.radioControlTask.CheckedChanged += new System.EventHandler(this.radioControlTask_CheckedChanged);
-            // 
-            // radioPredictionTask
-            // 
-            this.radioPredictionTask.AutoSize = true;
-            this.radioPredictionTask.Location = new System.Drawing.Point(6, 46);
-            this.radioPredictionTask.Name = "radioPredictionTask";
-            this.radioPredictionTask.Size = new System.Drawing.Size(116, 17);
-            this.radioPredictionTask.TabIndex = 1;
-            this.radioPredictionTask.TabStop = true;
-            this.radioPredictionTask.Text = "Прогнозирование";
-            this.radioPredictionTask.UseVisualStyleBackColor = true;
-            this.radioPredictionTask.CheckedChanged += new System.EventHandler(this.radioPredictionTask_CheckedChanged);
-            // 
-            // predictionTab
-            // 
-            this.predictionTab.Controls.Add(this.loadDataForPredictButton);
-            this.predictionTab.Controls.Add(this.predictionMetricsDataGrid);
-            this.predictionTab.Controls.Add(this.realPredictValuesDataGrid);
-            this.predictionTab.Location = new System.Drawing.Point(4, 22);
-            this.predictionTab.Name = "predictionTab";
-            this.predictionTab.Size = new System.Drawing.Size(816, 390);
-            this.predictionTab.TabIndex = 7;
-            this.predictionTab.Text = "Прогнозирование";
-            this.predictionTab.UseVisualStyleBackColor = true;
-            // 
-            // realPredictValuesDataGrid
-            // 
-            this.realPredictValuesDataGrid.AllowUserToAddRows = false;
-            this.realPredictValuesDataGrid.AllowUserToDeleteRows = false;
-            this.realPredictValuesDataGrid.AllowUserToResizeRows = false;
-            this.realPredictValuesDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.realPredictValuesDataGrid.Location = new System.Drawing.Point(3, 3);
-            this.realPredictValuesDataGrid.Name = "realPredictValuesDataGrid";
-            this.realPredictValuesDataGrid.ReadOnly = true;
-            this.realPredictValuesDataGrid.RowHeadersWidth = 51;
-            this.realPredictValuesDataGrid.Size = new System.Drawing.Size(632, 265);
-            this.realPredictValuesDataGrid.TabIndex = 13;
-            // 
-            // predictionMetricsDataGrid
-            // 
-            this.predictionMetricsDataGrid.AllowUserToAddRows = false;
-            this.predictionMetricsDataGrid.AllowUserToDeleteRows = false;
-            this.predictionMetricsDataGrid.AllowUserToResizeRows = false;
-            this.predictionMetricsDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.predictionMetricsDataGrid.Location = new System.Drawing.Point(3, 274);
-            this.predictionMetricsDataGrid.Name = "predictionMetricsDataGrid";
-            this.predictionMetricsDataGrid.ReadOnly = true;
-            this.predictionMetricsDataGrid.RowHeadersWidth = 51;
-            this.predictionMetricsDataGrid.Size = new System.Drawing.Size(632, 113);
-            this.predictionMetricsDataGrid.TabIndex = 14;
-            // 
-            // loadDataForPredictButton
-            // 
-            this.loadDataForPredictButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.loadDataForPredictButton.Location = new System.Drawing.Point(669, 55);
-            this.loadDataForPredictButton.Name = "loadDataForPredictButton";
-            this.loadDataForPredictButton.Size = new System.Drawing.Size(124, 66);
-            this.loadDataForPredictButton.TabIndex = 15;
-            this.loadDataForPredictButton.Text = "Загрузить данные для прогноза";
-            this.loadDataForPredictButton.UseVisualStyleBackColor = true;
-            this.loadDataForPredictButton.Click += new System.EventHandler(this.loadDataForPredictButton_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1203,6 +1203,8 @@
             this.allTabs.ResumeLayout(false);
             this.loadDataTab.ResumeLayout(false);
             this.loadDataTab.PerformLayout();
+            this.groupTaskType.ResumeLayout(false);
+            this.groupTaskType.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.factorsData)).EndInit();
             this.processingStatDataTabGusev.ResumeLayout(false);
             this.processingStatDataTabGusev.PerformLayout();
@@ -1236,13 +1238,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.percentAreaExpansion)).EndInit();
             this.groupDefinitionAreaType.ResumeLayout(false);
             this.groupDefinitionAreaType.PerformLayout();
+            this.predictionTab.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.predictionMetricsDataGrid)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.realPredictValuesDataGrid)).EndInit();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
-            this.groupTaskType.ResumeLayout(false);
-            this.groupTaskType.PerformLayout();
-            this.predictionTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.realPredictValuesDataGrid)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.predictionMetricsDataGrid)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

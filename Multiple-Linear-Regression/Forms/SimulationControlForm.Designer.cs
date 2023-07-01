@@ -131,8 +131,10 @@
             // checkMutualImpactFactors
             // 
             this.checkMutualImpactFactors.AutoSize = true;
+            this.checkMutualImpactFactors.Checked = true;
+            this.checkMutualImpactFactors.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkMutualImpactFactors.Location = new System.Drawing.Point(260, 25);
-            this.checkMutualImpactFactors.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.checkMutualImpactFactors.Margin = new System.Windows.Forms.Padding(2);
             this.checkMutualImpactFactors.Name = "checkMutualImpactFactors";
             this.checkMutualImpactFactors.Size = new System.Drawing.Size(164, 30);
             this.checkMutualImpactFactors.TabIndex = 17;

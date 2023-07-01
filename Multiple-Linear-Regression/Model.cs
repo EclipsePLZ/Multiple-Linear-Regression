@@ -484,7 +484,7 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="shortNames">Dictionary with short names of regressors</param>
         private void GetEquation(Dictionary<string, string> shortNames) {
-            Equation = "Y = " + Math.Round(RegressorsCoeffs[RegressorsCoeffs.Keys.ToList()[0]], 4).ToString();
+            Equation = "Y = " + Math.Round(RegressorsCoeffs[RegressorsCoeffs.Keys.ToList()[0]], 2).ToString();
 
             for (int i = 1; i < RegressorsCoeffs.Count; i++) {
                 string regressorName = RegressorsNames[i - 1];
@@ -499,12 +499,12 @@ namespace Multiple_Linear_Regression {
                 }
 
                 if (RegressorsCoeffs[RegressorsNames[i - 1]] < 0) {
-                    Equation += " - " + Math.Abs(Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4)).ToString()
+                    Equation += " - " + Math.Abs(Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 2)).ToString()
                         + $"*{regressorShortName}";
                     continue;
                 }
                 else {
-                    Equation += " + " + Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 4).ToString() + 
+                    Equation += " + " + Math.Round(RegressorsCoeffs[RegressorsNames[i - 1]], 2).ToString() + 
                         $"*{regressorShortName}";
                 }
             }

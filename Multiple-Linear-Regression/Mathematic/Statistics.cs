@@ -495,13 +495,57 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
-        /// Get predict error
+        /// Get predict error (MAPE)
         /// </summary>
         /// <param name="realValue">Real value</param>
         /// <param name="predictValue">Predicted value</param>
         /// <returns>Prediction error</returns>
         public static double PredictError(double realValue, double predictValue) {
             return (Math.Abs(realValue - predictValue) / realValue) * 100;
+        }
+
+        /// <summary>
+        /// Get min max error (range error)
+        /// </summary>
+        /// <param name="realValue">Real value</param>
+        /// <param name="predictValue">Predicted value</param>
+        /// <param name="minValue">Min value of real values</param>
+        /// <param name="maxValue">Max value of real values</param>
+        /// <returns>Range error</returns>
+        public static double RangeError(double realValue, double predictValue, double minValue, double maxValue) {
+            return (Math.Abs(realValue - predictValue) / (maxValue - minValue)) * 100;
+        }
+
+        /// <summary>
+        /// Get absolute error
+        /// </summary>
+        /// <param name="realValue">Real value</param>
+        /// <param name="predictValue">Predicted value</param>
+        /// <returns>Absolute error</returns>
+        public static double AbsoluteError(double realValue, double predictValue) {
+            return Math.Abs(realValue - predictValue);
+        }
+
+        /// <summary>
+        /// Get max percentage error
+        /// </summary>
+        /// <param name="realValue">Real value</param>
+        /// <param name="predictValue">Predicted value</param>
+        /// <param name="maxValue">Max value of real values</param>
+        /// <returns>Max percentage error</returns>
+        public static double MaxPercentError(double realValue, double predictValue, double maxValue) {
+            return (Math.Abs(realValue - predictValue) / maxValue) * 100;
+        }
+
+        /// <summary>
+        /// Get min percentage error
+        /// </summary>
+        /// <param name="realValue">Real value</param>
+        /// <param name="predictValue">Predicted value</param>
+        /// <param name="minValue">Min value of real values</param>
+        /// <returns>Min percentage error</returns>
+        public static double MinPercentError(double realValue, double predictValue, double minValue) {
+            return (Math.Abs(realValue - predictValue) / minValue) * 100;
         }
     }
 }

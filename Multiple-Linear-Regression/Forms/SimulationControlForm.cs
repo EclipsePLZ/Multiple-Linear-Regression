@@ -85,13 +85,16 @@ namespace Multiple_Linear_Regression.Forms {
 
                         RegressorsDefinitionArea.Add(regressor.Key, GetDefinitionArea(regressor.Value));
 
-                        regressorsSetDataGrid.Rows.Add(new string[] {regressor.Key, regressor.Value.Last().ToString(),
-                            RegressorsDefinitionArea[regressor.Key].Item1.ToString(), 
-                            RegressorsDefinitionArea[regressor.Key].Item2.ToString()});
+                        regressorsSetDataGrid.Rows.Add(new string[] {regressor.Key, 
+                            Math.Round(regressor.Value.Last(), 2).ToString(),
+                            Math.Round(RegressorsDefinitionArea[regressor.Key].Item1, 2).ToString(), 
+                            Math.Round(RegressorsDefinitionArea[regressor.Key].Item2, 2).ToString()});
                     }
                 }
                 // Calculate the regressants values
-                regressantsResultDataGrid.Rows.Add(new string[] {model.RegressantName, CalcModelValue(model).ToString(), model.Equation});
+                regressantsResultDataGrid.Rows.Add(new string[] {model.RegressantName, 
+                    Math.Round(CalcModelValue(model), 2).ToString(),
+                    model.Equation});
             }
 
             helpImitationContorl.ToolTipText = StepsInfo.ImitationOfControlForm;
@@ -351,7 +354,17 @@ namespace Multiple_Linear_Regression.Forms {
             try {
                 if (dialogService.OpenFileDialog() == true) {
                     fileService = GetFileService(dialogService.FilePath);
-                    RegressorsFromFile(fileService.Open(dialogService.FilePath));
+
+                    List<List<string>> allRows = new List<List<string>>();
+                    try {
+                        allRows = fileService.Open(dialogService.FilePath);
+                    }
+                    catch (Exception ex) {
+                        MessageBox.Show(ex.Message);
+                    }
+                    finally {
+                        RegressorsFromFile(allRows);
+                    }
                 }
             }
             catch (Exception ex) {
@@ -381,7 +394,7 @@ namespace Multiple_Linear_Regression.Forms {
                 allRegressorsFromFile.Add(regressorName, new List<double>());
 
                 for (int row = 1; row < allRows.Count; row++) {
-                    allRegressorsFromFile[regressorName].Add(Convert.ToDouble(allRows[row][col]));
+                    allRegressorsFromFile[regressorName].Add(Math.Round(Convert.ToDouble(allRows[row][col]), 2));
                 }
             }
 
@@ -407,7 +420,7 @@ namespace Multiple_Linear_Regression.Forms {
                             : StartRegressors[regressorName];
                     }
 
-                    regressorsRowValues.Add(regressorName, value);
+                    regressorsRowValues.Add(regressorName, Math.Round(value, 2));
                 }
 
                 // Add regressors values to next Row
@@ -417,7 +430,7 @@ namespace Multiple_Linear_Regression.Forms {
 
                 // For each model add regressant value to next Row
                 foreach(var model in Models) {
-                    nextRow.Add(CalcModelValue(model, regressorsRowValues).ToString());
+                    nextRow.Add(Math.Round(CalcModelValue(model, regressorsRowValues), 2).ToString());
                 }
 
                 predictedRegressants.Add(nextRow);
@@ -457,6 +470,8 @@ namespace Multiple_Linear_Regression.Forms {
                         if ((regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value != null && 
                             regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value.ToString() != "-") ||
                             regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value == null) {
+
+                            regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value = Math.Round(Convert.ToDouble(regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value), 2);
                             double regressorValue = Convert.ToDouble(regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value);
 
                             // Check if the value falls within the definition area
@@ -511,7 +526,7 @@ namespace Multiple_Linear_Regression.Forms {
         /// <param name="models">List of models for update</param>
         private void UpdateModels(List<Model> models) {
             foreach (var model in models) {
-                regressantsResultDataGrid[1, Models.IndexOf(model)].Value = CalcModelValue(model);
+                regressantsResultDataGrid[1, Models.IndexOf(model)].Value = Math.Round(CalcModelValue(model), 2);
             }
         }
 
@@ -557,7 +572,7 @@ namespace Multiple_Linear_Regression.Forms {
             // Update combination of regressors
             double newValue = AllRegressors[combinedRegressors[0]] * AllRegressors[combinedRegressors[1]];
             AllRegressors[pariwiseCombinationRegressorname] = newValue;
-            regressorsSetDataGrid[MODIFY_COLUMN, regressorsNames.IndexOf(pariwiseCombinationRegressorname)].Value = newValue;
+            regressorsSetDataGrid[MODIFY_COLUMN, regressorsNames.IndexOf(pariwiseCombinationRegressorname)].Value = Math.Round(newValue, 2);
 
             // Check value of pairwise combination regressor
             CheckRegressorDefArea(pariwiseCombinationRegressorname, newValue);
@@ -579,7 +594,7 @@ namespace Multiple_Linear_Regression.Forms {
             // Update regressors values in dataGridView
             foreach(var regressorName in SelectedStartRegressors.Keys) {
                 regressorsSetDataGrid[MODIFY_COLUMN, regressorsNames.IndexOf(regressorName)].Value =
-                    AllRegressors[regressorName];
+                    Math.Round(AllRegressors[regressorName], 2);
             }
 
             // Update all models
