@@ -95,6 +95,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\AllDefaultParameters.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\AllDefaultParameters.Designer.cs">
+      <DependentUpon>AllDefaultParameters.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FileRegressors.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -148,6 +154,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mathematic\Statistics.cs" />
     <Compile Include="StepsInfo.cs" />
+    <EmbeddedResource Include="Forms\AllDefaultParameters.resx">
+      <DependentUpon>AllDefaultParameters.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ExitForm.resx">
       <DependentUpon>ExitForm.cs</DependentUpon>
     </EmbeddedResource>

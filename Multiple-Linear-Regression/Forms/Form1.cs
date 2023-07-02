@@ -265,14 +265,25 @@ namespace Multiple_Linear_Regression {
 
                 FillRegressorsForModels();
 
-                labelResultDataLoad.Visible = true;
-                processingStatDataTabGusev.Enabled = true;
-                processingStatDataTabOkunev.Enabled = true;
-                removeUnimportantFactorsTab.Enabled = false;
-                buildRegrEquationsTab.Enabled = false;
-                doFunctionalProcessGusevButton.Enabled = true;
-                doFunctionalProcessOkunevButton.Enabled = true;
-                formationOfControlFactorSetsTab.Enabled = true;
+                // Will the automatic calculation be used
+                AllDefaultParameters autoCalcForm = new AllDefaultParameters();
+                autoCalcForm.ShowDialog();
+
+                if (autoCalcForm.UsingDefaultParameters) {
+                    // Automatic calculation with default parameters
+                    GusevProcessingAllModels();
+
+                }
+                else {
+                    labelResultDataLoad.Visible = true;
+                    processingStatDataTabGusev.Enabled = true;
+                    processingStatDataTabOkunev.Enabled = true;
+                    removeUnimportantFactorsTab.Enabled = false;
+                    buildRegrEquationsTab.Enabled = false;
+                    doFunctionalProcessGusevButton.Enabled = true;
+                    doFunctionalProcessOkunevButton.Enabled = true;
+                    formationOfControlFactorSetsTab.Enabled = true;
+                }
             }
             else {
                 if (RegressantsHeaders.Count == 0 && RegressorsHeaders.Count == 0) {
@@ -679,22 +690,29 @@ namespace Multiple_Linear_Regression {
                 e.Cancel = true;
             }
             else {
-                // Find best functions for each regressors for each model
-                foreach(var model in Models) {
-                    model.StartGusevFunctionalPreprocessing();
-
-                    // Add functions and correlation coefficients to data grid view
-                    foreach (var regressor in model.ProcessFunctions) {
-                        string regressorName = $"{RegressorsShortName[regressor.Key]} - {regressor.Key}";
-                        // Add row of preprocess functions to data grid
-                        functionsForProcessingGusevDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingGusevDataGrid.Rows.Add(row.ToArray())),
-                            new List<string>() { model.RegressantName, regressorName,
-                                String.Join(", ", regressor.Value.ToArray()),
-                                Math.Round(Math.Abs(model.CorrelationCoefficient[regressor.Key]), 2).ToString() });
-                    }
-                }
+                GusevProcessingAllModels();
 
                 bgWorker.CancelAsync();
+            }
+        }
+
+        /// <summary>
+        /// Perform Gusev functional processing for each model
+        /// </summary>
+        private void GusevProcessingAllModels() {
+            // Find best functions for each regressors for each model
+            foreach (var model in Models) {
+                model.StartGusevFunctionalPreprocessing();
+
+                // Add functions and correlation coefficients to data grid view
+                foreach (var regressor in model.ProcessFunctions) {
+                    string regressorName = $"{RegressorsShortName[regressor.Key]} - {regressor.Key}";
+                    // Add row of preprocess functions to data grid
+                    functionsForProcessingGusevDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingGusevDataGrid.Rows.Add(row.ToArray())),
+                        new List<string>() { model.RegressantName, regressorName,
+                                String.Join(", ", regressor.Value.ToArray()),
+                                Math.Round(Math.Abs(model.CorrelationCoefficient[regressor.Key]), 2).ToString() });
+                }
             }
         }
 
