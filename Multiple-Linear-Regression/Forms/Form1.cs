@@ -273,6 +273,8 @@ namespace Multiple_Linear_Regression {
                     // Automatic calculation with default parameters
                     GusevProcessingAllModels();
 
+                    PrepareGroupImportantDataGrids();
+                    GetGroupsRegressors();
                 }
                 else {
                     labelResultDataLoad.Visible = true;
@@ -400,12 +402,7 @@ namespace Multiple_Linear_Regression {
         }
 
         private void RunBackgroundGroupingRegressors() {
-            ClearDataGV(groupedRegressorsDataGrid);
-            // Fill grouped regressors table headers
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, groupedRegressorsDataGrid, true);
-
-            // Fill filtered table headers
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, onlyImportantFactorsDataGrid, true);
+            PrepareGroupImportantDataGrids();
 
             // Background worker for grouping regressors
             BackgroundWorker bgWorker = new BackgroundWorker();
@@ -423,6 +420,18 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
+        /// Prepare headers for grouping and important factors data grid
+        /// </summary>
+        private void PrepareGroupImportantDataGrids() {
+            ClearDataGV(groupedRegressorsDataGrid);
+            // Fill grouped regressors table headers
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, groupedRegressorsDataGrid, true);
+
+            // Fill filtered table headers
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, onlyImportantFactorsDataGrid, true);
+        }
+
+        /// <summary>
         /// Grouping non-correlation regressors
         /// </summary>
         /// <param name="sender"></param>
@@ -434,27 +443,34 @@ namespace Multiple_Linear_Regression {
                 e.Cancel = true;
             }
             else {
-                double thresholdCorrCoef = Convert.ToDouble(maxCorrelBtwRegressors.Value);
-
-                // Get all possible combinations
-                List<List<string>> combinationsOfRegressors = new List<List<string>>();
-                GetCombinations(GetCorrelatedRegressors(thresholdCorrCoef), 0, new List<string>(), combinationsOfRegressors);
-                if (checkPairwiseCombinations.Checked) {
-                    AddPairwiseCombinationsOfFactors(combinationsOfRegressors);
-                }
-
-                // Fill all possible combinations for each model
-                ModelsForRegressants = CreateGroupsOfModels(combinationsOfRegressors);
-
-                // Print regressors from all models for each regressant
-                PrintGroupedRegressors(groupedRegressorsDataGrid);
-                PrintGroupedRegressors(onlyImportantFactorsDataGrid);
-
-                // Enable accept button for grouping of regressors
-                groupedRegressorsButton.Invoke(new Action<bool>((b) => groupedRegressorsButton.Enabled = b), true);
-
+                GetGroupsRegressors();
+                
                 bgWorker.CancelAsync();
             }
+        }
+
+        /// <summary>
+        /// Get all groups of non-correlated regressors for each regressant
+        /// </summary>
+        private void GetGroupsRegressors() {
+            double thresholdCorrCoef = Convert.ToDouble(maxCorrelBtwRegressors.Value);
+
+            // Get all possible combinations
+            List<List<string>> combinationsOfRegressors = new List<List<string>>();
+            GetCombinations(GetCorrelatedRegressors(thresholdCorrCoef), 0, new List<string>(), combinationsOfRegressors);
+            if (checkPairwiseCombinations.Checked) {
+                AddPairwiseCombinationsOfFactors(combinationsOfRegressors);
+            }
+
+            // Fill all possible combinations for each model
+            ModelsForRegressants = CreateGroupsOfModels(combinationsOfRegressors);
+
+            // Print regressors from all models for each regressant
+            PrintGroupedRegressors(groupedRegressorsDataGrid);
+            PrintGroupedRegressors(onlyImportantFactorsDataGrid);
+
+            // Enable accept button for grouping of regressors
+            groupedRegressorsButton.Invoke(new Action<bool>((b) => groupedRegressorsButton.Enabled = b), true);
         }
 
         /// <summary>
