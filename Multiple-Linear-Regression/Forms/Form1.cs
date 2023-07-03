@@ -28,6 +28,7 @@ namespace Multiple_Linear_Regression {
         private Dictionary<string, List<double>> BaseRegressants { get; set; } = new Dictionary<string, List<double>>();
         private List<string> AllNotCombinedRegressorsNamesFromModels { get; set; } = new List<string>();
         private List<string> AllRegressorsNamesFromModels { get; set; } = new List<string>();
+        private List<List<double>> AllValues { get; set; } = new List<List<double>>();
         private Dictionary<string, List<Model>> ModelsForRegressants { get; set; }
         private bool IsPredictionTask { get; set; }
         private bool IsControlTask { get; set; }
@@ -106,68 +107,80 @@ namespace Multiple_Linear_Regression {
                 e.Cancel = true;
             }
             else {
-                List<List<string>> allRows = fileService.Open(dialogService.FilePath);
-                if (allRows.Count > 0) {
+                List<List<string>> allRows = new List<List<string>>();
+                try {
+                    allRows = fileService.Open(dialogService.FilePath);
+                }
+                catch (Exception ex) {
+                    MessageBox.Show(ex.Message);
+                }
+                finally {
+                    if (allRows.Count > 0) {
 
-                    // Clear StepLoadData
-                    Action clear = () => ClearControlsLoadData();
-                    factorsData.Invoke(clear);
+                        // Clear StepLoadData
+                        Action clear = () => ClearControlsLoadData();
+                        factorsData.Invoke(clear);
 
-                    // Add headers to properties
-                    Headers.Clear();
-                    int headerCounter = 0;
-                    foreach (var header in allRows[0]) {
-                        Headers[header] = headerCounter;
-                        headerCounter++;
-                    }
-
-                    RegressantsHeaders.Clear();
-                    RegressorsHeaders.Clear();
-
-                    // Add headers to data grid view
-                    factorsData.Invoke(new Action<List<string>>((s) => SetDataGVColumnHeaders(s, factorsData, false)), allRows[0]);
-
-                    // Create start parameters for progress bar
-                    int progress = 0;
-                    int step = (allRows.Count - 1) / 100;
-                    int oneBarInProgress = 1;
-                    if ((allRows.Count - 1) < 100) {
-                        step = 1;
-                        oneBarInProgress = (100 / (allRows.Count - 1)) + 1;
-                    }
-
-                    for (int i = 1; i < allRows.Count; i++) {
-                        // Find progress
-                        if ((i - 1) % step == 0) {
-                            progress += oneBarInProgress;
-                            bgWorker.ReportProgress(progress);
+                        // Add headers to properties
+                        Headers.Clear();
+                        int headerCounter = 0;
+                        foreach (var header in allRows[0]) {
+                            Headers[header] = headerCounter;
+                            headerCounter++;
                         }
 
-                        // Check empty elements in row
-                        if (allRows[i].All(elem => elem.ToString() != "")) {
-                            // Add row to dataGridView
-                            factorsData.Invoke(new Action<List<string>>((s) => factorsData.Rows.Add(s.ToArray())), allRows[i]);
+                        RegressantsHeaders.Clear();
+                        RegressorsHeaders.Clear();
+
+                        // Add headers to data grid view
+                        factorsData.Invoke(new Action<List<string>>((s) => SetDataGVColumnHeaders(s, factorsData, false)), allRows[0]);
+
+                        // Create start parameters for progress bar
+                        int progress = 0;
+                        int step = (allRows.Count - 1) / 100;
+                        int oneBarInProgress = 1;
+                        if ((allRows.Count - 1) < 100) {
+                            step = 1;
+                            oneBarInProgress = (100 / (allRows.Count - 1)) + 1;
                         }
+
+                        for (int i = 1; i < allRows.Count; i++) {
+                            // Find progress
+                            if ((i - 1) % step == 0) {
+                                progress += oneBarInProgress;
+                                bgWorker.ReportProgress(progress);
+                            }
+
+                            // Check empty elements in row
+                            if (allRows[i].All(elem => elem.ToString() != "")) {
+                                // Add row to AllValues
+                                AllValues.Add(allRows[i].Select(str => double.Parse(str)).ToList());
+
+                                // Add row to dataGridView
+                                factorsData.Invoke(new Action<List<string>>((s) => factorsData.Rows.Add(s.ToArray())),
+                                    allRows[i].Select(elem => Math.Round(double.Parse(elem), 2).ToString()).ToList());
+                            }
+                        }
+
+                        // Enable button to select regressors and regressants
+                        selectRegressorsButton.Invoke(new Action<bool>((b) => selectRegressorsButton.Enabled = b), true);
+                        selectRegressantsButton.Invoke(new Action<bool>((b) => selectRegressantsButton.Enabled = b), true);
+
+                        // Enable accept selected factors button
+                        acceptFactorsButton.Invoke(new Action<bool>((b) => acceptFactorsButton.Enabled = b), true);
+
+                        // Enable clear selected factors button
+                        clearSelectedFactorsButton.Invoke(new Action<bool>((b) => clearSelectedFactorsButton.Enabled = b), true);
+
+                        // Hide progress bar
+                        progressBarDataLoad.Invoke(new Action<bool>((b) => progressBarDataLoad.Visible = b), false);
+
+                        // Resize dataGrid
+                        factorsData.Invoke(new Action<Size>((size) => factorsData.Size = size),
+                            new Size(factorsData.Width, factorsData.Height + 19));
+
+                        bgWorker.CancelAsync();
                     }
-
-                    // Enable button to select regressors and regressants
-                    selectRegressorsButton.Invoke(new Action<bool>((b) => selectRegressorsButton.Enabled = b), true);
-                    selectRegressantsButton.Invoke(new Action<bool>((b) => selectRegressantsButton.Enabled = b), true);
-
-                    // Enable accept selected factors button
-                    acceptFactorsButton.Invoke(new Action<bool>((b) => acceptFactorsButton.Enabled = b), true);
-
-                    // Enable clear selected factors button
-                    clearSelectedFactorsButton.Invoke(new Action<bool>((b) => clearSelectedFactorsButton.Enabled = b), true);
-
-                    // Hide progress bar
-                    progressBarDataLoad.Invoke(new Action<bool>((b) => progressBarDataLoad.Visible = b), false);
-
-                    // Resize dataGrid
-                    factorsData.Invoke(new Action<Size>((size) => factorsData.Size = size),
-                        new Size(factorsData.Width, factorsData.Height + 19));
-
-                    bgWorker.CancelAsync();
                 }
             }
         }
@@ -244,6 +257,8 @@ namespace Multiple_Linear_Regression {
                 ClearControlsProcessDataOkunev();
                 ClearControlsFilterFactors();
                 ClearControlsBuildEquations();
+                ClearControlsImitationParameters();
+                ClearPredictionTab();
 
                 // Change value factor if prediction task was choosen
                 if (radioPredictionTask.Checked) {
@@ -252,14 +267,34 @@ namespace Multiple_Linear_Regression {
 
                 FillRegressorsForModels();
 
-                labelResultDataLoad.Visible = true;
-                processingStatDataTabGusev.Enabled = true;
-                processingStatDataTabOkunev.Enabled = true;
-                removeUnimportantFactorsTab.Enabled = false;
-                buildRegrEquationsTab.Enabled = false;
-                doFunctionalProcessGusevButton.Enabled = true;
-                doFunctionalProcessOkunevButton.Enabled = true;
-                formationOfControlFactorSetsTab.Enabled = true;
+                // Will the automatic calculation be used
+                AllDefaultParameters autoCalcForm = new AllDefaultParameters();
+                autoCalcForm.ShowDialog();
+
+                if (autoCalcForm.UsingDefaultParameters) {
+                    // Background worker for function preprocessing
+                    BackgroundWorker bgWorkerFunc = new BackgroundWorker();
+                    bgWorkerFunc.DoWork += new DoWorkEventHandler((senderNew, eNew) => RunFullyAutoCalculation(senderNew, eNew, bgWorkerFunc));
+                    bgWorkerFunc.WorkerSupportsCancellation = true;
+                    bgWorkerFunc.RunWorkerAsync();
+
+                    // Backgound worker for loading label
+                    BackgroundWorker bgWorkerLabel = new BackgroundWorker();
+                    bgWorkerLabel.DoWork += new DoWorkEventHandler((senderNew, eNew) =>
+                        ShowLoadingFunctionPreprocessing(senderNew, eNew, bgWorkerLabel, bgWorkerFunc, labelFindingBestModel, labelFindingBestModelEnd));
+                    bgWorkerLabel.WorkerSupportsCancellation = true;
+                    bgWorkerLabel.RunWorkerAsync();
+                }
+                else {
+                    labelResultDataLoad.Visible = true;
+                    processingStatDataTabGusev.Enabled = true;
+                    processingStatDataTabOkunev.Enabled = true;
+                    removeUnimportantFactorsTab.Enabled = false;
+                    buildRegrEquationsTab.Enabled = false;
+                    doFunctionalProcessGusevButton.Enabled = true;
+                    doFunctionalProcessOkunevButton.Enabled = true;
+                    formationOfControlFactorSetsTab.Enabled = true;
+                }
             }
             else {
                 if (RegressantsHeaders.Count == 0 && RegressorsHeaders.Count == 0) {
@@ -278,6 +313,78 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
+        /// Fully automatic calculations for finding best models
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <param name="bgWorker">Background worker</param>
+        private void RunFullyAutoCalculation(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+            // Check if bgworker has been stopped
+            if (bgWorker.CancellationPending) {
+                e.Cancel = true;
+            }
+            else {
+                allTabs.Invoke(new Action<bool>((b) => allTabs.Enabled = b), false);
+
+                // Automatic calculation with default parameters
+                // Gusev functional preprocess
+                Action gusevDG = () => SetHeadersForGusevPreprocess();
+                functionsForProcessingGusevDataGrid.Invoke(gusevDG);
+                GusevProcessingAllModels();
+
+                // Header for grouped data grid
+                Action groupedDG = () => SetHeaderGroupedDataGrid();
+                groupedRegressorsDataGrid.Invoke(groupedDG);
+
+                // Header for important factors data grid
+                Action importantFactorsDG = () => SetHeaderImportantFactorsDataGrid();
+                onlyImportantFactorsDataGrid.Invoke(importantFactorsDG);
+
+                // Get groups of non-correlated regressors
+                GetGroupsRegressors();
+
+                // Filtering of insignificant regressors by empirical way
+                EmpiricalWayToFilterRegressors();
+
+                // Print grouped regressors for each regressant
+                PrintGroupedRegressors(onlyImportantFactorsDataGrid);
+
+                // Header for data grid with equations
+                Action equationsDG = () => SetHeadersForEquationsDataGrid();
+                equationsDataGrid.Invoke(equationsDG);
+
+                // Find best model for each regressant
+                FindAllBestModels();
+
+                allTabs.Invoke(new Action<bool>((b) => allTabs.Enabled = b), true);
+                predictionTab.Invoke(new Action<bool>((b) => predictionTab.Enabled = b), IsPredictionTask);
+                controlSimulationTab.Invoke(new Action<bool>((b) => controlSimulationTab.Enabled = b), IsControlTask);
+
+                // Selecting a tab based on the solving task
+                if (IsPredictionTask) {
+                    allTabs.Invoke(new Action<TabPage>((page) => allTabs.SelectTab(page)), predictionTab);
+                }
+                else if (IsControlTask) {
+                    allTabs.Invoke(new Action<TabPage>((page) => allTabs.SelectTab(page)), controlSimulationTab);
+                }
+
+                // Enable used tabs
+                processingStatDataTabGusev.Invoke(new Action<bool>((b) => processingStatDataTabGusev.Enabled = b), true);
+
+                formationOfControlFactorSetsTab.Invoke(new Action<bool>((b) => formationOfControlFactorSetsTab.Enabled = b), true);
+                groupBoxGroupedRegressors.Invoke(new Action<bool>((b) => groupBoxGroupedRegressors.Enabled = b), false);
+
+                removeUnimportantFactorsTab.Invoke(new Action<bool>((b) => removeUnimportantFactorsTab.Enabled = b), true);
+                groupBoxFilterRegressors.Invoke(new Action<bool>((b) => groupBoxFilterRegressors.Enabled = b), false);
+
+                buildRegrEquationsTab.Invoke(new Action<bool>((b) => buildRegrEquationsTab.Enabled = b), true);
+                buildEquationsButton.Invoke(new Action<bool>((b) => buildEquationsButton.Enabled = b), false);
+
+                bgWorker.CancelAsync();
+            }
+        }
+
+        /// <summary>
         /// Load values for selected factors from data grid view
         /// </summary>
         private void LoadValuesForFactors() {
@@ -288,8 +395,8 @@ namespace Multiple_Linear_Regression {
             foreach (var factor in RegressantsHeaders) {
                 List<double> regressantValues = new List<double>();
 
-                for (int row = 0; row < factorsData.Rows.Count; row++) {
-                    regressantValues.Add(Convert.ToDouble(factorsData[factor.Value, row].Value));
+                for (int row = 0; row < AllValues.Count; row++) {
+                    regressantValues.Add(AllValues[row][factor.Value]);
                 }
                 BaseRegressants[factor.Key] = regressantValues;
             }
@@ -298,8 +405,8 @@ namespace Multiple_Linear_Regression {
             foreach (var factor in RegressorsHeaders) {
                 List<double> regressorsValues = new List<double>();
                 
-                for (int row = 0; row < factorsData.Rows.Count; row++) {
-                    regressorsValues.Add(Convert.ToDouble(factorsData[factor.Value, row].Value));
+                for (int row = 0; row < AllValues.Count; row++) {
+                    regressorsValues.Add(AllValues[row][factor.Value]);
                 }
                 BaseRegressors[factor.Key] = regressorsValues;
             }
@@ -376,12 +483,7 @@ namespace Multiple_Linear_Regression {
         }
 
         private void RunBackgroundGroupingRegressors() {
-            ClearDataGV(groupedRegressorsDataGrid);
-            // Fill grouped regressors table headers
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, groupedRegressorsDataGrid, true);
-
-            // Fill filtered table headers
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, onlyImportantFactorsDataGrid, true);
+            PrepareGroupImportantDataGrids();
 
             // Background worker for grouping regressors
             BackgroundWorker bgWorker = new BackgroundWorker();
@@ -399,6 +501,32 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
+        /// Prepare headers for grouping and important factors data grid
+        /// </summary>
+        private void PrepareGroupImportantDataGrids() {
+            SetHeaderGroupedDataGrid();
+            SetHeaderImportantFactorsDataGrid();
+        }
+
+        /// <summary>
+        /// Set header for grouped data grid
+        /// </summary>
+        private void SetHeaderGroupedDataGrid() {
+            ClearDataGV(groupedRegressorsDataGrid);
+
+            // Fill grouped regressors table headers
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, groupedRegressorsDataGrid, true);
+        }
+
+        /// <summary>
+        /// Set header for important factors data grid
+        /// </summary>
+        private void SetHeaderImportantFactorsDataGrid() {
+            // Fill filtered table headers
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, onlyImportantFactorsDataGrid, true);
+        }
+
+        /// <summary>
         /// Grouping non-correlation regressors
         /// </summary>
         /// <param name="sender"></param>
@@ -410,27 +538,34 @@ namespace Multiple_Linear_Regression {
                 e.Cancel = true;
             }
             else {
-                double thresholdCorrCoef = Convert.ToDouble(maxCorrelBtwRegressors.Value);
-
-                // Get all possible combinations
-                List<List<string>> combinationsOfRegressors = new List<List<string>>();
-                GetCombinations(GetCorrelatedRegressors(thresholdCorrCoef), 0, new List<string>(), combinationsOfRegressors);
-                if (checkPairwiseCombinations.Checked) {
-                    AddPairwiseCombinationsOfFactors(combinationsOfRegressors);
-                }
-
-                // Fill all possible combinations for each model
-                ModelsForRegressants = CreateGroupsOfModels(combinationsOfRegressors);
-
-                // Print regressors from all models for each regressant
-                PrintGroupedRegressors(groupedRegressorsDataGrid);
-                PrintGroupedRegressors(onlyImportantFactorsDataGrid);
-
-                // Enable accept button for grouping of regressors
-                groupedRegressorsButton.Invoke(new Action<bool>((b) => groupedRegressorsButton.Enabled = b), true);
-
+                GetGroupsRegressors();
+                
                 bgWorker.CancelAsync();
             }
+        }
+
+        /// <summary>
+        /// Get all groups of non-correlated regressors for each regressant
+        /// </summary>
+        private void GetGroupsRegressors() {
+            double thresholdCorrCoef = Convert.ToDouble(maxCorrelBtwRegressors.Value);
+
+            // Get all possible combinations
+            List<List<string>> combinationsOfRegressors = new List<List<string>>();
+            GetCombinations(GetCorrelatedRegressors(thresholdCorrCoef), 0, new List<string>(), combinationsOfRegressors);
+            if (checkPairwiseCombinations.Checked) {
+                AddPairwiseCombinationsOfFactors(combinationsOfRegressors);
+            }
+
+            // Fill all possible combinations for each model
+            ModelsForRegressants = CreateGroupsOfModels(combinationsOfRegressors);
+
+            // Print regressors from all models for each regressant
+            PrintGroupedRegressors(groupedRegressorsDataGrid);
+            PrintGroupedRegressors(onlyImportantFactorsDataGrid);
+
+            // Enable accept button for grouping of regressors
+            groupedRegressorsButton.Invoke(new Action<bool>((b) => groupedRegressorsButton.Enabled = b), true);
         }
 
         /// <summary>
@@ -637,8 +772,7 @@ namespace Multiple_Linear_Regression {
         /// Run background worker for functional process data by Gusev method
         /// </summary>
         private void RunBackgroundFunctionalProcessGusevData() {
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
-                functionsForProcessingGusevDataGrid, true, new List<int>() { 3 });
+            SetHeadersForGusevPreprocess();
 
             // Background worker for function preprocessing
             BackgroundWorker bgWorkerFunc = new BackgroundWorker();
@@ -655,6 +789,14 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
+        /// Set headers for data grid with Gusev preprocessing
+        /// </summary>
+        private void SetHeadersForGusevPreprocess() {
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
+                functionsForProcessingGusevDataGrid, true, new List<int>() { 3 });
+        }
+
+        /// <summary>
         /// Find the functions that maximize the Pearson coefficient between regressors and regressants factors by Gusev method
         /// </summary>
         /// <param name="sender"></param>
@@ -666,22 +808,29 @@ namespace Multiple_Linear_Regression {
                 e.Cancel = true;
             }
             else {
-                // Find best functions for each regressors for each model
-                foreach(var model in Models) {
-                    model.StartGusevFunctionalPreprocessing();
-
-                    // Add functions and correlation coefficients to data grid view
-                    foreach (var regressor in model.ProcessFunctions) {
-                        string regressorName = $"{RegressorsShortName[regressor.Key]} - {regressor.Key}";
-                        // Add row of preprocess functions to data grid
-                        functionsForProcessingGusevDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingGusevDataGrid.Rows.Add(row.ToArray())),
-                            new List<string>() { model.RegressantName, regressorName,
-                                String.Join(", ", regressor.Value.ToArray()),
-                                Math.Abs(model.CorrelationCoefficient[regressor.Key]).ToString() });
-                    }
-                }
+                GusevProcessingAllModels();
 
                 bgWorker.CancelAsync();
+            }
+        }
+
+        /// <summary>
+        /// Perform Gusev functional processing for each model
+        /// </summary>
+        private void GusevProcessingAllModels() {
+            // Find best functions for each regressors for each model
+            foreach (var model in Models) {
+                model.StartGusevFunctionalPreprocessing();
+
+                // Add functions and correlation coefficients to data grid view
+                foreach (var regressor in model.ProcessFunctions) {
+                    string regressorName = $"{RegressorsShortName[regressor.Key]} - {regressor.Key}";
+                    // Add row of preprocess functions to data grid
+                    functionsForProcessingGusevDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingGusevDataGrid.Rows.Add(row.ToArray())),
+                        new List<string>() { model.RegressantName, regressorName,
+                                String.Join(", ", regressor.Value.ToArray()),
+                                Math.Round(Math.Abs(model.CorrelationCoefficient[regressor.Key]), 2).ToString() });
+                }
             }
         }
 
@@ -741,7 +890,7 @@ namespace Multiple_Linear_Regression {
                         functionsForProcessingOkunevDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingOkunevDataGrid.Rows.Add(row.ToArray())),
                             new List<string>() { model.RegressantName, regressorName,
                                 String.Join(", ", regressor.Value.ToArray()),
-                                Math.Abs(model.CorrelationCoefficient[regressor.Key]).ToString() });
+                                Math.Round(Math.Abs(model.CorrelationCoefficient[regressor.Key]), 2).ToString() });
                     }
                 }
 
@@ -755,6 +904,9 @@ namespace Multiple_Linear_Regression {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <param name="bgWorker">Background worker</param>
+        /// <param name="mainBgWorker">Main background worker</param>
+        /// <param name="loadLabel">Loading label</param>
+        /// <param name="finishLabel">Label for finish</param>
         private void ShowLoadingFunctionPreprocessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker, 
             BackgroundWorker mainBgWorker, Label loadLabel, Label finishLabel) {
             // Check if bgworker has been stopped
@@ -892,8 +1044,7 @@ namespace Multiple_Linear_Regression {
         /// Find best model for each regressant
         /// </summary>
         private void RunBackgroundFindEquations() {
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Скорректрованный коэффициент детерминации", "Уравнение" },
-                equationsDataGrid, true, new List<int>() { 1 });
+            SetHeadersForEquationsDataGrid();
             buildEquationsButton.Enabled = false;
 
             // Background worker for building equations
@@ -911,6 +1062,14 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
+        /// Set headers for data grid with equations
+        /// </summary>
+        private void SetHeadersForEquationsDataGrid() {
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Скорректрованный коэффициент детерминации", "Уравнение" },
+                equationsDataGrid, true, new List<int>() { 1 });
+        }
+
+        /// <summary>
         /// Build equation for each model and fill data grid
         /// </summary>
         /// <param name="sender"></param>
@@ -922,32 +1081,39 @@ namespace Multiple_Linear_Regression {
                 e.Cancel = true;
             }
             else {
-                BestModels = new List<Model>();
-                
-                // Build the equation for each model and find best model for each regressant
-                foreach (var regressant in ModelsForRegressants.Keys) {
-                    ModelsForRegressants[regressant].ForEach(model => model.BuildEquation(RegressorsShortName));
-
-                    Model nextBestModel = FindBestModel(regressant);
-
-                    BestModels.Add(nextBestModel);
-
-                    equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
-                        new List<string>() { regressant, nextBestModel.AdjDetermCoeff.ToString(), nextBestModel.Equation });
-                }
-
-                if (IsControlTask) {
-                    // Add model for the imitation step
-                    listAvailabelModels.Invoke(new Action<List<string>>((regrName) => listAvailabelModels.Items.AddRange(regrName.ToArray())),
-                        ModelsForRegressants.Keys.ToList());
-                }
-
-                if (IsPredictionTask) {
-                    // Fill prediction tab
-                    FillPredictionTab();
-                }
+                FindAllBestModels();
 
                 bgWorker.CancelAsync();
+            }
+        }
+
+        /// <summary>
+        /// Find best model (adequate and significant for each regressant)
+        /// </summary>
+        private void FindAllBestModels() {
+            BestModels = new List<Model>();
+
+            // Build the equation for each model and find best model for each regressant
+            foreach (var regressant in ModelsForRegressants.Keys) {
+                ModelsForRegressants[regressant].ForEach(model => model.BuildEquation(RegressorsShortName));
+
+                Model nextBestModel = FindBestModel(regressant);
+
+                BestModels.Add(nextBestModel);
+
+                equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
+                    new List<string>() { regressant, Math.Round(nextBestModel.AdjDetermCoeff, 2).ToString(), nextBestModel.Equation });
+            }
+
+            if (IsControlTask) {
+                // Add model for the imitation step
+                listAvailabelModels.Invoke(new Action<List<string>>((regrName) => listAvailabelModels.Items.AddRange(regrName.ToArray())),
+                    ModelsForRegressants.Keys.ToList());
+            }
+
+            if (IsPredictionTask) {
+                // Fill prediction tab
+                FillPredictionTab();
             }
         }
 
@@ -1367,12 +1533,22 @@ namespace Multiple_Linear_Regression {
             foreach (var model in BestModels) {
                 headers.Add($"{model.RegressantName} (Реальное)");
                 headers.Add($"{model.RegressantName} (Предсказанное)");
-                headers.Add("Прогнозная ошибка");
+                headers.Add("Прогнозная ошибка (%)");
+                headers.Add("Прогнозная ошибка с размахом (%)");
+                headers.Add("Абсолютная ошибка");
+                headers.Add("Прогнозная ошибка с максимумом (%)");
+                headers.Add("Прогнозная ошибка с минимумом (%)");
             }
 
             Action setHeadersRealPredict = () => SetDataGVColumnHeaders(headers, realPredictValuesDataGrid, false);
-            Action setHeadersPredictionMetrics = () => SetDataGVColumnHeaders(new List<string>() { "Управляющий показатель", 
-                "Среднее значение прогнозной ошибки" }, predictionMetricsDataGrid, true);
+            Action setHeadersPredictionMetrics = () => SetDataGVColumnHeaders(new List<string>() { 
+                "Управляющий показатель", 
+                "Среднее значение прогнозной ошибки (%)",
+                "Среднее значение прогнозной ошибки с размахом (%)",
+                "Среднее значение абсолютной ошибки",
+                "Среднее значение прогнозной ошибки с максимумом (%)",
+                "Среднее значение прогнозной ошибки с минимумом (%)"
+            }, predictionMetricsDataGrid, true);
 
             realPredictValuesDataGrid.Invoke(setHeadersRealPredict);
             predictionMetricsDataGrid.Invoke(setHeadersPredictionMetrics);
@@ -1385,9 +1561,20 @@ namespace Multiple_Linear_Regression {
         private void FillValuesInPredictTab(Dictionary<string, List<double>> regressorsValues) {
             int numOfValues = regressorsValues[AllNotCombinedRegressorsNamesFromModels[0]].Count;
 
-            Dictionary<string, List<double>> modelsPredictionErrors = new Dictionary<string, List<double>>();
+            Dictionary<string, Dictionary<string, List<double>>> modelsPredictionErrors = new Dictionary<string, Dictionary<string, List<double>>>();
             foreach (var model in BestModels) {
-                modelsPredictionErrors[model.RegressantName] = new List<double>();
+                modelsPredictionErrors[model.RegressantName] = new Dictionary<string, List<double>>();
+                modelsPredictionErrors[model.RegressantName]["MAPE"] = new List<double>();
+                modelsPredictionErrors[model.RegressantName]["MinMax"] = new List<double>();
+                modelsPredictionErrors[model.RegressantName]["AbsError"] = new List<double>();
+                modelsPredictionErrors[model.RegressantName]["MaxError"] = new List<double>();
+                modelsPredictionErrors[model.RegressantName]["MinError"] = new List<double>();
+            }
+
+            // Find min and max in all models
+            Dictionary<string, (double, double)> minMaxModel = new Dictionary<string, (double, double)>();
+            foreach (var model in BestModels) {
+                minMaxModel[model.RegressantName] = (model.RegressantValues.Min(), model.RegressantValues.Max());
             }
 
             // Fill real/predict values in data grid view
@@ -1396,19 +1583,36 @@ namespace Multiple_Linear_Regression {
                 
                 // Add regressors values to row
                 foreach(var regressor in regressorsValues) {
-                    nextRow.Add(regressor.Value[i].ToString());
+                    nextRow.Add(Math.Round(regressor.Value[i], 2).ToString());
                 }
 
                 // Add regressant values to row
                 foreach (var model in BestModels) {
-                    nextRow.Add(model.RegressantValues[i].ToString());
-                    nextRow.Add(model.PredictedValues[i].ToString());
+                    nextRow.Add(Math.Round(model.RegressantValues[i], 2).ToString());
+                    nextRow.Add(Math.Round(model.PredictedValues[i], 2).ToString());
 
-                    // Calc predict error for regressant
-                    double predictError = Statistics.PredictError(model.RegressantValues[i], model.PredictedValues[i]);
-                    nextRow.Add(predictError.ToString());
+                    // Calc all errors for regressant
+                    double mapeError = Statistics.PredictError(model.RegressantValues[i], model.PredictedValues[i]);
+                    double minMaxError = Statistics.RangeError(model.RegressantValues[i], model.PredictedValues[i],
+                        minMaxModel[model.RegressantName].Item1, minMaxModel[model.RegressantName].Item2);
+                    double absoluteError = Statistics.AbsoluteError(model.RegressantValues[i], model.PredictedValues[i]);
+                    double maxPercentError = Statistics.MaxPercentError(model.RegressantValues[i], model.PredictedValues[i],
+                        minMaxModel[model.RegressantName].Item2);
+                    double minPercentError = Statistics.MinPercentError(model.RegressantValues[i], model.PredictedValues[i],
+                        minMaxModel[model.RegressantName].Item1);
 
-                    modelsPredictionErrors[model.RegressantName].Add(predictError);
+                    // Add all error to next row
+                    nextRow.Add(Math.Round(mapeError, 2).ToString());
+                    nextRow.Add(Math.Round(minMaxError, 2).ToString());
+                    nextRow.Add(Math.Round(absoluteError, 2).ToString());
+                    nextRow.Add(Math.Round(maxPercentError, 2).ToString());
+                    nextRow.Add(Math.Round(minPercentError, 2).ToString());
+
+                    modelsPredictionErrors[model.RegressantName]["MAPE"].Add(mapeError);
+                    modelsPredictionErrors[model.RegressantName]["MinMax"].Add(minMaxError);
+                    modelsPredictionErrors[model.RegressantName]["AbsError"].Add(absoluteError);
+                    modelsPredictionErrors[model.RegressantName]["MaxError"].Add(maxPercentError);
+                    modelsPredictionErrors[model.RegressantName]["MinError"].Add(minPercentError);
                 }
                 realPredictValuesDataGrid.Invoke(new Action<List<string>>((row) => realPredictValuesDataGrid.Rows.Add(row.ToArray())),
                     nextRow);
@@ -1417,7 +1621,14 @@ namespace Multiple_Linear_Regression {
             // Fill prediction metric data grid view
             foreach (var regressantErrors in modelsPredictionErrors) {
                 predictionMetricsDataGrid.Invoke(new Action<List<string>>((row) => predictionMetricsDataGrid.Rows.Add(row.ToArray())),
-                    new List<string>() { regressantErrors.Key, regressantErrors.Value.Average().ToString() });
+                    new List<string>() { 
+                        regressantErrors.Key,
+                        Math.Round(regressantErrors.Value["MAPE"].Average(), 2).ToString(),
+                        Math.Round(regressantErrors.Value["MinMax"].Average(), 2).ToString(),
+                        Math.Round(regressantErrors.Value["AbsError"].Average(), 2).ToString(),
+                        Math.Round(regressantErrors.Value["MaxError"].Average(), 2).ToString(),
+                        Math.Round(regressantErrors.Value["MinError"].Average(), 2).ToString()
+                    });
             }
         }
 
@@ -1785,6 +1996,8 @@ namespace Multiple_Linear_Regression {
             regressantsList.Items.Clear();
             regressorsList.Items.Clear();
             labelResultDataLoad.Visible = false;
+            labelFindingBestModel.Visible = false;
+            labelFindingBestModelEnd.Visible = false;
             radioControlTask.Checked = true;
             radioPredictionTask.Checked = false;
 
@@ -1835,7 +2048,7 @@ namespace Multiple_Linear_Regression {
             classicWayRadio.Checked = false;
             empWayRadio.Enabled = true;
             classicWayRadio.Enabled = true;
-            valueEmpWayCorr.Value = Convert.ToDecimal(0.15);
+            valueEmpWayCorr.Value = Convert.ToDecimal(0.1);
             valueEmpWayCorr.Enabled = false;
             labelFilterLoad.Visible = false;
             labelFilterFinish.Visible = false;
@@ -2063,6 +2276,12 @@ namespace Multiple_Linear_Regression {
 
                         labelResultDataLoad.Invoke(new Action<Point>((loc) => labelResultDataLoad.Location = loc),
                             new Point(labelResultDataLoad.Location.X + widthDiff, labelResultDataLoad.Location.Y + heightDiff));
+
+                        labelFindingBestModel.Invoke(new Action<Point>((loc) => labelFindingBestModel.Location = loc),
+                            new Point(labelFindingBestModel.Location.X + widthDiff, labelFindingBestModel.Location.Y + heightDiff));
+
+                        labelFindingBestModelEnd.Invoke(new Action<Point>((loc) => labelFindingBestModelEnd.Location = loc),
+                            new Point(labelFindingBestModelEnd.Location.X + widthDiff, labelFindingBestModelEnd.Location.Y + heightDiff));
 
                         groupTaskType.Invoke(new Action<Point>((loc) => groupTaskType.Location = loc),
                             new Point(groupTaskType.Location.X + widthDiff, groupTaskType.Location.Y));

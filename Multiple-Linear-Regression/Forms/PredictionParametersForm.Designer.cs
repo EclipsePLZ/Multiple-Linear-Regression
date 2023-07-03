@@ -107,9 +107,14 @@
             this.lagValue.Name = "lagValue";
             this.lagValue.Size = new System.Drawing.Size(120, 20);
             this.lagValue.TabIndex = 6;
+            this.lagValue.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.lagValue.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ValidateKeyPressedOnlyNums);
             // 
-            // PredictionParametersFrom
+            // PredictionParametersForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -122,7 +127,7 @@
             this.Controls.Add(this.totalValuesCount);
             this.Controls.Add(this.labelValuesCount);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "PredictionParametersFrom";
+            this.Name = "PredictionParametersForm";
             this.Text = "Параметры прогнозирования";
             ((System.ComponentModel.ISupportInitialize)(this.numberValuesInTimeInterval)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.lagValue)).EndInit();
