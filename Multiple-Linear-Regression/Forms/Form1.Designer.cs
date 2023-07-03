@@ -116,6 +116,8 @@
             this.toolTipSymbiosis = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipAutoProportion = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipPercentAreaExpansion = new System.Windows.Forms.ToolTip(this.components);
+            this.labelFindingBestModelEnd = new System.Windows.Forms.Label();
+            this.labelFindingBestModel = new System.Windows.Forms.Label();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             this.groupTaskType.SuspendLayout();
@@ -190,6 +192,8 @@
             // 
             // loadDataTab
             // 
+            this.loadDataTab.Controls.Add(this.labelFindingBestModelEnd);
+            this.loadDataTab.Controls.Add(this.labelFindingBestModel);
             this.loadDataTab.Controls.Add(this.groupTaskType);
             this.loadDataTab.Controls.Add(this.labelResultDataLoad);
             this.loadDataTab.Controls.Add(this.checkPairwiseCombinations);
@@ -351,7 +355,7 @@
             // labelPreprocessingGusevFinish
             // 
             this.labelPreprocessingGusevFinish.AutoSize = true;
-            this.labelPreprocessingGusevFinish.Location = new System.Drawing.Point(665, 371);
+            this.labelPreprocessingGusevFinish.Location = new System.Drawing.Point(666, 371);
             this.labelPreprocessingGusevFinish.Name = "labelPreprocessingGusevFinish";
             this.labelPreprocessingGusevFinish.Size = new System.Drawing.Size(145, 13);
             this.labelPreprocessingGusevFinish.TabIndex = 17;
@@ -1182,6 +1186,26 @@
             this.labelRegressorsList.TabIndex = 8;
             this.labelRegressorsList.Text = "Управляющие факторы:";
             // 
+            // labelFindingBestModelEnd
+            // 
+            this.labelFindingBestModelEnd.AutoSize = true;
+            this.labelFindingBestModelEnd.Location = new System.Drawing.Point(652, 370);
+            this.labelFindingBestModelEnd.Name = "labelFindingBestModelEnd";
+            this.labelFindingBestModelEnd.Size = new System.Drawing.Size(133, 13);
+            this.labelFindingBestModelEnd.TabIndex = 19;
+            this.labelFindingBestModelEnd.Text = "Лучшие модели найдены";
+            this.labelFindingBestModelEnd.Visible = false;
+            // 
+            // labelFindingBestModel
+            // 
+            this.labelFindingBestModel.AutoSize = true;
+            this.labelFindingBestModel.Location = new System.Drawing.Point(651, 370);
+            this.labelFindingBestModel.Name = "labelFindingBestModel";
+            this.labelFindingBestModel.Size = new System.Drawing.Size(155, 13);
+            this.labelFindingBestModel.TabIndex = 18;
+            this.labelFindingBestModel.Text = "Нахождение лучших моделей";
+            this.labelFindingBestModel.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1340,6 +1364,8 @@
         private System.Windows.Forms.DataGridView predictionMetricsDataGrid;
         private System.Windows.Forms.DataGridView realPredictValuesDataGrid;
         private System.Windows.Forms.Button loadDataForPredictButton;
+        private System.Windows.Forms.Label labelFindingBestModelEnd;
+        private System.Windows.Forms.Label labelFindingBestModel;
     }
 }
 

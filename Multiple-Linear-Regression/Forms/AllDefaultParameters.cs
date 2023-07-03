@@ -14,6 +14,7 @@ namespace Multiple_Linear_Regression.Forms {
         public bool UsingDefaultParameters { get; private set; }
         public AllDefaultParameters() {
             InitializeComponent();
+            this.CenterToScreen();
             UsingDefaultParameters = false;
         }
 

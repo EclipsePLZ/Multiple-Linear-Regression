@@ -270,11 +270,18 @@ namespace Multiple_Linear_Regression {
                 autoCalcForm.ShowDialog();
 
                 if (autoCalcForm.UsingDefaultParameters) {
-                    // Automatic calculation with default parameters
-                    GusevProcessingAllModels();
+                    // Background worker for function preprocessing
+                    BackgroundWorker bgWorkerFunc = new BackgroundWorker();
+                    bgWorkerFunc.DoWork += new DoWorkEventHandler((senderNew, eNew) => RunFullyAutoCalculation(senderNew, eNew, bgWorkerFunc));
+                    bgWorkerFunc.WorkerSupportsCancellation = true;
+                    bgWorkerFunc.RunWorkerAsync();
 
-                    PrepareGroupImportantDataGrids();
-                    GetGroupsRegressors();
+                    // Backgound worker for loading label
+                    BackgroundWorker bgWorkerLabel = new BackgroundWorker();
+                    bgWorkerLabel.DoWork += new DoWorkEventHandler((senderNew, eNew) =>
+                        ShowLoadingFunctionPreprocessing(senderNew, eNew, bgWorkerLabel, bgWorkerFunc, labelFindingBestModel, labelFindingBestModelEnd));
+                    bgWorkerLabel.WorkerSupportsCancellation = true;
+                    bgWorkerLabel.RunWorkerAsync();
                 }
                 else {
                     labelResultDataLoad.Visible = true;
@@ -300,6 +307,45 @@ namespace Multiple_Linear_Regression {
                 else if (!radioControlTask.Checked && !radioPredictionTask.Checked) {
                     MessageBox.Show("Вы не выбрали тип решаемой задачи");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Fully automatic calculations for finding best models
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <param name="bgWorker">Background worker</param>
+        private void RunFullyAutoCalculation(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker) {
+            // Check if bgworker has been stopped
+            if (bgWorker.CancellationPending) {
+                e.Cancel = true;
+            }
+            else {
+                // Automatic calculation with default parameters
+                GusevProcessingAllModels();
+
+                PrepareGroupImportantDataGrids();
+                GetGroupsRegressors();
+                EmpiricalWayToFilterRegressors();
+
+                // Print grouped regressors for each regressant
+                PrintGroupedRegressors(onlyImportantFactorsDataGrid);
+
+                SetHeadersForEquationsDataGrid();
+                FindAllBestModels();
+
+                predictionTab.Invoke(new Action<bool>((b) => predictionTab.Enabled = b), IsPredictionTask);
+                controlSimulationTab.Invoke(new Action<bool>((b) => controlSimulationTab.Enabled = b), IsControlTask);
+
+                if (IsPredictionTask) {
+                    allTabs.Invoke(new Action<TabPage>((page) => allTabs.SelectTab(page)), predictionTab);
+                }
+                else if (IsControlTask) {
+                    allTabs.Invoke(new Action<TabPage>((page) => allTabs.SelectTab(page)), controlSimulationTab);
+                }
+
+                bgWorker.CancelAsync();
             }
         }
 
@@ -694,6 +740,8 @@ namespace Multiple_Linear_Regression {
             bgWorkerLabel.RunWorkerAsync();
         }
 
+
+
         /// <summary>
         /// Find the functions that maximize the Pearson coefficient between regressors and regressants factors by Gusev method
         /// </summary>
@@ -939,8 +987,7 @@ namespace Multiple_Linear_Regression {
         /// Find best model for each regressant
         /// </summary>
         private void RunBackgroundFindEquations() {
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Скорректрованный коэффициент детерминации", "Уравнение" },
-                equationsDataGrid, true, new List<int>() { 1 });
+            SetHeadersForEquationsDataGrid();
             buildEquationsButton.Enabled = false;
 
             // Background worker for building equations
@@ -958,6 +1005,14 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
+        /// Set headers for data grid with equations
+        /// </summary>
+        private void SetHeadersForEquationsDataGrid() {
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Скорректрованный коэффициент детерминации", "Уравнение" },
+                equationsDataGrid, true, new List<int>() { 1 });
+        }
+
+        /// <summary>
         /// Build equation for each model and fill data grid
         /// </summary>
         /// <param name="sender"></param>
@@ -969,32 +1024,39 @@ namespace Multiple_Linear_Regression {
                 e.Cancel = true;
             }
             else {
-                BestModels = new List<Model>();
-                
-                // Build the equation for each model and find best model for each regressant
-                foreach (var regressant in ModelsForRegressants.Keys) {
-                    ModelsForRegressants[regressant].ForEach(model => model.BuildEquation(RegressorsShortName));
-
-                    Model nextBestModel = FindBestModel(regressant);
-
-                    BestModels.Add(nextBestModel);
-
-                    equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
-                        new List<string>() { regressant, Math.Round(nextBestModel.AdjDetermCoeff, 2).ToString(), nextBestModel.Equation });
-                }
-
-                if (IsControlTask) {
-                    // Add model for the imitation step
-                    listAvailabelModels.Invoke(new Action<List<string>>((regrName) => listAvailabelModels.Items.AddRange(regrName.ToArray())),
-                        ModelsForRegressants.Keys.ToList());
-                }
-
-                if (IsPredictionTask) {
-                    // Fill prediction tab
-                    FillPredictionTab();
-                }
+                FindAllBestModels();
 
                 bgWorker.CancelAsync();
+            }
+        }
+
+        /// <summary>
+        /// Find best model (adequate and significant for each regressant)
+        /// </summary>
+        private void FindAllBestModels() {
+            BestModels = new List<Model>();
+
+            // Build the equation for each model and find best model for each regressant
+            foreach (var regressant in ModelsForRegressants.Keys) {
+                ModelsForRegressants[regressant].ForEach(model => model.BuildEquation(RegressorsShortName));
+
+                Model nextBestModel = FindBestModel(regressant);
+
+                BestModels.Add(nextBestModel);
+
+                equationsDataGrid.Invoke(new Action<List<string>>((row) => equationsDataGrid.Rows.Add(row.ToArray())),
+                    new List<string>() { regressant, Math.Round(nextBestModel.AdjDetermCoeff, 2).ToString(), nextBestModel.Equation });
+            }
+
+            if (IsControlTask) {
+                // Add model for the imitation step
+                listAvailabelModels.Invoke(new Action<List<string>>((regrName) => listAvailabelModels.Items.AddRange(regrName.ToArray())),
+                    ModelsForRegressants.Keys.ToList());
+            }
+
+            if (IsPredictionTask) {
+                // Fill prediction tab
+                FillPredictionTab();
             }
         }
 
@@ -1877,6 +1939,8 @@ namespace Multiple_Linear_Regression {
             regressantsList.Items.Clear();
             regressorsList.Items.Clear();
             labelResultDataLoad.Visible = false;
+            labelFindingBestModel.Visible = false;
+            labelFindingBestModelEnd.Visible = false;
             radioControlTask.Checked = true;
             radioPredictionTask.Checked = false;
 
@@ -2155,6 +2219,12 @@ namespace Multiple_Linear_Regression {
 
                         labelResultDataLoad.Invoke(new Action<Point>((loc) => labelResultDataLoad.Location = loc),
                             new Point(labelResultDataLoad.Location.X + widthDiff, labelResultDataLoad.Location.Y + heightDiff));
+
+                        labelFindingBestModel.Invoke(new Action<Point>((loc) => labelFindingBestModel.Location = loc),
+                            new Point(labelFindingBestModel.Location.X + widthDiff, labelFindingBestModel.Location.Y + heightDiff));
+
+                        labelFindingBestModelEnd.Invoke(new Action<Point>((loc) => labelFindingBestModelEnd.Location = loc),
+                            new Point(labelFindingBestModelEnd.Location.X + widthDiff, labelFindingBestModelEnd.Location.Y + heightDiff));
 
                         groupTaskType.Invoke(new Action<Point>((loc) => groupTaskType.Location = loc),
                             new Point(groupTaskType.Location.X + widthDiff, groupTaskType.Location.Y));
