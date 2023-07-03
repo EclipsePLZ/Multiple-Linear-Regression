@@ -1087,11 +1087,11 @@
             this.predictionMetricsDataGrid.AllowUserToDeleteRows = false;
             this.predictionMetricsDataGrid.AllowUserToResizeRows = false;
             this.predictionMetricsDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.predictionMetricsDataGrid.Location = new System.Drawing.Point(3, 274);
+            this.predictionMetricsDataGrid.Location = new System.Drawing.Point(3, 236);
             this.predictionMetricsDataGrid.Name = "predictionMetricsDataGrid";
             this.predictionMetricsDataGrid.ReadOnly = true;
             this.predictionMetricsDataGrid.RowHeadersWidth = 51;
-            this.predictionMetricsDataGrid.Size = new System.Drawing.Size(632, 113);
+            this.predictionMetricsDataGrid.Size = new System.Drawing.Size(632, 151);
             this.predictionMetricsDataGrid.TabIndex = 14;
             // 
             // realPredictValuesDataGrid
@@ -1104,7 +1104,7 @@
             this.realPredictValuesDataGrid.Name = "realPredictValuesDataGrid";
             this.realPredictValuesDataGrid.ReadOnly = true;
             this.realPredictValuesDataGrid.RowHeadersWidth = 51;
-            this.realPredictValuesDataGrid.Size = new System.Drawing.Size(632, 265);
+            this.realPredictValuesDataGrid.Size = new System.Drawing.Size(632, 227);
             this.realPredictValuesDataGrid.TabIndex = 13;
             // 
             // menuStrip

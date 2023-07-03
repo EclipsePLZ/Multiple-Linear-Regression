@@ -257,6 +257,8 @@ namespace Multiple_Linear_Regression {
                 ClearControlsProcessDataOkunev();
                 ClearControlsFilterFactors();
                 ClearControlsBuildEquations();
+                ClearControlsImitationParameters();
+                ClearPredictionTab();
 
                 // Change value factor if prediction task was choosen
                 if (radioPredictionTask.Checked) {
@@ -322,28 +324,61 @@ namespace Multiple_Linear_Regression {
                 e.Cancel = true;
             }
             else {
+                allTabs.Invoke(new Action<bool>((b) => allTabs.Enabled = b), false);
+
                 // Automatic calculation with default parameters
+                // Gusev functional preprocess
+                Action gusevDG = () => SetHeadersForGusevPreprocess();
+                functionsForProcessingGusevDataGrid.Invoke(gusevDG);
                 GusevProcessingAllModels();
 
-                PrepareGroupImportantDataGrids();
+                // Header for grouped data grid
+                Action groupedDG = () => SetHeaderGroupedDataGrid();
+                groupedRegressorsDataGrid.Invoke(groupedDG);
+
+                // Header for important factors data grid
+                Action importantFactorsDG = () => SetHeaderImportantFactorsDataGrid();
+                onlyImportantFactorsDataGrid.Invoke(importantFactorsDG);
+
+                // Get groups of non-correlated regressors
                 GetGroupsRegressors();
+
+                // Filtering of insignificant regressors by empirical way
                 EmpiricalWayToFilterRegressors();
 
                 // Print grouped regressors for each regressant
                 PrintGroupedRegressors(onlyImportantFactorsDataGrid);
 
-                SetHeadersForEquationsDataGrid();
+                // Header for data grid with equations
+                Action equationsDG = () => SetHeadersForEquationsDataGrid();
+                equationsDataGrid.Invoke(equationsDG);
+
+                // Find best model for each regressant
                 FindAllBestModels();
 
+                allTabs.Invoke(new Action<bool>((b) => allTabs.Enabled = b), true);
                 predictionTab.Invoke(new Action<bool>((b) => predictionTab.Enabled = b), IsPredictionTask);
                 controlSimulationTab.Invoke(new Action<bool>((b) => controlSimulationTab.Enabled = b), IsControlTask);
 
+                // Selecting a tab based on the solving task
                 if (IsPredictionTask) {
                     allTabs.Invoke(new Action<TabPage>((page) => allTabs.SelectTab(page)), predictionTab);
                 }
                 else if (IsControlTask) {
                     allTabs.Invoke(new Action<TabPage>((page) => allTabs.SelectTab(page)), controlSimulationTab);
                 }
+
+                // Enable used tabs
+                processingStatDataTabGusev.Invoke(new Action<bool>((b) => processingStatDataTabGusev.Enabled = b), true);
+
+                formationOfControlFactorSetsTab.Invoke(new Action<bool>((b) => formationOfControlFactorSetsTab.Enabled = b), true);
+                groupBoxGroupedRegressors.Invoke(new Action<bool>((b) => groupBoxGroupedRegressors.Enabled = b), false);
+
+                removeUnimportantFactorsTab.Invoke(new Action<bool>((b) => removeUnimportantFactorsTab.Enabled = b), true);
+                groupBoxFilterRegressors.Invoke(new Action<bool>((b) => groupBoxFilterRegressors.Enabled = b), false);
+
+                buildRegrEquationsTab.Invoke(new Action<bool>((b) => buildRegrEquationsTab.Enabled = b), true);
+                buildEquationsButton.Invoke(new Action<bool>((b) => buildEquationsButton.Enabled = b), false);
 
                 bgWorker.CancelAsync();
             }
@@ -469,10 +504,24 @@ namespace Multiple_Linear_Regression {
         /// Prepare headers for grouping and important factors data grid
         /// </summary>
         private void PrepareGroupImportantDataGrids() {
+            SetHeaderGroupedDataGrid();
+            SetHeaderImportantFactorsDataGrid();
+        }
+
+        /// <summary>
+        /// Set header for grouped data grid
+        /// </summary>
+        private void SetHeaderGroupedDataGrid() {
             ClearDataGV(groupedRegressorsDataGrid);
+
             // Fill grouped regressors table headers
             SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, groupedRegressorsDataGrid, true);
+        }
 
+        /// <summary>
+        /// Set header for important factors data grid
+        /// </summary>
+        private void SetHeaderImportantFactorsDataGrid() {
             // Fill filtered table headers
             SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, onlyImportantFactorsDataGrid, true);
         }
@@ -723,8 +772,7 @@ namespace Multiple_Linear_Regression {
         /// Run background worker for functional process data by Gusev method
         /// </summary>
         private void RunBackgroundFunctionalProcessGusevData() {
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
-                functionsForProcessingGusevDataGrid, true, new List<int>() { 3 });
+            SetHeadersForGusevPreprocess();
 
             // Background worker for function preprocessing
             BackgroundWorker bgWorkerFunc = new BackgroundWorker();
@@ -740,7 +788,13 @@ namespace Multiple_Linear_Regression {
             bgWorkerLabel.RunWorkerAsync();
         }
 
-
+        /// <summary>
+        /// Set headers for data grid with Gusev preprocessing
+        /// </summary>
+        private void SetHeadersForGusevPreprocess() {
+            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
+                functionsForProcessingGusevDataGrid, true, new List<int>() { 3 });
+        }
 
         /// <summary>
         /// Find the functions that maximize the Pearson coefficient between regressors and regressants factors by Gusev method
@@ -850,6 +904,9 @@ namespace Multiple_Linear_Regression {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <param name="bgWorker">Background worker</param>
+        /// <param name="mainBgWorker">Main background worker</param>
+        /// <param name="loadLabel">Loading label</param>
+        /// <param name="finishLabel">Label for finish</param>
         private void ShowLoadingFunctionPreprocessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker, 
             BackgroundWorker mainBgWorker, Label loadLabel, Label finishLabel) {
             // Check if bgworker has been stopped
