@@ -35,6 +35,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>vibrate.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="alglib.net, Version=3.19.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\alglib.net.3.19.0\lib\net48\alglib.net.dll</HintPath>
@@ -203,6 +206,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="vibrate.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
