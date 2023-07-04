@@ -8,6 +8,9 @@ If you selected the type of task - forecasting, you must set the forecasting par
 
 ![Параметры_прогнозирования](https://github.com/EclipsePLZ/Multiple-Linear-Regression/assets/84061271/10f8e4f5-84f2-47d9-b852-a4fcd56cad6c)
 
+After selecting the indicators, you will be prompted to perform a fully automatic calculation with default parameters.
+
+![Автоматический_расчет](https://github.com/EclipsePLZ/Multiple-Linear-Regression/assets/84061271/41f61dd2-19fd-47ae-901f-898b1e24f8c7)
 
 ## Functional preprocessing of statistical data (1 ver.)
 This step is optional.
@@ -74,7 +77,7 @@ In this step, forecasting is automatically performed for the existing observatio
 Also for each prediction indicator, the prediction error is calculated. And then the average value of the prediction error for each of the indicators is calculated.
 You can load the values of the defining indicators from a file to find the prediction for each of the indicators.
 
-![Прогнозирование](https://github.com/EclipsePLZ/Multiple-Linear-Regression/assets/84061271/47f84558-a174-4dd5-a0f4-b9e239432001)
+![Прогнозирование_основа](https://github.com/EclipsePLZ/Multiple-Linear-Regression/assets/84061271/1f80fa5e-ec7c-4e1b-b4fb-256d01e754b2)
 
 ## Load defining indicators from a file to build a forecast
 At this step it is possible to load the values of the determinants from the file to build the prediction. After finding the prediction values, you can unload the prediction results to a file.
