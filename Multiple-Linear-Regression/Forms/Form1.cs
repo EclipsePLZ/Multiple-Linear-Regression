@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Multiple_Linear_Regression.Mathematic;
+using Multiple_Linear_Regression.Work_With_Files;
 
 namespace Multiple_Linear_Regression {
     public partial class MainForm : Form {
@@ -69,7 +70,7 @@ namespace Multiple_Linear_Regression {
 
             try {
                 if (dialogService.OpenFileDialog() == true) {
-                    fileService = GetFileService(dialogService.FilePath);
+                    fileService = Files.GetFileService(dialogService.FilePath);
 
                     RunBackgroundWorkerLoadFile();
                 }
@@ -252,13 +253,7 @@ namespace Multiple_Linear_Regression {
                     CreatePairwiseCombinationsOfFactors();
                 }
 
-                ClearControlsGroupingFactors();
-                ClearControlsProcessDataGusev();
-                ClearControlsProcessDataOkunev();
-                ClearControlsFilterFactors();
-                ClearControlsBuildEquations();
-                ClearControlsImitationParameters();
-                ClearPredictionTab();
+                ClearTabsAfterSelectedFactors();
 
                 // Change value factor if prediction task was choosen
                 if (radioPredictionTask.Checked) {
@@ -281,7 +276,7 @@ namespace Multiple_Linear_Regression {
                     // Backgound worker for loading label
                     BackgroundWorker bgWorkerLabel = new BackgroundWorker();
                     bgWorkerLabel.DoWork += new DoWorkEventHandler((senderNew, eNew) =>
-                        ShowLoadingFunctionPreprocessing(senderNew, eNew, bgWorkerLabel, bgWorkerFunc, labelFindingBestModel, labelFindingBestModelEnd));
+                        ShowLoadingLogo(senderNew, eNew, bgWorkerLabel, bgWorkerFunc, labelFindingBestModel, labelFindingBestModelEnd));
                     bgWorkerLabel.WorkerSupportsCancellation = true;
                     bgWorkerLabel.RunWorkerAsync();
                 }
@@ -297,19 +292,21 @@ namespace Multiple_Linear_Regression {
                 }
             }
             else {
-                if (RegressantsHeaders.Count == 0 && RegressorsHeaders.Count == 0) {
-                    MessageBox.Show("Вы не выбрали показатели для исследования");
-                }
-                else if (RegressantsHeaders.Count == 0) {
-                    MessageBox.Show("Вы не выбрали управляемые факторы для исследования");
-                }
-                else if (RegressorsHeaders.Count == 0) {
-                    MessageBox.Show("Вы не выбрали управляющие факторы для исследования");
-                }
-                else if (!radioControlTask.Checked && !radioPredictionTask.Checked) {
-                    MessageBox.Show("Вы не выбрали тип решаемой задачи");
-                }
+                ShowErrorSelectedFactors();
             }
+        }
+
+        /// <summary>
+        /// Clear all tabs after selected factors
+        /// </summary>
+        private void ClearTabsAfterSelectedFactors() {
+            ClearControlsGroupingFactors();
+            ClearControlsProcessDataGusev();
+            ClearControlsProcessDataOkunev();
+            ClearControlsFilterFactors();
+            ClearControlsBuildEquations();
+            ClearControlsImitationParameters();
+            ClearPredictionTab();
         }
 
         /// <summary>
@@ -390,26 +387,39 @@ namespace Multiple_Linear_Regression {
         private void LoadValuesForFactors() {
             BaseRegressants.Clear();
             BaseRegressors.Clear();
-            
-            // Load regressants
-            foreach (var factor in RegressantsHeaders) {
-                List<double> regressantValues = new List<double>();
 
-                for (int row = 0; row < AllValues.Count; row++) {
-                    regressantValues.Add(AllValues[row][factor.Value]);
-                }
-                BaseRegressants[factor.Key] = regressantValues;
-            }
+            // Load regressants
+            BaseRegressants = new Dictionary<string, List<double>>(
+                GetFactorsWithValues(RegressantsHeaders, AllValues)
+                );
 
             // Load regressors
-            foreach (var factor in RegressorsHeaders) {
-                List<double> regressorsValues = new List<double>();
-                
-                for (int row = 0; row < AllValues.Count; row++) {
-                    regressorsValues.Add(AllValues[row][factor.Value]);
+            BaseRegressors = new Dictionary<string, List<double>>(
+                GetFactorsWithValues(RegressorsHeaders, AllValues)
+                );
+        }
+
+        /// <summary>
+        /// Get factors with it's values
+        /// </summary>
+        /// <param name="factors">Dictionary with name of factor and it's index</param>
+        /// <param name="values">Matrix with values of factors</param>
+        /// <returns>Dictionary with values for each factor</returns>
+        private Dictionary<string, List<double>> GetFactorsWithValues(Dictionary<string, int> factors, List<List<double>> values) {
+            Dictionary<string, List<double>> factorValues = new Dictionary<string, List<double>>();
+            
+            // Add values for each factor
+            foreach(var factor in factors) {
+                List<double> valuesForFactor = new List<double>();
+
+                // Collect all values for current factor
+                for (int row = 0; row < values.Count; row++) {
+                    valuesForFactor.Add(values[row][factor.Value]);
                 }
-                BaseRegressors[factor.Key] = regressorsValues;
+                factorValues[factor.Key] = valuesForFactor;
             }
+
+            return factorValues;
         }
 
         /// <summary>
@@ -449,13 +459,24 @@ namespace Multiple_Linear_Regression {
             List<string> regressantsName = new List<string>(BaseRegressants.Keys);
 
             // Perform a shift of the defining indicators
-            foreach (var regressorName in regressorsNames) {
-                BaseRegressors[regressorName] = BaseRegressors[regressorName].GetRange(0, newNumberOfValues);
-            }
+            ShiftFactorValues(BaseRegressors, 0, newNumberOfValues, regressorsNames);
 
             // Perform a shift of the forecast indicators
-            foreach (var regressantName in regressantsName) {
-                BaseRegressants[regressantName] = BaseRegressants[regressantName].GetRange(numberOfValuesForDelete, newNumberOfValues);
+            ShiftFactorValues(BaseRegressants, numberOfValuesForDelete, newNumberOfValues, regressantsName);
+        }
+
+        /// <summary>
+        /// A method for performing a shift in factor values from a dictionary.
+        /// </summary>
+        /// <param name="factors">Dictionary of factors</param>
+        /// <param name="startPosition">Start position for shifting</param>
+        /// <param name="numberOfValues">Number of values for shift</param>
+        /// <param name="factorsNames">Names of factors for shifting</param>
+        private void ShiftFactorValues(Dictionary<string, List<double>> factors, 
+            int startPosition, int numberOfValues, List<string> factorsNames) {
+
+            foreach (var factorName in factorsNames) {
+                factors[factorName] = factors[factorName].GetRange(startPosition, numberOfValues);
             }
         }
 
@@ -469,16 +490,48 @@ namespace Multiple_Linear_Regression {
             }
         }
 
+        /// <summary>
+        /// Show type of error in selected factors step
+        /// </summary>
+        private void ShowErrorSelectedFactors() {
+            if (RegressantsHeaders.Count == 0 && RegressorsHeaders.Count == 0) {
+                MessageBox.Show("Вы не выбрали показатели для исследования");
+            }
+            else if (RegressantsHeaders.Count == 0) {
+                MessageBox.Show("Вы не выбрали управляемые факторы для исследования");
+            }
+            else if (RegressorsHeaders.Count == 0) {
+                MessageBox.Show("Вы не выбрали управляющие факторы для исследования");
+            }
+            else if (!radioControlTask.Checked && !radioPredictionTask.Checked) {
+                MessageBox.Show("Вы не выбрали тип решаемой задачи");
+            }
+        }
+
         private void groupedRegressorsButton_Click(object sender, EventArgs e) {
             groupedRegressorsButton.Enabled = false;
-            ClearControlsFilterFactors();
-            ClearControlsBuildEquations();
-            
+
+            ClearTabsForGroupingFactors();
+
             RunBackgroundGroupingRegressors();
 
+            EnableControlsAfterGroupingFactors();
+        }
+
+        /// <summary>
+        /// Clear tabs for grouping factors
+        /// </summary>
+        private void ClearTabsForGroupingFactors() {
+            ClearControlsFilterFactors();
+            ClearControlsBuildEquations();
+        }
+
+        /// <summary>
+        /// Enable controls after grouping factors
+        /// </summary>
+        private void EnableControlsAfterGroupingFactors() {
             removeUnimportantFactorsTab.Enabled = true;
             buildRegrEquationsTab.Enabled = true;
-
             buildEquationsButton.Enabled = true;
         }
 
@@ -494,7 +547,7 @@ namespace Multiple_Linear_Regression {
             // Background worker for loading label
             BackgroundWorker bgWorkerLoad = new BackgroundWorker();
             bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
-                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLoad, bgWorker, labelGroupingRegressors,
+                ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorker, labelGroupingRegressors,
                 labelGroupingRegressorsEnd));
             bgWorkerLoad.WorkerSupportsCancellation = true;
             bgWorkerLoad.RunWorkerAsync();
@@ -593,10 +646,10 @@ namespace Multiple_Linear_Regression {
         /// Find correlated regressors
         /// </summary>
         /// <param name="thresholdCorr">Threshold value for check correlation</param>
-        /// <returns></returns>
+        /// <returns>List with groups of correlated regressors</returns>
         private List<List<string>> GetCorrelatedRegressors(double thresholdCorr) {
             List<List<string>> corrRegressors = new List<List<string>>();
-            List<string> nonCombinedRegressors = GetNotCombinedRegressors(BaseRegressors);
+            List<string> nonCombinedRegressors = GetNonCombinedRegressors(BaseRegressors.Keys.ToList());
             List<string> usedRegressors = new List<string>();
 
             // Find groups of correlated regressors
@@ -677,13 +730,22 @@ namespace Multiple_Linear_Regression {
                     regressorsWithValues[regressor] = new List<double>(model.Regressors[regressor]);
                 }
                 else if (regressor.Contains(" & ")) {
-                    string[] combinedRegressors = regressor.Split(new string[] { " & " }, StringSplitOptions.None);
-                    string regressorName = combinedRegressors[1] + " & " + combinedRegressors[0];
+                    string regressorName = SwapPartsOfCombinedFactor(regressor);
                     regressorsWithValues[regressorName] = new List<double>(model.Regressors[regressorName]);
                 }
             }
 
             return regressorsWithValues;
+        }
+
+        /// <summary>
+        /// Swap the factors that make up the combination of factors.
+        /// </summary>
+        /// <param name="factorName">Name of combination</param>
+        /// <returns>New combination name</returns>
+        private string SwapPartsOfCombinedFactor(string factorName) {
+            string[] combinedFactors = factorName.Split(new string[] { " & " }, StringSplitOptions.None);
+            return combinedFactors[1] + " & " + combinedFactors[0];
         }
 
         /// <summary>
@@ -717,8 +779,7 @@ namespace Multiple_Linear_Regression {
                     nextRegressor = RegressorsShortName[regressor];
                 }
                 else if (regressor.Contains(" & ")) {
-                    string[] combinedRegressors = regressor.Split(new string[] { " & " }, StringSplitOptions.None);
-                    nextRegressor = RegressorsShortName[combinedRegressors[1] + " & " + combinedRegressors[0]];
+                    nextRegressor = SwapPartsOfCombinedFactor(regressor);
                 }
                 shortRegressors.Add(nextRegressor);
             }
@@ -731,22 +792,7 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="regressors">Regressors</param>
         /// <returns>List of headers</returns>
-        private List<string> GetNotCombinedRegressors(Dictionary<string, List<double>> regressors) {
-            List<string> nonCombinedRegressors = new List<string>();
-            foreach (var regressorName in regressors.Keys) {
-                if (!regressorName.Contains(" & ")) {
-                    nonCombinedRegressors.Add(regressorName);
-                }
-            }
-            return nonCombinedRegressors;
-        }
-
-        /// <summary>
-        /// Get list of headers of non-combined regressors
-        /// </summary>
-        /// <param name="regressors">Regressors</param>
-        /// <returns>List of headers</returns>
-        private List<string> GetNotCombinedRegressors(List<string> regressors) {
+        private List<string> GetNonCombinedRegressors(List<string> regressors) {
             List<string> nonCombinedRegressors = new List<string>();
             foreach (var regressorName in regressors) {
                 if (!regressorName.Contains(" & ")) {
@@ -783,7 +829,7 @@ namespace Multiple_Linear_Regression {
             // Backgound worker for loading label
             BackgroundWorker bgWorkerLabel = new BackgroundWorker();
             bgWorkerLabel.DoWork += new DoWorkEventHandler((sender, e) =>
-                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLabel, bgWorkerFunc, labelFuncPreprocessGusev, labelPreprocessingGusevFinish));
+                ShowLoadingLogo(sender, e, bgWorkerLabel, bgWorkerFunc, labelFuncPreprocessGusev, labelPreprocessingGusevFinish));
             bgWorkerLabel.WorkerSupportsCancellation = true;
             bgWorkerLabel.RunWorkerAsync();
         }
@@ -862,7 +908,7 @@ namespace Multiple_Linear_Regression {
             // Backgound worker for loading label
             BackgroundWorker bgWorkerLabel = new BackgroundWorker();
             bgWorkerLabel.DoWork += new DoWorkEventHandler((sender, e) =>
-                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLabel, bgWorkerFunc, labelFuncPreprocessOkunev, labelPreprocessingOkunevFinish));
+                ShowLoadingLogo(sender, e, bgWorkerLabel, bgWorkerFunc, labelFuncPreprocessOkunev, labelPreprocessingOkunevFinish));
             bgWorkerLabel.WorkerSupportsCancellation = true;
             bgWorkerLabel.RunWorkerAsync();
         }
@@ -907,7 +953,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="mainBgWorker">Main background worker</param>
         /// <param name="loadLabel">Loading label</param>
         /// <param name="finishLabel">Label for finish</param>
-        private void ShowLoadingFunctionPreprocessing(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker, 
+        private void ShowLoadingLogo(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker, 
             BackgroundWorker mainBgWorker, Label loadLabel, Label finishLabel) {
             // Check if bgworker has been stopped
             if (bgWorker.CancellationPending) {
@@ -960,7 +1006,7 @@ namespace Multiple_Linear_Regression {
             // Background worker for loading label
             BackgroundWorker bgWorkerLoad = new BackgroundWorker();
             bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) => 
-                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLoad, bgWorker, labelFilterLoad, labelFilterFinish));
+                ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorker, labelFilterLoad, labelFilterFinish));
             bgWorkerLoad.WorkerSupportsCancellation = true;
             bgWorkerLoad.RunWorkerAsync();
         }
@@ -1056,7 +1102,7 @@ namespace Multiple_Linear_Regression {
             // Background worker for loading label
             BackgroundWorker bgWorkerLoad = new BackgroundWorker();
             bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
-                ShowLoadingFunctionPreprocessing(sender, e, bgWorkerLoad, bgWorkerEq, labelBuildingLoad, labelBuildingFinish));
+                ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorkerEq, labelBuildingLoad, labelBuildingFinish));
             bgWorkerLoad.WorkerSupportsCancellation = true;
             bgWorkerLoad.RunWorkerAsync();
         }
@@ -1093,7 +1139,7 @@ namespace Multiple_Linear_Regression {
         private void FindAllBestModels() {
             BestModels = new List<Model>();
 
-            // Build the equation for each model and find best model for each regressant
+            // Build the equation for each model and find the best model for each regressant
             foreach (var regressant in ModelsForRegressants.Keys) {
                 ModelsForRegressants[regressant].ForEach(model => model.BuildEquation(RegressorsShortName));
 
@@ -1127,362 +1173,13 @@ namespace Multiple_Linear_Regression {
             List<Model> listOfModels = new List<Model>(ModelsForRegressants[regressant]);
 
             // Check if there are significant models
-            List<Model> significantModels = GetSignificantModels(listOfModels);
+            List<Model> significantModels = OperationsWithModels.GetSignificantModels(listOfModels);
             if (significantModels.Count > 0) {
-                return FindAdequateModelInSignificantModels(significantModels, regressant);
+                return OperationsWithModels.FindAdequateModelInSignificantModels(significantModels, regressant);
             }
 
             // If there are no significant models, we will look for adequate models that are closest to the significance
-            return FindMostAdequateAndSignificantModel(listOfModels, regressant);
-        }
-
-        /// <summary>
-        /// Find most adequacy model in significance models
-        /// </summary>
-        /// <param name="significantModels">List of significance models</param>
-        /// <param name="regressant">Name of regressant</param>
-        /// <returns>Most adequacy model</returns>
-        private Model FindAdequateModelInSignificantModels(List<Model> significantModels, string regressant) {
-            List<Model> wilcoxonModels;
-            List<Model> asymmExcessModels;
-            List<Model> intervalModels;
-
-            // If there are significant and adequate models, we derive the model with the highest coefficient of determination
-            List<Model> fullyAdequateModels = GetFullyAdequateModels(significantModels);
-
-            if (fullyAdequateModels.Count > 0) {
-                MessageBox.Show($"Для показателя ({regressant}) найдена значимая и адекватная модель");
-                return GetModelWithBestDetermCoeff(fullyAdequateModels);
-            }
-
-            string message = $"Для показателя ({regressant}) найдена значимая модель, но не найдена адекватная модель." +
-                        $" Выведена самая близкая к адекватности модель";
-            // If there are models for which the Wilcoxon criterion is satisfied
-            wilcoxonModels = GetModelWithWilcoxonCriterion(significantModels);
-            if (wilcoxonModels.Count > 0) {
-                // If there are models for which the Wilcoxon criterion and asymmetry excess is satisfied
-                asymmExcessModels = GetModelWithAsymmetryExcess(wilcoxonModels);
-
-                if (asymmExcessModels.Count > 0) {
-                    MessageBox.Show(message);
-                    return GetModelWithBestDetermCoeff(asymmExcessModels);
-                }
-
-
-                // If there are models for which the Wilcoxon criterion normal interval is satisfied
-                intervalModels = GetModelWithIntervalOfNormalDistribution(wilcoxonModels);
-
-                if (intervalModels.Count > 0) {
-                    MessageBox.Show(message);
-                    return GetModelWithBestDetermCoeff(intervalModels);
-                }
-
-                // If there are no models for which the two adequacy conditions (first is Wilcoxon) are met,
-                // we return the model with the highest correlation coefficient
-                MessageBox.Show(message);
-                return GetModelWithBestDetermCoeff(wilcoxonModels);
-            }
-
-
-            // If there are models for which the coefficients of asymmetry and excess is satisfied
-            asymmExcessModels = GetModelWithAsymmetryExcess(significantModels);
-            if (asymmExcessModels.Count > 0) {
-
-                // If there are models for which the coefficients of asymmetry and excess and normal interval is satisfied
-                intervalModels = GetModelWithIntervalOfNormalDistribution(asymmExcessModels);
-                if (intervalModels.Count > 0) {
-                    MessageBox.Show(message);
-                    return GetModelWithBestDetermCoeff(intervalModels);
-                }
-
-                // If there are no models for which the two adequacy conditions (asymmetry and normal interval)
-                // are met, we return the model with the highest correlation coefficient
-                MessageBox.Show(message);
-                return GetModelWithBestDetermCoeff(asymmExcessModels);
-            }
-
-            // If there are models for which only the normal distribution interval is satisfied
-            intervalModels = GetModelWithIntervalOfNormalDistribution(significantModels);
-            if (intervalModels.Count > 0) {
-                MessageBox.Show(message);
-                return GetModelWithBestDetermCoeff(intervalModels);
-            }
-
-            // If there are no models for which at least one condition for adequacy is met,
-            // then we find the closest to adequacy model
-            MessageBox.Show(message);
-            return GetClosestModelToAdequacy(significantModels);
-        }
-
-        /// <summary>
-        /// Find closest model to adequacy and significance
-        /// </summary>
-        /// <param name="listOfModels">List of models</param>
-        /// <param name="regressant">Name of regressant</param>
-        /// <returns>Closest model to significance and adequacy</returns>
-        private Model FindMostAdequateAndSignificantModel(List<Model> listOfModels, string regressant) {
-            List<Model> fullyAdequateModels;
-            List<Model> wilcoxonModels;
-            List<Model> asymmExcessModels;
-            List<Model> intervalModels;
-
-            fullyAdequateModels = GetFullyAdequateModels(listOfModels);
-            if (fullyAdequateModels.Count > 0) {
-                MessageBox.Show($"Для показателя ({regressant}) найдена адекватная модель, но не найдена значимая модель." +
-                            $" Выведена самая близкая к значимости модель");
-                return GetClosestModelToSignificance(fullyAdequateModels);
-            }
-
-            string message = $"Для показателя ({regressant}) не найдено ни значимой ни адекватной модели." +
-                            $" Выведена самая близкая к значимости и адекватности модель";
-
-            // Try find a model with wilcoxon criterion adequacy conditions
-            wilcoxonModels = GetModelWithWilcoxonCriterion(listOfModels);
-            if (wilcoxonModels.Count > 0) {
-                // If there are models for which the Wilcoxon criterion and asymmetry excess is satisfied
-                asymmExcessModels = GetModelWithAsymmetryExcess(wilcoxonModels);
-
-                if (asymmExcessModels.Count > 0) {
-                    MessageBox.Show(message);
-                    return GetClosestModelToSignificance(asymmExcessModels);
-                }
-
-
-                // If there are models for which the Wilcoxon criterion normal interval is satisfied
-                intervalModels = GetModelWithIntervalOfNormalDistribution(wilcoxonModels);
-
-                if (intervalModels.Count > 0) {
-                    MessageBox.Show(message);
-                    return GetClosestModelToSignificance(intervalModels);
-                }
-
-                // If there are no models for which the two adequacy conditions (first is Wilcoxon) are met,
-                // we return the model with the highest correlation coefficient
-                MessageBox.Show(message);
-                return GetClosestModelToSignificance(wilcoxonModels);
-            }
-
-
-            // Try find a model with asymmetry and excess criterions condition is satisfied
-            asymmExcessModels = GetModelWithAsymmetryExcess(listOfModels);
-            if (asymmExcessModels.Count > 0) {
-
-                // If there are models for which the asymmetry and excess criterions and normal interval is satisfied
-                intervalModels = GetModelWithIntervalOfNormalDistribution(asymmExcessModels);
-                if (intervalModels.Count > 0) {
-                    MessageBox.Show(message);
-                    return GetClosestModelToSignificance(intervalModels);
-                }
-
-                MessageBox.Show(message);
-                return GetClosestModelToSignificance(asymmExcessModels);
-            }
-
-
-            // Try find a model with normal distribution interval condition is satisfied
-            intervalModels = GetModelWithIntervalOfNormalDistribution(listOfModels);
-            if (intervalModels.Count > 0) {
-                MessageBox.Show(message);
-                return GetClosestModelToSignificance(intervalModels);
-            }
-
-
-            // If there are no significance and adequacy models then return the closest one
-            MessageBox.Show(message);
-            return GetClosestModelToSignificanceAndAdequacy(listOfModels);
-        }
-
-        /// <summary>
-        /// Get only significant models from list of models
-        /// </summary>
-        /// <param name="listModels">List of models</param>
-        /// <returns>List of significant models</returns>
-        private List<Model> GetSignificantModels(List<Model> listModels) {
-            List<Model> significantsModels = new List<Model>();
-
-            // Checking the significance of the models
-            foreach (var model in listModels) {
-                if (model.IsSignificant) {
-                    significantsModels.Add(model);
-                }
-            }
-
-            return significantsModels;
-        }
-
-        /// <summary>
-        /// Get only fully adequate models from list of models
-        /// </summary>
-        /// <param name="listModels">List of models</param>
-        /// <returns>List of fully-adequate models</returns>
-        private List<Model> GetFullyAdequateModels(List<Model> listModels) {
-            List<Model> adequateModels = new List<Model>();
-
-            // Checking the fully adequate rules
-            foreach (var model in listModels) {
-                if (model.IsAdequate) {
-                    adequateModels.Add(model);
-                }
-            }
-
-            return adequateModels;
-        }
-
-        /// <summary>
-        /// Get models from list of models for which the Wilcoxon criterion is satisfied
-        /// </summary>
-        /// <param name="listModels">List of models</param>
-        /// <returns>List of models for which the Wilcoxon criterion is satisfied</returns>
-        private List<Model> GetModelWithWilcoxonCriterion(List<Model> listModels) {
-            List<Model> wilcoxonModels = new List<Model>();
-
-            // Checking the models for which the Wilcoxon criterion is satisfied
-            foreach (var model in listModels) {
-                if (model.WilcoxonCreterion) {
-                    wilcoxonModels.Add(model);
-                }
-            }
-
-            return wilcoxonModels;
-        }
-
-        /// <summary>
-        /// Get models from list of models for which the asymmetry and excess coefficients are less than unity
-        /// </summary>
-        /// <param name="listModels">List of models</param>
-        /// <returns>List of models for which the asymmetry and excess coefficients are less than unity</returns>
-        private List<Model> GetModelWithAsymmetryExcess(List<Model> listModels) {
-            List<Model> asymExcesModels = new List<Model>();
-
-            // Checking the models for which the asymmetry and excess coefficients are less than unity
-            foreach (var model in listModels) {
-                if (model.AsymmetryAndExcess) {
-                    asymExcesModels.Add(model);
-                }
-            }
-
-            return asymExcesModels;
-        }
-
-        /// <summary>
-        /// Get models from list of models for which 99.73% of observations fall within 
-        /// the interval plus/minus three standard deviations
-        /// </summary>
-        /// <param name="listModels">List of models</param>
-        /// <returns>List of models for which 99.73% of observations fall within
-        /// the interval plus/minus three standard deviations</returns>
-        private List<Model> GetModelWithIntervalOfNormalDistribution(List<Model> listModels) {
-            List<Model> normDistrModels = new List<Model>();
-
-            // Checking the models for which 99.73% of observations fall within
-            // the interval plus/minus three standard deviations
-            foreach (var model in listModels) {
-                if (model.NormalDistrInterval) {
-                    normDistrModels.Add(model);
-                }
-            }
-
-            return normDistrModels;
-        }
-
-        /// <summary>
-        /// Get best model from list of models by adjusted coefficient of determination
-        /// </summary>
-        /// <param name="models">List of models</param>
-        /// <returns>Best model by adjusted coefficient of determination</returns>
-        private Model GetModelWithBestDetermCoeff(List<Model> models) {
-            double bestCoeff = models[0].AdjDetermCoeff;
-            Model bestModel = models[0];
-
-            // Find the model with the best coefficient of determination
-            for (int i = 1; i < models.Count; i++) {
-                if (models[i].AdjDetermCoeff > bestCoeff) {
-                    bestCoeff = models[i].AdjDetermCoeff;
-                    bestModel = models[i];
-                }
-            }
-
-            return bestModel;
-        }
-
-        /// <summary>
-        /// Get model with minimum distance to adequacy
-        /// </summary>
-        /// <param name="models">List of models</param>
-        /// <returns>Closest to adequacy model</returns>
-        private Model GetClosestModelToAdequacy(List<Model> models) {
-            double minDist = models[0].DistanceToAdequate;
-            Model bestModel = models[0];
-
-            // Find the model with min distance to adequacy
-            for (int i = 1; i < models.Count; i++) {
-                if (models[i].DistanceToAdequate < minDist) {
-                    minDist = models[i].DistanceToAdequate;
-                    bestModel = models[i];
-                }
-
-                if (models[i].DistanceToAdequate == minDist) {
-                    if (models[i].AdjDetermCoeff > bestModel.AdjDetermCoeff) {
-                        bestModel = models[i];
-                    }
-                }
-            }
-
-            return bestModel;
-        }
-
-        /// <summary>
-        /// Get model with minimum distance to significance
-        /// </summary>
-        /// <param name="models">List of models</param>
-        /// <returns>Closest to significance model</returns>
-        private Model GetClosestModelToSignificance(List<Model> models) {
-            double minDist = models[0].DistanceToSignificat;
-            Model bestModel = models[0];
-
-            // Find the model with min distance to significance
-            for (int i = 1; i < models.Count; i++) {
-                if (models[i].DistanceToSignificat < minDist) {
-                    minDist = models[i].DistanceToSignificat;
-                    bestModel = models[i];
-                }
-
-                if (models[i].DistanceToSignificat == minDist) {
-                    if (models[i].AdjDetermCoeff > bestModel.AdjDetermCoeff) {
-                        bestModel = models[i];
-                    }
-                }
-            }
-
-            return bestModel;
-        }
-
-        /// <summary>
-        /// Get closest model to adequacy and significance
-        /// </summary>
-        /// <param name="models">List of models</param>
-        /// <returns>Closest model to adequacy and significance</returns>
-        private Model GetClosestModelToSignificanceAndAdequacy(List<Model> models) {
-            double minDist = models[0].DistanceToAdequate + models[0].DistanceToSignificat;
-            Model bestModel = models[0];
-
-            // Find the closest model to significance and adequacy
-            for (int i = 1; i < models.Count; i++) {
-                double modelDist = models[i].DistanceToSignificat + models[i].DistanceToAdequate;
-
-                if (modelDist < minDist) {
-                    minDist = modelDist;
-                    bestModel = models[i];
-                }
-
-                if (modelDist == minDist) {
-                    if (models[i].AdjDetermCoeff > bestModel.AdjDetermCoeff) {
-                        bestModel = models[i];
-                    }
-                }
-            }
-
-            return bestModel;
+            return OperationsWithModels.FindMostAdequateAndSignificantModel(listOfModels, regressant);
         }
 
         /// <summary>
@@ -1490,7 +1187,7 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         private void FillPredictionTab() {
             AllRegressorsNamesFromModels = GetAllRegressorsFromModels();
-            AllNotCombinedRegressorsNamesFromModels = GetNotCombinedRegressors(AllRegressorsNamesFromModels);
+            AllNotCombinedRegressorsNamesFromModels = GetNonCombinedRegressors(AllRegressorsNamesFromModels);
 
             // Fill all regressors from models with values 
             Dictionary<string, List<double>> allRegressors = new Dictionary<string, List<double>>();
@@ -1572,10 +1269,7 @@ namespace Multiple_Linear_Regression {
             }
 
             // Find min and max in all models
-            Dictionary<string, (double, double)> minMaxModel = new Dictionary<string, (double, double)>();
-            foreach (var model in BestModels) {
-                minMaxModel[model.RegressantName] = (model.RegressantValues.Min(), model.RegressantValues.Max());
-            }
+            Dictionary<string, (double, double)> minMaxModel = GetMinMaxValuesForRegressants(BestModels);
 
             // Fill real/predict values in data grid view
             for (int i = 0; i < numOfValues; i++) {
@@ -1630,6 +1324,22 @@ namespace Multiple_Linear_Regression {
                         Math.Round(regressantErrors.Value["MinError"].Average(), 2).ToString()
                     });
             }
+        }
+
+        /// <summary>
+        /// Get min and max values for each regressant in models
+        /// </summary>
+        /// <param name="models">List of models</param>
+        /// <returns>Dicitonary with min and max values</returns>
+        private Dictionary<string, (double, double)> GetMinMaxValuesForRegressants(List<Model> models) {
+            Dictionary<string, (double, double)> minMaxModel = new Dictionary<string, (double, double)>();
+
+            // Find min and max values of regressant for each model
+            foreach (var model in models) {
+                minMaxModel[model.RegressantName] = (model.RegressantValues.Min(), model.RegressantValues.Max());
+            }
+
+            return minMaxModel;
         }
 
         private void acceptControlsParametersButton_Click(object sender, EventArgs e) {
@@ -1687,7 +1397,7 @@ namespace Multiple_Linear_Regression {
         private void loadDataForPredictButton_Click(object sender, EventArgs e) {
             try {
                 if (dialogService.OpenFileDialog() == true) {
-                    fileService = GetFileService(dialogService.FilePath);
+                    fileService = Files.GetFileService(dialogService.FilePath);
 
                     LoadFactorsForPredict();
                 }
@@ -2128,23 +1838,7 @@ namespace Multiple_Linear_Regression {
             dataGV.ColumnHeadersVisible = true;
         }
 
-        /// <summary>
-        /// Get right file service for reading file
-        /// </summary>
-        /// <param name="filename">Path to file</param>
-        /// <returns>File Service</returns>
-        IFileService GetFileService(string filename) {
-            switch (filename.Split('.').Last()) {
-                case "xls":
-                    return new ExcelFileService();
-
-                case "xlsx":
-                    return new ExcelFileService();
-
-                default:
-                    return new ExcelFileService();
-            }
-        }
+        
 
         /// <summary>
         /// Change progress bar value

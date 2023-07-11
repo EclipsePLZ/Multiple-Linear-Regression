@@ -143,6 +143,7 @@
     <Compile Include="Forms\SelectParametersForm.Designer.cs">
       <DependentUpon>SelectParametersForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="OperationsWithModels.cs" />
     <Compile Include="Work-With-Files\DefaultDialogService.cs" />
     <Compile Include="Work-With-Files\ExcelFileService.cs" />
     <Compile Include="Forms\Form1.cs">
@@ -151,6 +152,7 @@
     <Compile Include="Forms\Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Work-With-Files\Files.cs" />
     <Compile Include="Work-With-Files\Interfaces\IDialogService.cs" />
     <Compile Include="Work-With-Files\Interfaces\IFileService.cs" />
     <Compile Include="Program.cs" />
