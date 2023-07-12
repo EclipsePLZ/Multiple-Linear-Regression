@@ -18,6 +18,7 @@ namespace Multiple_Linear_Regression.Forms {
         private IDialogService dialogService = new DefaultDialogService();
 
         private BackgroundWorker resizeWorker = new BackgroundWorker();
+        private OperationsWithControls operationsWithControls = new OperationsWithControls();
 
         private const int MODIFY_COLUMN = 1;
 
@@ -64,11 +65,11 @@ namespace Multiple_Linear_Regression.Forms {
         /// Setting start parameters for form
         /// </summary>
         private void SetStartParameters() {
-            SetDataGVColumnHeaders(new List<string>() { "Название", "Значение", "Минимум", "Максимум" }, regressorsSetDataGrid,
-                true, null, new List<int>() { 1 });
+            operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Название", "Значение", "Минимум", "Максимум" }, 
+                                                    regressorsSetDataGrid, true, null, new List<int>() { 1 });
 
-            SetDataGVColumnHeaders(new List<string>() { "Название", "Значение", "Уравнение" }, regressantsResultDataGrid,
-                true);
+            operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Название", "Значение", "Уравнение" },
+                                                    regressantsResultDataGrid, true);
 
             SelectedStartRegressors = new Dictionary<string, List<double>>();
             AllRegressors = new Dictionary<string, double>();
@@ -562,23 +563,23 @@ namespace Multiple_Linear_Regression.Forms {
         /// <summary>
         /// Update single pairwise combination
         /// </summary>
-        /// <param name="pariwiseCombinationRegressorname">Name of pairwise combination factor</param>
-        private void UpdatePairwiseCombination(string pariwiseCombinationRegressorname) {
+        /// <param name="pariwiseCombinationRegressorName">Name of pairwise combination factor</param>
+        private void UpdatePairwiseCombination(string pariwiseCombinationRegressorName) {
             List<string> regressorsNames = new List<string>(AllRegressors.Keys);
 
             // Find the regressors that form the combination
-            string[] combinedRegressors = pariwiseCombinationRegressorname.Split(new string[] { " & " }, StringSplitOptions.None);
+            string[] combinedRegressors = pariwiseCombinationRegressorName.Split(new string[] { " & " }, StringSplitOptions.None);
 
             // Update combination of regressors
             double newValue = AllRegressors[combinedRegressors[0]] * AllRegressors[combinedRegressors[1]];
-            AllRegressors[pariwiseCombinationRegressorname] = newValue;
-            regressorsSetDataGrid[MODIFY_COLUMN, regressorsNames.IndexOf(pariwiseCombinationRegressorname)].Value = Math.Round(newValue, 2);
+            AllRegressors[pariwiseCombinationRegressorName] = newValue;
+            regressorsSetDataGrid[MODIFY_COLUMN, regressorsNames.IndexOf(pariwiseCombinationRegressorName)].Value = Math.Round(newValue, 2);
 
             // Check value of pairwise combination regressor
-            CheckRegressorDefArea(pariwiseCombinationRegressorname, newValue);
+            CheckRegressorDefArea(pariwiseCombinationRegressorName, newValue);
 
             // Update models that contains combined regressorKey
-            UpdateModels(GetModifiedModels(pariwiseCombinationRegressorname));
+            UpdateModels(GetModifiedModels(pariwiseCombinationRegressorName));
         }
 
         /// <summary>
@@ -632,38 +633,6 @@ namespace Multiple_Linear_Regression.Forms {
             }
 
             return modifiedModels;
-        }
-
-        /// <summary>
-        /// Set column headers and column settings to dataGV
-        /// </summary>
-        /// <param name="headers">List of column headers</param>
-        /// <param name="dataGV">DataGridView</param>
-        /// <param name="autoSize">AutoSize column width</param>
-        /// <param name="indexOfSortableColumns">List of indexes of sortable columns</param>
-        /// <param name="indexOfModifiableColumns">List of indexes of modifiable columns</param>
-        private void SetDataGVColumnHeaders(List<string> headers, DataGridView dataGV, bool autoSize, 
-            List<int> indexOfSortableColumns = null, List<int> indexOfModifiableColumns = null) {
-            dataGV.ColumnCount = headers.Count;
-            for (int i = 0; i < dataGV.Columns.Count; i++) {
-                dataGV.Columns[i].HeaderText = headers[i];
-                dataGV.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGV.Columns[i].ReadOnly = true;
-                if (autoSize) {
-                    dataGV.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                }
-            }
-            if (indexOfSortableColumns != null) {
-                foreach (var index in indexOfSortableColumns) {
-                    dataGV.Columns[index].SortMode = DataGridViewColumnSortMode.Automatic;
-                }
-            }
-            if (indexOfModifiableColumns != null) {
-                foreach(var index in indexOfModifiableColumns) {
-                    dataGV.Columns[index].ReadOnly = false;
-                }
-            }
-            dataGV.ColumnHeadersVisible = true;
         }
 
         private void SimulationControlForm_FormClosing(object sender, FormClosingEventArgs e) {

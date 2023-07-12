@@ -18,6 +18,7 @@ namespace Multiple_Linear_Regression.Forms {
         private List<List<string>> AllRows { get; set; }
 
         private BackgroundWorker resizeWorker = new BackgroundWorker();
+        private OperationsWithControls operationsWithControls = new OperationsWithControls();
 
         private bool isResizeNeeded = false;
 
@@ -53,44 +54,12 @@ namespace Multiple_Linear_Regression.Forms {
         /// </summary>
         private void StartSetRows() {
             // Set header
-            SetDataGVColumnHeaders(AllRows[0], regressorsFromFileDataGrid, false);
+            operationsWithControls.SetDataGVColumnHeaders(AllRows[0], regressorsFromFileDataGrid, false);
 
             // Set all other rows
             for (int i = 1; i < AllRows.Count; i++) { 
                 regressorsFromFileDataGrid.Rows.Add(AllRows[i].ToArray());
             }
-        }
-
-        /// <summary>
-        /// Set column headers and column settings to dataGV
-        /// </summary>
-        /// <param name="headers">List of column headers</param>
-        /// <param name="dataGV">DataGridView</param>
-        /// <param name="autoSize">AutoSize column width</param>
-        /// <param name="indexOfSortableColumns">List of indexes of sortable columns</param>
-        /// <param name="indexOfModifiableColumns">List of indexes of modifiable columns</param>
-        private void SetDataGVColumnHeaders(List<string> headers, DataGridView dataGV, bool autoSize,
-            List<int> indexOfSortableColumns = null, List<int> indexOfModifiableColumns = null) {
-            dataGV.ColumnCount = headers.Count;
-            for (int i = 0; i < dataGV.Columns.Count; i++) {
-                dataGV.Columns[i].HeaderText = headers[i];
-                dataGV.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGV.Columns[i].ReadOnly = true;
-                if (autoSize) {
-                    dataGV.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                }
-            }
-            if (indexOfSortableColumns != null) {
-                foreach (var index in indexOfSortableColumns) {
-                    dataGV.Columns[index].SortMode = DataGridViewColumnSortMode.Automatic;
-                }
-            }
-            if (indexOfModifiableColumns != null) {
-                foreach (var index in indexOfModifiableColumns) {
-                    dataGV.Columns[index].ReadOnly = false;
-                }
-            }
-            dataGV.ColumnHeadersVisible = true;
         }
 
         private void saveAsDataFileMenu_Click(object sender, EventArgs e) {

@@ -20,6 +20,7 @@ namespace Multiple_Linear_Regression {
 
         private BackgroundWorker resizeWorker = new BackgroundWorker();
         private bool isResizeNeeded = false;
+        private OperationsWithControls operationsWithControls = new OperationsWithControls();
 
         private Dictionary<string, int> RegressantsHeaders { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> RegressorsHeaders { get; set; } = new Dictionary<string, int>();
@@ -134,7 +135,8 @@ namespace Multiple_Linear_Regression {
                         RegressorsHeaders.Clear();
 
                         // Add headers to data grid view
-                        factorsData.Invoke(new Action<List<string>>((s) => SetDataGVColumnHeaders(s, factorsData, false)), allRows[0]);
+                        factorsData.Invoke(new Action<List<string>>((s) =>
+                            operationsWithControls.SetDataGVColumnHeaders(s, factorsData, false)), allRows[0]);
 
                         // Create start parameters for progress bar
                         int progress = 0;
@@ -325,7 +327,8 @@ namespace Multiple_Linear_Regression {
 
                 // Automatic calculation with default parameters
                 // Gusev functional preprocess
-                Action gusevDG = () => SetHeadersForGusevPreprocess();
+                Action gusevDG = () => operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
+                functionsForProcessingGusevDataGrid, true, new List<int>() { 3 });
                 functionsForProcessingGusevDataGrid.Invoke(gusevDG);
                 GusevProcessingAllModels();
 
@@ -568,7 +571,8 @@ namespace Multiple_Linear_Regression {
             ClearDataGV(groupedRegressorsDataGrid);
 
             // Fill grouped regressors table headers
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, groupedRegressorsDataGrid, true);
+            operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, 
+                                                    groupedRegressorsDataGrid, true);
         }
 
         /// <summary>
@@ -576,7 +580,8 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         private void SetHeaderImportantFactorsDataGrid() {
             // Fill filtered table headers
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, onlyImportantFactorsDataGrid, true);
+            operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессоры" }, 
+                                                    onlyImportantFactorsDataGrid, true);
         }
 
         /// <summary>
@@ -818,7 +823,9 @@ namespace Multiple_Linear_Regression {
         /// Run background worker for functional process data by Gusev method
         /// </summary>
         private void RunBackgroundFunctionalProcessGusevData() {
-            SetHeadersForGusevPreprocess();
+            operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", 
+                                                                         "Модуль коэффициента корреляции" },
+                                                    functionsForProcessingGusevDataGrid, true, new List<int>() { 3 });
 
             // Background worker for function preprocessing
             BackgroundWorker bgWorkerFunc = new BackgroundWorker();
@@ -832,14 +839,6 @@ namespace Multiple_Linear_Regression {
                 ShowLoadingLogo(sender, e, bgWorkerLabel, bgWorkerFunc, labelFuncPreprocessGusev, labelPreprocessingGusevFinish));
             bgWorkerLabel.WorkerSupportsCancellation = true;
             bgWorkerLabel.RunWorkerAsync();
-        }
-
-        /// <summary>
-        /// Set headers for data grid with Gusev preprocessing
-        /// </summary>
-        private void SetHeadersForGusevPreprocess() {
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
-                functionsForProcessingGusevDataGrid, true, new List<int>() { 3 });
         }
 
         /// <summary>
@@ -896,8 +895,9 @@ namespace Multiple_Linear_Regression {
         /// Run background worker for functional process data by Okunev method
         /// </summary>
         private void RunBackgroundFunctionalProcessOkunevData() {
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
-                functionsForProcessingOkunevDataGrid, true, new List<int>() { 3 });
+            operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", 
+                                                                        "Модуль коэффициента корреляции" },
+                                                    functionsForProcessingOkunevDataGrid, true, new List<int>() { 3 });
 
             // Background worker for function preprocessing
             BackgroundWorker bgWorkerFunc = new BackgroundWorker();
@@ -1111,8 +1111,9 @@ namespace Multiple_Linear_Regression {
         /// Set headers for data grid with equations
         /// </summary>
         private void SetHeadersForEquationsDataGrid() {
-            SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Скорректрованный коэффициент детерминации", "Уравнение" },
-                equationsDataGrid, true, new List<int>() { 1 });
+            operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Регрессант", 
+                                                                         "Скорректрованный коэффициент детерминации", "Уравнение" },
+                                                    equationsDataGrid, true, new List<int>() { 1 });
         }
 
         /// <summary>
@@ -1237,8 +1238,8 @@ namespace Multiple_Linear_Regression {
                 headers.Add("Прогнозная ошибка с минимумом (%)");
             }
 
-            Action setHeadersRealPredict = () => SetDataGVColumnHeaders(headers, realPredictValuesDataGrid, false);
-            Action setHeadersPredictionMetrics = () => SetDataGVColumnHeaders(new List<string>() { 
+            Action setHeadersRealPredict = () => operationsWithControls.SetDataGVColumnHeaders(headers, realPredictValuesDataGrid, false);
+            Action setHeadersPredictionMetrics = () => operationsWithControls.SetDataGVColumnHeaders(new List<string>() { 
                 "Управляющий показатель", 
                 "Среднее значение прогнозной ошибки (%)",
                 "Среднее значение прогнозной ошибки с размахом (%)",
@@ -1475,7 +1476,6 @@ namespace Multiple_Linear_Regression {
             FileRegressors fileRegressorsForm = new FileRegressors(predictedRegressants, "Прогнозирование",
                 StepsInfo.PredictRegressorsFromFile);
             fileRegressorsForm.ShowDialog();
-
         }
 
         /// <summary>
@@ -1523,41 +1523,29 @@ namespace Multiple_Linear_Regression {
         }
 
         private void toSelectModelsList_Click(object sender, EventArgs e) {
-            MoveModelBetweenLists(listAvailabelModels, listSelectedModels);
+            MoveItemBetweenLists(listAvailabelModels, listSelectedModels);
         }
 
         private void toAvailableModelsList_Click(object sender, EventArgs e) {
-            MoveModelBetweenLists(listSelectedModels, listAvailabelModels);
+            MoveItemBetweenLists(listSelectedModels, listAvailabelModels);
         }
 
         private void listSelectedModels_DoubleClick(object sender, EventArgs e) {
-            MoveModelBetweenLists(listSelectedModels, listAvailabelModels);
+            MoveItemBetweenLists(listSelectedModels, listAvailabelModels);
         }
 
         private void listAvailabelModels_DoubleClick(object sender, EventArgs e) {
-            MoveModelBetweenLists(listAvailabelModels, listSelectedModels);
+            MoveItemBetweenLists(listAvailabelModels, listSelectedModels);
         }
 
         /// <summary>
         /// Move selected model from one list to another
         /// </summary>
-        /// <param name="fromList">The list from which we move the model</param>
-        /// <param name="toList">The list to which we move the model</param>
-        private void MoveModelBetweenLists(ListBox fromList, ListBox toList) {
-            if (fromList.SelectedItems.Count == 1) {
-                int selectedIndex = fromList.SelectedIndex;
-                toList.Items.Add(fromList.SelectedItem);
-                fromList.Items.Remove(fromList.SelectedItem);
-                if (fromList.Items.Count > 0) {
-                    if (selectedIndex < fromList.Items.Count) {
-                        fromList.SelectedIndex = selectedIndex;
-                    }
-                    else {
-                        fromList.SelectedIndex = selectedIndex - 1;
-                    }
-                }
-                CheckAcceptControlParameterButton();
-            }
+        /// <param name="fromList"></param>
+        /// <param name="toList"></param>
+        private void MoveItemBetweenLists(ListBox fromList, ListBox toList) {
+            operationsWithControls.MoveModelBetweenLists(fromList, toList);
+            CheckAcceptControlParameterButton();
         }
 
         private void allToSelectModelsList_Click(object sender, EventArgs e) {
@@ -1575,8 +1563,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="toList">The list to which we move the models</param>
         private void MoveAllItemsBetweenLists(ListBox fromList, ListBox toList) {
             if (fromList.Items.Count > 0) {
-                toList.Items.AddRange(fromList.Items);
-                fromList.Items.Clear();
+                operationsWithControls.MoveAllItemsBetweenLists(fromList, toList);
                 CheckAcceptControlParameterButton();
             }
         }
@@ -1812,33 +1799,7 @@ namespace Multiple_Linear_Regression {
             data.Rows.Clear();
             data.ColumnHeadersVisible = columnHeadersVisible;
             data.Refresh();
-        }
-
-        /// <summary>
-        /// Set column headers and column settings to dataGV
-        /// </summary>
-        /// <param name="headers">List of column headers</param>
-        /// <param name="dataGV">DataGridView</param>
-        /// <param name="autoSize">AutoSize column width</param>
-        /// <param name="indexOfSortableColumns">List of indexes of sortable columns</param>
-        private void SetDataGVColumnHeaders(List<string> headers, DataGridView dataGV, bool autoSize, List<int> indexOfSortableColumns = null) {
-            dataGV.ColumnCount = headers.Count;
-            for (int i = 0; i < dataGV.Columns.Count; i++) {
-                dataGV.Columns[i].HeaderText = headers[i];
-                dataGV.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
-                if (autoSize) {
-                    dataGV.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                }
-            }
-            if (indexOfSortableColumns != null) {
-                foreach (var index in indexOfSortableColumns) {
-                    dataGV.Columns[index].SortMode = DataGridViewColumnSortMode.Automatic;
-                }
-            }
-            dataGV.ColumnHeadersVisible = true;
-        }
-
-        
+        }   
 
         /// <summary>
         /// Change progress bar value
