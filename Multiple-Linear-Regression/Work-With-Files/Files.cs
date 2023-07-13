@@ -1,10 +1,6 @@
 ﻿using Multiple_Linear_Regression.Work_WIth_Files;
 using Multiple_Linear_Regression.Work_WIth_Files.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Multiple_Linear_Regression.Work_With_Files {
     public static class Files {

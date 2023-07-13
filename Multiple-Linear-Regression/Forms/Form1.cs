@@ -7,10 +7,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Multiple_Linear_Regression.Mathematic;
 using Multiple_Linear_Regression.Work_With_Files;
 
 namespace Multiple_Linear_Regression {

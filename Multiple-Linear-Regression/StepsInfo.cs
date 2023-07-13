@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Multiple_Linear_Regression {
+﻿namespace Multiple_Linear_Regression {
     internal static class StepsInfo {
         public static string StepLoadData { get; } = "Загрузка данных из файла (excel, csv) и выбор показателей для построения моделей.";
 
