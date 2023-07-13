@@ -7,6 +7,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -15,7 +16,9 @@ namespace Multiple_Linear_Regression.Forms {
         IFileService fileService;
         IDialogService dialogService;
 
-        private List<List<string>> AllRows { get; set; }
+        private List<List<string>> AllRows { get; }
+        private List<string> RegressorsNames { get; }
+        private List<Model> Models { get; }
 
         private BackgroundWorker resizeWorker = new BackgroundWorker();
         private OperationsWithControls operationsWithControls = new OperationsWithControls();
@@ -28,8 +31,12 @@ namespace Multiple_Linear_Regression.Forms {
 
         private const int SIZE_DIFF_GV_FORM_HEIGHT = 99;
 
-        public FileRegressors(List<List<string>> rows, string formName, string infoForForm) {
-            AllRows = new List<List<string>>(rows);
+        public FileRegressors(List<string> regressorsNames, List<Model> models, List<List<string>> allRows,
+                              string formName, string infoForForm) {
+
+            RegressorsNames = new List<string>(regressorsNames);
+            Models = new List<Model>(models);
+            AllRows = new List<List<string>>(allRows);
 
             fileService = new ExcelFileService();
             dialogService = new DefaultDialogService();
@@ -50,15 +57,63 @@ namespace Multiple_Linear_Regression.Forms {
         }
 
         /// <summary>
-        /// Set rows into data grid
+        /// Set predicted values for regressors into the data grid
         /// </summary>
         private void StartSetRows() {
-            // Set header
-            operationsWithControls.SetDataGVColumnHeaders(AllRows[0], regressorsFromFileDataGrid, false);
+            // Create headers row
+            List<string> headers = new List<string>(RegressorsNames);
+            foreach (var model in Models) {
+                headers.Add(model.RegressantName);
+            }
 
-            // Set all other rows
-            for (int i = 1; i < AllRows.Count; i++) { 
-                regressorsFromFileDataGrid.Rows.Add(AllRows[i].ToArray());
+            // Set header
+            operationsWithControls.SetDataGVColumnHeaders(headers, regressorsFromFileDataGrid, false);
+
+            Dictionary<string, List<double>> allRegressors = new Dictionary<string, List<double>>();
+
+            // Fill all regressors values from input data
+            for (int col = 0; col < AllRows[0].Count; col++) {
+                string regressorName = AllRows[0][col];
+                allRegressors.Add(regressorName, new List<double>());
+
+                for (int row = 1; row < AllRows.Count; row++) {
+                    allRegressors[regressorName].Add(Convert.ToDouble(AllRows[row][col]));
+                }
+            }
+
+            // Find predict for each row of regressors from file
+            for (int row = 0; row < AllRows.Count - 1; row++) {
+                List<string> nextRow = new List<string>();
+                Dictionary<string, double> regressorsRowValues = new Dictionary<string, double>();
+
+                foreach (var regressorName in RegressorsNames) {
+                    double value = 0;
+
+                    // If it's pairwise factor the multiply the factors
+                    if (regressorName.Contains(" & ")) {
+                        string[] pairwiseRegressors = regressorName.Split(new string[] { " & " }, StringSplitOptions.None);
+                        double factor1 = allRegressors[pairwiseRegressors[0]][row];
+                        double factor2 = allRegressors[pairwiseRegressors[1]][row];
+                        value = factor1 * factor2;
+                    }
+                    else {
+                        value = allRegressors[regressorName][row];
+                    }
+
+                    regressorsRowValues.Add(regressorName, value);
+                }
+
+                // Add regressors value to the next row
+                foreach (var regressorValue in regressorsRowValues.Values) {
+                    nextRow.Add(Math.Round(regressorValue, 2).ToString());
+                }
+
+                // For each model add regressant value to the next row
+                foreach (var model in Models) {
+                    nextRow.Add(Math.Round(OperationsWithModels.CalcModelValue(model, regressorsRowValues), 2).ToString());
+                }
+
+                regressorsFromFileDataGrid.Rows.Add(nextRow.ToArray());
             }
         }
 

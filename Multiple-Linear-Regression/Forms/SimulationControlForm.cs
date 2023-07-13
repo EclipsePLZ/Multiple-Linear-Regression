@@ -94,7 +94,7 @@ namespace Multiple_Linear_Regression.Forms {
                 }
                 // Calculate the regressants values
                 regressantsResultDataGrid.Rows.Add(new string[] {model.RegressantName, 
-                    Math.Round(CalcModelValue(model), 2).ToString(),
+                    Math.Round(OperationsWithModels.CalcModelValue(model, AllRegressors), 2).ToString(),
                     model.Equation});
             }
 
@@ -108,28 +108,6 @@ namespace Multiple_Linear_Regression.Forms {
             }
 
             GetRegressorsMutualImpact();
-        }
-
-        /// <summary>
-        /// Calculate the predicted value for regressant of the model
-        /// </summary>
-        /// <param name="model">Model</param>
-        /// <param name="regressors">Dictionary of regressors with values</param>
-        /// <returns>Predicted value</returns>
-        private double CalcModelValue(Model model, Dictionary<string, double> regressors = null) {
-            if (regressors is null) {
-                regressors = new Dictionary<string, double>(AllRegressors);
-            }
-            // Fill new X values for model
-            double[] xValues = new double[model.Regressors.Count];
-            int position = 0;
-            foreach(var regressor in model.Regressors) {
-                xValues[position] = regressors[regressor.Key];
-                position++;
-            }
-
-            // Get predicted value for regressant
-            return model.Predict(xValues);
         }
 
         /// <summary>
@@ -364,83 +342,17 @@ namespace Multiple_Linear_Regression.Forms {
                         MessageBox.Show(ex.Message);
                     }
                     finally {
-                        RegressorsFromFile(allRows);
+                        //RegressorsFromFile(allRows);
+                        // Show predicted regressants with regressors values
+                        FileRegressors fileRegressorsForm = new FileRegressors(AllRegressors.Keys.ToList(), Models, allRows,
+                            "Имитация управления", StepsInfo.ImitationRegressorsFromFile);
+                        fileRegressorsForm.ShowDialog();
                     }
                 }
             }
             catch (Exception ex) {
                 dialogService.ShowMessage(ex.Message);
             }
-        }
-
-        /// <summary>
-        /// Get predicted regressants values for regressors from file
-        /// </summary>
-        /// <param name="allRows">Rows form file</param>
-        private void RegressorsFromFile(List<List<string>> allRows) {
-            List<List<string>> predictedRegressants = new List<List<string>>();
-
-            // Create headers row
-            List<string> headers = new List<string>(AllRegressors.Keys);
-            foreach(var model in Models) {
-                headers.Add(model.RegressantName);
-            }
-            predictedRegressants.Add(headers);
-
-            Dictionary<string, List<double>> allRegressorsFromFile = new Dictionary<string, List<double>>();
-
-            // Fill all regressors values from file data
-            for (int col = 0; col < allRows[0].Count; col++) {
-                string regressorName = allRows[0][col];
-                allRegressorsFromFile.Add(regressorName, new List<double>());
-
-                for (int row = 1; row < allRows.Count; row++) {
-                    allRegressorsFromFile[regressorName].Add(Math.Round(Convert.ToDouble(allRows[row][col]), 2));
-                }
-            }
-
-            // Fill rows for file regressor form
-            for (int row = 0; row < allRows.Count - 1; row++) {
-                List<string> nextRow = new List<string>();
-                Dictionary<string, double> regressorsRowValues = new Dictionary<string, double>();
-
-                foreach (var regressorName in AllRegressors.Keys) {
-                    double value = 0;
-
-                    // If it's pairwise factor then multiply the factors
-                    if (regressorName.Contains(" & ")) {
-                        string[] pairwiseRegressors = regressorName.Split(new string[] { " & " }, StringSplitOptions.None);
-                        double factor1 = allRegressorsFromFile.ContainsKey(pairwiseRegressors[0]) ? allRegressorsFromFile[pairwiseRegressors[0]][row]
-                            : StartRegressors[pairwiseRegressors[0]];
-                        double factor2 = allRegressorsFromFile.ContainsKey(pairwiseRegressors[1]) ? allRegressorsFromFile[pairwiseRegressors[1]][row]
-                            : StartRegressors[pairwiseRegressors[1]];
-                        value = factor1 * factor2;
-                    }
-                    else {
-                        value = allRegressorsFromFile.ContainsKey(regressorName) ? allRegressorsFromFile[regressorName][row]
-                            : StartRegressors[regressorName];
-                    }
-
-                    regressorsRowValues.Add(regressorName, Math.Round(value, 2));
-                }
-
-                // Add regressors values to next Row
-                foreach(var regressorValue in regressorsRowValues.Values) {
-                    nextRow.Add(regressorValue.ToString());
-                }
-
-                // For each model add regressant value to next Row
-                foreach(var model in Models) {
-                    nextRow.Add(Math.Round(CalcModelValue(model, regressorsRowValues), 2).ToString());
-                }
-
-                predictedRegressants.Add(nextRow);
-            }
-
-            // Show predicted regressants with regressors values
-            FileRegressors fileRegressorsForm = new FileRegressors(predictedRegressants, "Имитация управления",
-                StepsInfo.ImitationRegressorsFromFile);
-            fileRegressorsForm.ShowDialog();
         }
 
         /// <summary>
@@ -527,7 +439,8 @@ namespace Multiple_Linear_Regression.Forms {
         /// <param name="models">List of models for update</param>
         private void UpdateModels(List<Model> models) {
             foreach (var model in models) {
-                regressantsResultDataGrid[1, Models.IndexOf(model)].Value = Math.Round(CalcModelValue(model), 2);
+                regressantsResultDataGrid[1, Models.IndexOf(model)].Value = 
+                    Math.Round(OperationsWithModels.CalcModelValue(model, AllRegressors), 2);
             }
         }
 

@@ -8,6 +8,56 @@ using System.Windows.Forms;
 namespace Multiple_Linear_Regression {
     public static class OperationsWithModels {
         /// <summary>
+        /// Calculate the predicted value for regressant of the model
+        /// </summary>
+        /// <param name="model">Model</param>
+        /// <param name="regressors">Dictionary of regressors with values</param>
+        /// <returns>Predicted value</returns>
+        public static double CalcModelValue(Model model, Dictionary<string, double> regressors) {
+            // Fill new X values for model
+            double[] xValues = new double[model.Regressors.Count];
+            int position = 0;
+
+            foreach (var regressor in model.Regressors) {
+                xValues[position] = regressors[regressor.Key];
+                position++;
+            }
+
+            // Get predicted value for regressant
+            return model.Predict(xValues);
+        }
+
+        /// <summary>
+        /// Get all regressors names from models
+        /// </summary>
+        /// <returns>List of all regressors</returns>
+        public static List<string> GetAllRegressorsFromModels(List<Model> models) {
+            List<string> allRegressorsNames = new List<string>();
+
+            // Get all names of defining factors
+            foreach (var model in models) {
+                allRegressorsNames = allRegressorsNames.Union(model.RegressorsNames).ToList();
+            }
+
+            return allRegressorsNames;
+        }
+
+        /// <summary>
+        /// Get list of headers of non-combined regressors
+        /// </summary>
+        /// <param name="regressors">Regressors</param>
+        /// <returns>List of headers</returns>
+        public static List<string> GetNonCombinedRegressors(List<string> regressors) {
+            List<string> nonCombinedRegressors = new List<string>();
+            foreach (var regressorName in regressors) {
+                if (!regressorName.Contains(" & ")) {
+                    nonCombinedRegressors.Add(regressorName);
+                }
+            }
+            return nonCombinedRegressors;
+        }
+
+        /// <summary>
         /// Get only significant models from list of models
         /// </summary>
         /// <param name="listModels">List of models</param>

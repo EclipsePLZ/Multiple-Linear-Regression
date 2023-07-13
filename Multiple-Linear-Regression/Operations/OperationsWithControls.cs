@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,6 +38,44 @@ namespace Multiple_Linear_Regression {
                 }
             }
             dataGV.ColumnHeadersVisible = true;
+        }
+
+        /// <summary>
+        /// Function for showing logo of the loading
+        /// </summary>
+        /// <param name="bgWorker">Background worker</param>
+        /// <param name="mainBgWorker">Main background worker</param>
+        /// <param name="loadLabel">Loading label</param>
+        /// <param name="finishLabel">Label for finish</param>
+        public void ShowLoadingLogo(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker,
+            BackgroundWorker mainBgWorker, Label loadLabel, Label finishLabel) {
+            // Check if bgworker has been stopped
+            if (bgWorker.CancellationPending) {
+                e.Cancel = true;
+            }
+            else {
+                loadLabel.Invoke(new Action<bool>((vis) => loadLabel.Visible = vis), true);
+
+                // While mainBgWorker is busy, we will update the load indicator
+                while (mainBgWorker.IsBusy == true) {
+                    if (loadLabel.Text.Count(symb => symb == '.') < 3) {
+                        loadLabel.Invoke(new Action<string>((load) => loadLabel.Text = load),
+                            loadLabel.Text + ".");
+                    }
+                    else {
+                        loadLabel.Invoke(new Action<string>((load) => loadLabel.Text = load),
+                            loadLabel.Text.Replace(".", ""));
+                    }
+                    System.Threading.Thread.Sleep(500);
+                }
+
+                // Hide loadLabel
+                loadLabel.Invoke(new Action<bool>((vis) => loadLabel.Visible = vis), false);
+
+                // Showing finish label
+                finishLabel.Invoke(new Action<bool>((vis) => finishLabel.Visible = vis), true);
+                bgWorker.CancelAsync();
+            }
         }
 
         /// <summary>

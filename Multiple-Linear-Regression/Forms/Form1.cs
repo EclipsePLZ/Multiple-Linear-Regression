@@ -278,11 +278,13 @@ namespace Multiple_Linear_Regression {
                     // Backgound worker for loading label
                     BackgroundWorker bgWorkerLabel = new BackgroundWorker();
                     bgWorkerLabel.DoWork += new DoWorkEventHandler((senderNew, eNew) =>
-                        ShowLoadingLogo(senderNew, eNew, bgWorkerLabel, bgWorkerFunc, labelFindingBestModel, labelFindingBestModelEnd));
+                        operationsWithControls.ShowLoadingLogo(senderNew, eNew, bgWorkerLabel,
+                                                               bgWorkerFunc, labelFindingBestModel, labelFindingBestModelEnd));
                     bgWorkerLabel.WorkerSupportsCancellation = true;
                     bgWorkerLabel.RunWorkerAsync();
                 }
                 else {
+                    labelFindingBestModelEnd.Visible = false;
                     labelResultDataLoad.Visible = true;
                     processingStatDataTabGusev.Enabled = true;
                     processingStatDataTabOkunev.Enabled = true;
@@ -291,6 +293,8 @@ namespace Multiple_Linear_Regression {
                     doFunctionalProcessGusevButton.Enabled = true;
                     doFunctionalProcessOkunevButton.Enabled = true;
                     formationOfControlFactorSetsTab.Enabled = true;
+                    groupBoxFilterRegressors.Enabled = true;
+                    groupBoxGroupedRegressors.Enabled = true;
                 }
             }
             else {
@@ -327,8 +331,11 @@ namespace Multiple_Linear_Regression {
 
                 // Automatic calculation with default parameters
                 // Gusev functional preprocess
-                Action gusevDG = () => operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" },
-                functionsForProcessingGusevDataGrid, true, new List<int>() { 3 });
+                Action gusevDG = () => operationsWithControls.SetDataGVColumnHeaders(new List<string>() { 
+                        "Регрессант", "Регрессор", "Функции предобработки", "Модуль коэффициента корреляции" 
+                        },
+                        functionsForProcessingGusevDataGrid, true, new List<int>() { 3 });
+
                 functionsForProcessingGusevDataGrid.Invoke(gusevDG);
                 GusevProcessingAllModels();
 
@@ -550,7 +557,7 @@ namespace Multiple_Linear_Regression {
             // Background worker for loading label
             BackgroundWorker bgWorkerLoad = new BackgroundWorker();
             bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
-                ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorker, labelGroupingRegressors,
+                operationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorker, labelGroupingRegressors,
                 labelGroupingRegressorsEnd));
             bgWorkerLoad.WorkerSupportsCancellation = true;
             bgWorkerLoad.RunWorkerAsync();
@@ -654,7 +661,7 @@ namespace Multiple_Linear_Regression {
         /// <returns>List with groups of correlated regressors</returns>
         private List<List<string>> GetCorrelatedRegressors(double thresholdCorr) {
             List<List<string>> corrRegressors = new List<List<string>>();
-            List<string> nonCombinedRegressors = GetNonCombinedRegressors(BaseRegressors.Keys.ToList());
+            List<string> nonCombinedRegressors = OperationsWithModels.GetNonCombinedRegressors(BaseRegressors.Keys.ToList());
             List<string> usedRegressors = new List<string>();
 
             // Find groups of correlated regressors
@@ -792,21 +799,6 @@ namespace Multiple_Linear_Regression {
             return shortRegressors;
         }
 
-        /// <summary>
-        /// Get list of headers of non-combined regressors
-        /// </summary>
-        /// <param name="regressors">Regressors</param>
-        /// <returns>List of headers</returns>
-        private List<string> GetNonCombinedRegressors(List<string> regressors) {
-            List<string> nonCombinedRegressors = new List<string>();
-            foreach (var regressorName in regressors) {
-                if (!regressorName.Contains(" & ")) {
-                    nonCombinedRegressors.Add(regressorName);
-                }
-            }
-            return nonCombinedRegressors;
-        }
-
         private void doFunctionalProcessGusevButton_Click(object sender, EventArgs e) {
             // Show warinig form
             UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
@@ -836,7 +828,8 @@ namespace Multiple_Linear_Regression {
             // Backgound worker for loading label
             BackgroundWorker bgWorkerLabel = new BackgroundWorker();
             bgWorkerLabel.DoWork += new DoWorkEventHandler((sender, e) =>
-                ShowLoadingLogo(sender, e, bgWorkerLabel, bgWorkerFunc, labelFuncPreprocessGusev, labelPreprocessingGusevFinish));
+                                    operationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLabel, bgWorkerFunc, 
+                                                                           labelFuncPreprocessGusev, labelPreprocessingGusevFinish));
             bgWorkerLabel.WorkerSupportsCancellation = true;
             bgWorkerLabel.RunWorkerAsync();
         }
@@ -871,7 +864,8 @@ namespace Multiple_Linear_Regression {
                 foreach (var regressor in model.ProcessFunctions) {
                     string regressorName = $"{RegressorsShortName[regressor.Key]} - {regressor.Key}";
                     // Add row of preprocess functions to data grid
-                    functionsForProcessingGusevDataGrid.Invoke(new Action<List<string>>((row) => functionsForProcessingGusevDataGrid.Rows.Add(row.ToArray())),
+                    functionsForProcessingGusevDataGrid.Invoke(new Action<List<string>>((row) => 
+                        functionsForProcessingGusevDataGrid.Rows.Add(row.ToArray())),
                         new List<string>() { model.RegressantName, regressorName,
                                 String.Join(", ", regressor.Value.ToArray()),
                                 Math.Round(Math.Abs(model.CorrelationCoefficient[regressor.Key]), 2).ToString() });
@@ -908,7 +902,8 @@ namespace Multiple_Linear_Regression {
             // Backgound worker for loading label
             BackgroundWorker bgWorkerLabel = new BackgroundWorker();
             bgWorkerLabel.DoWork += new DoWorkEventHandler((sender, e) =>
-                ShowLoadingLogo(sender, e, bgWorkerLabel, bgWorkerFunc, labelFuncPreprocessOkunev, labelPreprocessingOkunevFinish));
+                                        operationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLabel, bgWorkerFunc, 
+                                                                               labelFuncPreprocessOkunev, labelPreprocessingOkunevFinish));
             bgWorkerLabel.WorkerSupportsCancellation = true;
             bgWorkerLabel.RunWorkerAsync();
         }
@@ -944,46 +939,6 @@ namespace Multiple_Linear_Regression {
             }
         }
 
-        /// <summary>
-        /// Function for showing logo of the loading
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <param name="bgWorker">Background worker</param>
-        /// <param name="mainBgWorker">Main background worker</param>
-        /// <param name="loadLabel">Loading label</param>
-        /// <param name="finishLabel">Label for finish</param>
-        private void ShowLoadingLogo(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker, 
-            BackgroundWorker mainBgWorker, Label loadLabel, Label finishLabel) {
-            // Check if bgworker has been stopped
-            if (bgWorker.CancellationPending) {
-                e.Cancel = true;
-            }
-            else {
-                loadLabel.Invoke(new Action<bool>((vis) => loadLabel.Visible = vis), true);
-
-                // While mainBgWorker is busy, we will update the load indicator
-                while (mainBgWorker.IsBusy == true) {
-                    if (loadLabel.Text.Count(symb => symb == '.') < 3) {
-                        loadLabel.Invoke(new Action<string>((load) => loadLabel.Text = load),
-                            loadLabel.Text + ".");
-                    }
-                    else {
-                        loadLabel.Invoke(new Action<string>((load) => loadLabel.Text = load),
-                            loadLabel.Text.Replace(".", ""));
-                    }
-                    System.Threading.Thread.Sleep(500);
-                }
-
-                // Hide loadLabel
-                loadLabel.Invoke(new Action<bool>((vis) => loadLabel.Visible = vis), false);
-
-                // Showing finish label
-                finishLabel.Invoke(new Action<bool>((vis) => finishLabel.Visible = vis), true);
-                bgWorker.CancelAsync();
-            }
-        }
-
         private void acceptFilterFactorsButton_Click(object sender, EventArgs e) {
             ClearDataGV(onlyImportantFactorsDataGrid);
 
@@ -1005,8 +960,8 @@ namespace Multiple_Linear_Regression {
 
             // Background worker for loading label
             BackgroundWorker bgWorkerLoad = new BackgroundWorker();
-            bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) => 
-                ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorker, labelFilterLoad, labelFilterFinish));
+            bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
+                operationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorker, labelFilterLoad, labelFilterFinish));
             bgWorkerLoad.WorkerSupportsCancellation = true;
             bgWorkerLoad.RunWorkerAsync();
         }
@@ -1102,7 +1057,7 @@ namespace Multiple_Linear_Regression {
             // Background worker for loading label
             BackgroundWorker bgWorkerLoad = new BackgroundWorker();
             bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
-                ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorkerEq, labelBuildingLoad, labelBuildingFinish));
+                operationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorkerEq, labelBuildingLoad, labelBuildingFinish));
             bgWorkerLoad.WorkerSupportsCancellation = true;
             bgWorkerLoad.RunWorkerAsync();
         }
@@ -1187,8 +1142,8 @@ namespace Multiple_Linear_Regression {
         /// Fill tab with predict values for prediction factors
         /// </summary>
         private void FillPredictionTab() {
-            AllRegressorsNamesFromModels = GetAllRegressorsFromModels();
-            AllNotCombinedRegressorsNamesFromModels = GetNonCombinedRegressors(AllRegressorsNamesFromModels);
+            AllRegressorsNamesFromModels = OperationsWithModels.GetAllRegressorsFromModels(BestModels);
+            AllNotCombinedRegressorsNamesFromModels = OperationsWithModels.GetNonCombinedRegressors(AllRegressorsNamesFromModels);
 
             // Fill all regressors from models with values 
             Dictionary<string, List<double>> allRegressors = new Dictionary<string, List<double>>();
@@ -1203,21 +1158,6 @@ namespace Multiple_Linear_Regression {
             FillValuesInPredictTab(allRegressors);
 
             loadDataForPredictButton.Invoke(new Action<bool>((enab) => loadDataForPredictButton.Enabled = enab), true);
-        }
-
-        /// <summary>
-        /// Get all regressors names from models
-        /// </summary>
-        /// <returns>List of all regressors</returns>
-        private List<string> GetAllRegressorsFromModels() {
-            List<string> allRegressorsNames = new List<string>();
-
-            // Get all names of defining factors
-            foreach (var model in BestModels) {
-                allRegressorsNames = allRegressorsNames.Union(model.RegressorsNames).ToList();
-            }
-
-            return allRegressorsNames;
         }
 
         /// <summary>
@@ -1399,104 +1339,19 @@ namespace Multiple_Linear_Regression {
             try {
                 if (dialogService.OpenFileDialog() == true) {
                     fileService = Files.GetFileService(dialogService.FilePath);
+                    List<List<string>> allRows = fileService.Open(dialogService.FilePath);
 
-                    LoadFactorsForPredict();
+                    // Show predicted regressants with regressors values
+                    FileRegressors fileRegressorsForm = new FileRegressors(AllRegressorsNamesFromModels, BestModels,
+                        allRows, "Прогнозирование", StepsInfo.PredictRegressorsFromFile);
+                    fileRegressorsForm.ShowDialog();
+
+                    //LoadFactorsForPredict();
                 }
             }
             catch (Exception ex) {
                 dialogService.ShowMessage(ex.Message);
             }
-        }
-
-        /// <summary>
-        /// Loading factors from file for calc predict
-        /// </summary>
-        private void LoadFactorsForPredict() {
-            List<List<string>> allRows = fileService.Open(dialogService.FilePath);
-            List<List<string>> predictedRegressants = new List<List<string>>();
-
-            // Create headers row
-            List<string> headers = new List<string>(AllRegressorsNamesFromModels);
-            foreach (var model in Models) {
-                headers.Add(model.RegressantName);
-            }
-            predictedRegressants.Add(headers);
-
-            Dictionary<string, List<double>> allRegressorsFromFile = new Dictionary<string, List<double>>();
-
-            // Fill all regressors values from file data
-            for (int col = 0; col < allRows[0].Count; col++) {
-                string regressorName = allRows[0][col];
-                allRegressorsFromFile.Add(regressorName, new List<double>());
-
-                for (int row = 1; row < allRows.Count; row++) {
-                    allRegressorsFromFile[regressorName].Add(Convert.ToDouble(allRows[row][col]));
-                }
-            }
-
-            // Find predict for each row of regressors from file
-            for (int row = 0; row < allRows.Count - 1; row++) {
-                List<string> nextRow = new List<string>();
-                Dictionary<string, double> regressorsRowValues = new Dictionary<string, double>();
-
-                foreach (var regressorName in AllRegressorsNamesFromModels) {
-                    double value = 0;
-
-                    // If it's pairwise factor then multiply the factors
-                    if (regressorName.Contains(" & ")) {
-                        string[] pairwiseRegressors = regressorName.Split(new string[] { " & " }, StringSplitOptions.None);
-                        double factor1 = allRegressorsFromFile.ContainsKey(pairwiseRegressors[0]) ? allRegressorsFromFile[pairwiseRegressors[0]][row]
-                            : BaseRegressors[pairwiseRegressors[0]].Last();
-                        double factor2 = allRegressorsFromFile.ContainsKey(pairwiseRegressors[1]) ? allRegressorsFromFile[pairwiseRegressors[1]][row]
-                            : BaseRegressors[pairwiseRegressors[1]].Last();
-                        value = factor1 * factor2;
-                    }
-                    else {
-                        value = allRegressorsFromFile.ContainsKey(regressorName) ? allRegressorsFromFile[regressorName][row]
-                        : BaseRegressors[regressorName].Last();
-                    }
-
-                    regressorsRowValues.Add(regressorName, value);
-                }
-
-                // Add regressors values to next Row
-                foreach (var regressorValue in regressorsRowValues.Values) {
-                    nextRow.Add(regressorValue.ToString());
-                }
-
-                // For each model add regressant value to next Row
-                foreach (var model in BestModels) {
-                    nextRow.Add(CalcModelValue(model, regressorsRowValues).ToString());
-                }
-
-                predictedRegressants.Add(nextRow);
-            }
-
-            // Show predicted regressants with regressors values
-            FileRegressors fileRegressorsForm = new FileRegressors(predictedRegressants, "Прогнозирование",
-                StepsInfo.PredictRegressorsFromFile);
-            fileRegressorsForm.ShowDialog();
-        }
-
-        /// <summary>
-        /// Calculate the predicted value for regressant of the model
-        /// </summary>
-        /// <param name="model">Model</param>
-        /// <param name="regressors">Dictionary of regressors with values</param>
-        /// <returns>Predicted value</returns>
-        private double CalcModelValue(Model model, Dictionary<string, double> regressors) {
-
-            // Fill new X values for model
-            double[] xValues = new double[model.Regressors.Count];
-            int position = 0;
-
-            foreach (var regressor in model.Regressors) {
-                xValues[position] = regressors[regressor.Key];
-                position++;
-            }
-
-            // Get predicted value for regressant
-            return model.Predict(xValues);
         }
 
         private void empWayRadio_CheckedChanged(object sender, EventArgs e) {
