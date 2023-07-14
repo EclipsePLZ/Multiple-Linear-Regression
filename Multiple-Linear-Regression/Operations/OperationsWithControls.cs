@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 
 namespace Multiple_Linear_Regression {
-    public class OperationsWithControls {
+    public static class OperationsWithControls {
         /// <summary>
         /// Set column headers and column settings to dataGV
         /// </summary>
@@ -14,7 +14,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="autoSize">AutoSize column width</param>
         /// <param name="indexOfSortableColumns">List of indexes of sortable columns</param>
         /// <param name="indexOfModifiableColumns">List of indexes of modifiable columns</param>
-        public void SetDataGVColumnHeaders(List<string> headers, DataGridView dataGV, bool autoSize,
+        public static void SetDataGVColumnHeaders(List<string> headers, DataGridView dataGV, bool autoSize,
             List<int> indexOfSortableColumns = null, List<int> indexOfModifiableColumns = null) {
             dataGV.ColumnCount = headers.Count;
             for (int i = 0; i < dataGV.Columns.Count; i++) {
@@ -45,7 +45,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="mainBgWorker">Main background worker</param>
         /// <param name="loadLabel">Loading label</param>
         /// <param name="finishLabel">Label for finish</param>
-        public void ShowLoadingLogo(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker,
+        public static void ShowLoadingLogo(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker,
             BackgroundWorker mainBgWorker, Label loadLabel, Label finishLabel) {
             // Check if bgworker has been stopped
             if (bgWorker.CancellationPending) {
@@ -81,7 +81,7 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="fromList">The list from which we move the item</param>
         /// <param name="toList">The list to which we move the item</param>
-        public void MoveModelBetweenLists(ListBox fromList, ListBox toList) {
+        public static void MoveModelBetweenLists(ListBox fromList, ListBox toList) {
             if (fromList.SelectedItems.Count == 1) {
                 int selectedIndex = fromList.SelectedIndex;
                 toList.Items.Add(fromList.SelectedItem);
@@ -102,7 +102,7 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="fromList">The list from which we move the items</param>
         /// <param name="toList">The list to which we move the items</param>
-        public void MoveAllItemsBetweenLists(ListBox fromList, ListBox toList) {
+        public static void MoveAllItemsBetweenLists(ListBox fromList, ListBox toList) {
             if (fromList.Items.Count > 0) {
                 toList.Items.AddRange(fromList.Items);
                 fromList.Items.Clear();

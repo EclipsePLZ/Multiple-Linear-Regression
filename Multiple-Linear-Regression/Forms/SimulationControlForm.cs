@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-
+using Multiple_Linear_Regression.Work_With_Files;
 
 namespace Multiple_Linear_Regression.Forms {
     public partial class SimulationControlForm : Form {
@@ -14,7 +14,7 @@ namespace Multiple_Linear_Regression.Forms {
         private IDialogService dialogService = new DefaultDialogService();
 
         private BackgroundWorker resizeWorker = new BackgroundWorker();
-        private OperationsWithControls operationsWithControls = new OperationsWithControls();
+        SimulationControl simulationControl = new SimulationControl();
 
         private const int MODIFY_COLUMN = 1;
 
@@ -61,10 +61,10 @@ namespace Multiple_Linear_Regression.Forms {
         /// Setting start parameters for form
         /// </summary>
         private void SetStartParameters() {
-            operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Название", "Значение", "Минимум", "Максимум" }, 
+            OperationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Название", "Значение", "Минимум", "Максимум" }, 
                                                     regressorsSetDataGrid, true, null, new List<int>() { 1 });
 
-            operationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Название", "Значение", "Уравнение" },
+            OperationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Название", "Значение", "Уравнение" },
                                                     regressantsResultDataGrid, true);
 
             SelectedStartRegressors = new Dictionary<string, List<double>>();
@@ -100,224 +100,15 @@ namespace Multiple_Linear_Regression.Forms {
             StartRegressors = new Dictionary<string, double>(AllRegressors);
 
             if (NumberGroupOfCorrelatedRegressors == 0) {
-                CalcNumberGroupOfCorrelatedRegressors();
+                NumberGroupOfCorrelatedRegressors = simulationControl.CalcNumberGroupOfCorrelatedRegressors(AllRegressors.Count);
             }
 
-            GetRegressorsMutualImpact();
-        }
+            // Calculate correlation between regressors
+            RegressorsCorrelation = simulationControl.CalcCorrelationCoefficients(SelectedStartRegressors);
 
-        /// <summary>
-        /// Automatically find the number of groups for correlated regressors 
-        /// </summary>
-        private void CalcNumberGroupOfCorrelatedRegressors() {
-            NumberGroupOfCorrelatedRegressors = (int)Math.Log(2,AllRegressors.Count);
-
-            if (NumberGroupOfCorrelatedRegressors < 3) {
-                NumberGroupOfCorrelatedRegressors = 3;
-            }
-        }
-
-        /// <summary>
-        /// Get a coefficient for equation that represents regressors mutual impact
-        /// </summary>
-        private void GetRegressorsMutualImpact() {
-            // Get correlation coefficients between regressors
-            CalcCorrelationCoefficients();
-
-            RegressorsImpact = new Dictionary<string, Dictionary<string, Dictionary<string, double>>>();
-
-            // Find threshold correlation coefficients
-            List<double> corrIntervals = GetCorrIntervals();
-
-            // For each regressor, find the impact on the other regressors
-            foreach (var mainRegressorName in SelectedStartRegressors.Keys) {
-                Dictionary<string, Dictionary<string, double>> nextSecsRegressorsForMain =
-                    new Dictionary<string, Dictionary<string, double>>();
-                List<string> unUsedRegressors = new List<string>(SelectedStartRegressors.Keys);
-                List<List<string>> groupsRegressors = new List<List<string>>();
-
-                unUsedRegressors.Remove(mainRegressorName);
-
-                // Fill second regressors for main regressor
-                foreach (var corrLevel in corrIntervals) {
-
-                    // Find regressors for next correlation level
-                    List<string> nextGroupRegressors = RegressorsForImpact(unUsedRegressors, mainRegressorName, corrLevel);
-                    
-                    if (nextGroupRegressors.Count > 0) {
-                        groupsRegressors.Add(nextGroupRegressors);
-                        FillNextGroupRegressors(ref nextSecsRegressorsForMain, groupsRegressors, mainRegressorName);
-                        unUsedRegressors = unUsedRegressors.Except(nextGroupRegressors).ToList();
-                    }
-                }
-
-                RegressorsImpact[mainRegressorName] = nextSecsRegressorsForMain;
-            }
-        }
-
-        /// <summary>
-        /// Calculate correlation coefficients between all regressors
-        /// </summary>
-        private void CalcCorrelationCoefficients() {
-            RegressorsCorrelation = new Dictionary<string, Dictionary<string, double>>();
-
-            // Find correlation coefficients between all non-combine regressors
-            foreach(var mainRegressor in SelectedStartRegressors.Keys) {
-                Dictionary<string, double> secondsRegressorForMain = new Dictionary<string, double>();
-                foreach(var secRegressor in SelectedStartRegressors.Keys) {
-                    if (secRegressor != mainRegressor) {
-                        if (RegressorsCorrelation.ContainsKey(secRegressor)) {
-                            secondsRegressorForMain[secRegressor] = RegressorsCorrelation[secRegressor][mainRegressor];
-                        }
-                        else {
-                            secondsRegressorForMain[secRegressor] = Statistics.PearsonCorrelationCoefficient(
-                                SelectedStartRegressors[mainRegressor], SelectedStartRegressors[secRegressor]);
-                        }
-                    }
-                }
-                RegressorsCorrelation[mainRegressor] = secondsRegressorForMain;
-            }
-        }
-
-        /// <summary>
-        /// Get threshold values for find correlation group of regressors
-        /// </summary>
-        /// <returns>List of threshold values</returns>
-        private List<double> GetCorrIntervals() {
-            List<double> thresholdValues = new List<double>();
-            double oneStep = 1.0 / NumberGroupOfCorrelatedRegressors;
-
-            // Find next threshold value
-            for (int i = 0; i < NumberGroupOfCorrelatedRegressors; i++) {
-                thresholdValues.Add(oneStep * i);
-            }
-
-             thresholdValues.Reverse();
-
-            return thresholdValues;
-        }
-
-        /// <summary>
-        /// Get regressors wich coefficient of correlation more than threshold value
-        /// </summary>
-        /// <param name="secRegressors">List of regressors to choose from</param>
-        /// <param name="mainRegressor">Main regressor</param>
-        /// <param name="thresholdCorrValue">Threshold value of correlation coefficient</param>
-        /// <returns>List of regressors</returns>
-        private List<string> RegressorsForImpact(List<string> secRegressors, string mainRegressor,
-            double thresholdCorrValue = 0) {
-            List<string> selectedRegressors = new List<string>();
-
-            foreach (var regressor in secRegressors) {
-                if (Math.Abs(RegressorsCorrelation[mainRegressor][regressor]) > thresholdCorrValue) {
-                    selectedRegressors.Add(regressor);
-                }
-            }
-
-            return selectedRegressors;
-        }
-
-        /// <summary>
-        /// Fill dictionary impact for group of regressors
-        /// </summary>
-        /// <param name="regressorsForMain">Dictionary impact for main regressor</param>
-        /// <param name="groupsOfRegressors"></param>
-        /// <param name="mainRegressor"></param>
-        private void FillNextGroupRegressors(ref Dictionary<string, Dictionary<string, double>> regressorsForMain,
-            List<List<string>> groupsOfRegressors, string mainRegressor) {
-
-            foreach (var secRegressor in groupsOfRegressors.Last()) {
-                regressorsForMain[secRegressor] = ImpactCoefficientsGroup(secRegressor, mainRegressor,
-                    groupsOfRegressors.GetRange(0, groupsOfRegressors.Count() - 1));
-            }
-        }
-
-        /// <summary>
-        /// Find coefficients of impact between correlated regressors
-        /// </summary>
-        /// <param name="yRegressor">Y-regressor</param>
-        /// <param name="xRegressor">X-regressor</param>
-        /// <param name="prevGroupsRegressors">Groups of regressors with a high correlation coefficient</param>
-        /// <returns>Coefficients of impact between regressors</returns>
-        private Dictionary<string, double> ImpactCoefficientsGroup(string yRegressor, string xRegressor, 
-            List<List<string>> prevGroupsRegressors) {
-
-            double rValue = 0;
-
-            if (prevGroupsRegressors.Count > 0) {
-                List<int> indexesOfRegressors = Enumerable.Repeat(0, prevGroupsRegressors.Count).ToList();
-
-                // Find rValue
-                while (true) {
-
-                    // Check if we have used all regressors
-                    if (indexesOfRegressors[0] >= prevGroupsRegressors[0].Count) {
-                        break;
-                    }
-
-                    double nextCoeff = 1;
-                    string leftRegressor = xRegressor;
-                    string rightRegressor = "";
-
-                    // Find next multiple of correlation coefficients for r-value
-                    for (int i = 0; i < indexesOfRegressors.Count; i++) {
-                        rightRegressor = prevGroupsRegressors[i][indexesOfRegressors[i]];
-                        nextCoeff *= RegressorsCorrelation[leftRegressor][rightRegressor];
-                        leftRegressor = rightRegressor;
-                    }
-                    nextCoeff *= RegressorsCorrelation[leftRegressor][yRegressor];
-
-                    rValue += nextCoeff;
-                    CalcIndexesOfNextRegressors(ref indexesOfRegressors, prevGroupsRegressors,
-                        indexesOfRegressors.Count - 1);
-                }
-            }
-            else {
-                rValue = RegressorsCorrelation[yRegressor][xRegressor];
-            }
-
-            // Checking Exceptional Situations
-            rValue = rValue < -1 ? -1 : rValue;
-            rValue = rValue > 1 ? 1 : rValue;
-
-            return GetCoefficientsForImpactEquation(rValue, yRegressor, xRegressor);
-        }
-
-        /// <summary>
-        /// Finding regressor indexes to calculate the next term in the r-value
-        /// </summary>
-        /// <param name="indexesOfRegressors">List with indexes for next coeff in r-value</param>
-        /// <param name="prevGroupsRegressors">Groups of more correlated regressors</param>
-        /// <param name="position">Variable regressor position</param>
-        private void CalcIndexesOfNextRegressors(ref List<int> indexesOfRegressors, 
-            List<List<string>> prevGroupsRegressors, int position) {
-
-            if (position >= 0 && indexesOfRegressors[position] == prevGroupsRegressors[position].Count - 1) {
-                indexesOfRegressors[position] = 0;
-                CalcIndexesOfNextRegressors(ref indexesOfRegressors, prevGroupsRegressors, position - 1);
-            }
-            else if (position < 0) {
-                indexesOfRegressors[0] = prevGroupsRegressors[0].Count;
-            }
-            else {
-                indexesOfRegressors[position]++;
-            }
-        }
-
-        /// <summary>
-        /// Get coefficients for regressors impact equation
-        /// </summary>
-        /// <param name="r">Correlation coefficient</param>
-        /// <param name="yRegressor">Y-regressor</param>
-        /// <param name="xRegressor">X-regressor</param>
-        /// <returns>Coefficients of impact equation</returns>
-        private Dictionary<string, double> GetCoefficientsForImpactEquation(double r, string yRegressor, string xRegressor) {
-            Dictionary<string, double> coeffs = new Dictionary<string, double>();
-            coeffs["b"] = r * (Statistics.StandardDeviation(SelectedStartRegressors[yRegressor]) /
-                Statistics.StandardDeviation(SelectedStartRegressors[xRegressor]));
-            coeffs["a"] = SelectedStartRegressors[yRegressor].Average() - coeffs["b"] * SelectedStartRegressors[xRegressor].Average();
-
-            return coeffs;
+            // Find coefficients of regressors mutual impact
+            RegressorsImpact = simulationControl.GetRegressorsMutualImpact(RegressorsCorrelation, NumberGroupOfCorrelatedRegressors,
+                                                                           SelectedStartRegressors.Keys.ToList(), SelectedStartRegressors);
         }
 
         /// <summary>
@@ -328,7 +119,7 @@ namespace Multiple_Linear_Regression.Forms {
         private void loadDataFileMenu_Click(object sender, EventArgs e) {
             try {
                 if (dialogService.OpenFileDialog() == true) {
-                    fileService = GetFileService(dialogService.FilePath);
+                    fileService = Files.GetFileService(dialogService.FilePath);
 
                     List<List<string>> allRows = new List<List<string>>();
                     try {
@@ -351,24 +142,6 @@ namespace Multiple_Linear_Regression.Forms {
             }
         }
 
-        /// <summary>
-        /// Get right file service for reading file
-        /// </summary>
-        /// <param name="filename">Path to file</param>
-        /// <returns>File Service</returns>
-        IFileService GetFileService(string filename) {
-            switch (filename.Split('.').Last()) {
-                case "xls":
-                    return new ExcelFileService();
-
-                case "xlsx":
-                    return new ExcelFileService();
-
-                default:
-                    return new ExcelFileService();
-            }
-        }
-
         private void regressorsSetDataGrid_CellValueChanged(object sender, DataGridViewCellEventArgs e) {
             if (e.ColumnIndex == MODIFY_COLUMN && e.RowIndex >= 0) {
                 string regressorName = AllRegressors.Keys.ToList()[e.RowIndex];
@@ -384,11 +157,12 @@ namespace Multiple_Linear_Regression.Forms {
                             double regressorValue = Convert.ToDouble(regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value);
 
                             // Check if the value falls within the definition area
-                            CheckRegressorDefArea(regressorName, regressorValue);
+                            simulationControl.CheckDefAreaForRegressor(regressorName, regressorValue, 
+                                                                       RegressorsDefinitionArea[regressorName]);
                             AllRegressors[regressorName] = regressorValue;
 
                             // Update models, that contains regressor
-                            UpdateModels(GetModifiedModels(regressorName));
+                            UpdateModels(OperationsWithModels.GetModelsByRegressors(regressorName, Models));
 
                             // Update regressors affected by changable regressor
                             if (checkMutualImpactFactors.Checked) {
@@ -410,22 +184,6 @@ namespace Multiple_Linear_Regression.Forms {
                 else {
                     regressorsSetDataGrid[e.ColumnIndex, e.RowIndex].Value = AllRegressors[regressorName];
                 }
-            }
-        }
-
-        /// <summary>
-        /// Check whether the regressorKey value is within the boundaries of the definition area
-        /// </summary>
-        /// <param name="regressorName">Name of adjustable regressorKey</param>
-        /// <param name="regressorValue">Value of adjustable regressorKey</param>
-        private void CheckRegressorDefArea(string regressorName, double regressorValue) {
-            if (regressorValue < RegressorsDefinitionArea[regressorName].Item1) {
-                MessageBox.Show($"Значение регрессора ({regressorName}) не попадает в область определения (Минимальное значение - " +
-                    $"{RegressorsDefinitionArea[regressorName].Item1}). Модель может работать некорректно.");
-            }
-            else if (regressorValue > RegressorsDefinitionArea[regressorName].Item2) {
-                MessageBox.Show($"Значение регрессора ({regressorName}) не попадает в область определения (Максимальное значение - " +
-                   $"{RegressorsDefinitionArea[regressorName].Item2}). Модель может работать некорректно.");
             }
         }
 
@@ -485,10 +243,11 @@ namespace Multiple_Linear_Regression.Forms {
             regressorsSetDataGrid[MODIFY_COLUMN, regressorsNames.IndexOf(pariwiseCombinationRegressorName)].Value = Math.Round(newValue, 2);
 
             // Check value of pairwise combination regressor
-            CheckRegressorDefArea(pariwiseCombinationRegressorName, newValue);
+            simulationControl.CheckDefAreaForRegressor(pariwiseCombinationRegressorName, newValue,
+                                                       RegressorsDefinitionArea[pariwiseCombinationRegressorName]);
 
             // Update models that contains combined regressorKey
-            UpdateModels(GetModifiedModels(pariwiseCombinationRegressorName));
+            UpdateModels(OperationsWithModels.GetModelsByRegressors(pariwiseCombinationRegressorName, Models));
         }
 
         /// <summary>
@@ -497,7 +256,7 @@ namespace Multiple_Linear_Regression.Forms {
         /// <param name="changableRegressorName">Changable regressor name</param>
         private void UpdateImpactRegressors(string changableRegressorName) {
             List<string> needUpdatedRegressors = new List<string>(SelectedStartRegressors.Keys);
-            UpdateAllRegressors(changableRegressorName, needUpdatedRegressors);
+            simulationControl.UpdateRegressors(AllRegressors, changableRegressorName, needUpdatedRegressors, RegressorsImpact);
 
             List<string> regressorsNames = new List<string>(AllRegressors.Keys);
 
@@ -509,39 +268,6 @@ namespace Multiple_Linear_Regression.Forms {
 
             // Update all models
             UpdateModels(Models);
-        }
-
-        /// <summary>
-        /// Update all regressors
-        /// </summary>
-        /// <param name="changableRegressorName">Cnangable regressor name</param>
-        /// <param name="needUpdateRegressors">Not-updated regressors</param>
-        private void UpdateAllRegressors(string changableRegressorName, List<string> needUpdateRegressors) {
-            needUpdateRegressors.Remove(changableRegressorName);
-            if (needUpdateRegressors.Count != 0) {
-                foreach (var regressor in needUpdateRegressors) {
-                    AllRegressors[regressor] = RegressorsImpact[changableRegressorName][regressor]["a"] +
-                       RegressorsImpact[changableRegressorName][regressor]["b"] * AllRegressors[changableRegressorName];
-                }
-                UpdateAllRegressors(needUpdateRegressors[0], needUpdateRegressors);
-            }         
-        }
-
-        /// <summary>
-        /// Get a list of models that contain a modified regressorKey
-        /// </summary>
-        /// <param name="regressorName">Name of modified regressorKey</param>
-        /// <returns></returns>
-        private List<Model> GetModifiedModels(string regressorName) {
-            List<Model> modifiedModels = new List<Model>();
-
-            foreach(var model in Models) {
-                if (model.Regressors.Keys.Contains(regressorName)) {
-                    modifiedModels.Add(model);
-                }
-            }
-
-            return modifiedModels;
         }
 
         private void SimulationControlForm_FormClosing(object sender, FormClosingEventArgs e) {

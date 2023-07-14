@@ -16,7 +16,6 @@ namespace Multiple_Linear_Regression.Forms {
         private List<Model> Models { get; }
 
         private BackgroundWorker resizeWorker = new BackgroundWorker();
-        private OperationsWithControls operationsWithControls = new OperationsWithControls();
 
         private bool isResizeNeeded = false;
 
@@ -62,7 +61,7 @@ namespace Multiple_Linear_Regression.Forms {
             }
 
             // Set header
-            operationsWithControls.SetDataGVColumnHeaders(headers, regressorsFromFileDataGrid, false);
+            OperationsWithControls.SetDataGVColumnHeaders(headers, regressorsFromFileDataGrid, false);
 
             Dictionary<string, List<double>> allRegressors = new Dictionary<string, List<double>>();
 

@@ -28,16 +28,50 @@ namespace Multiple_Linear_Regression {
         /// <summary>
         /// Get all regressors names from models
         /// </summary>
-        /// <returns>List of all regressors</returns>
+        /// <param name="models">List of models</param>
+        /// <returns>List of names of all regressors</returns>
         public static List<string> GetAllRegressorsFromModels(List<Model> models) {
             List<string> allRegressorsNames = new List<string>();
 
-            // Get all names of defining factors
+            // Get all names of regressors
             foreach (var model in models) {
                 allRegressorsNames = allRegressorsNames.Union(model.RegressorsNames).ToList();
             }
 
             return allRegressorsNames;
+        }
+
+        /// <summary>
+        /// Get all start regressors names from models
+        /// </summary>
+        /// <param name="models">List of models</param>
+        /// <returns>List of names of all start regressors</returns>
+        public static List<string> GetStartRegressorsFromModels(List<Model> models) {
+            List<string> startRegressorsFromModels = new List<string>();
+
+            // Get all names of start regressors
+            foreach (var model in models) {
+                startRegressorsFromModels = startRegressorsFromModels.Union(model.StartRegressors.Keys).ToList();
+            }
+
+            return startRegressorsFromModels;
+        }
+
+        /// <summary>
+        /// Get a list of models that contain a given regressorKey
+        /// </summary>
+        /// <param name="regressorName">Name of given regressorKey</param>
+        /// <returns>List of models</returns>
+        public static List<Model> GetModelsByRegressors(string regressorName, List<Model> models) {
+            List<Model> modifiedModels = new List<Model>();
+
+            foreach (var model in models) {
+                if (model.Regressors.Keys.Contains(regressorName)) {
+                    modifiedModels.Add(model);
+                }
+            }
+
+            return modifiedModels;
         }
 
         /// <summary>

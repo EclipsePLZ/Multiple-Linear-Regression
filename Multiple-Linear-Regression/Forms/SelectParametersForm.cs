@@ -11,7 +11,6 @@ namespace Multiple_Linear_Regression {
 
         // Background worker for resize elements
         private BackgroundWorker resizeWorker = new BackgroundWorker();
-        private OperationsWithControls operationsWithControls = new OperationsWithControls();
 
         private bool isResizeNeeded = false;
 
@@ -51,7 +50,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="fromList">The list from which we move the item</param>
         /// <param name="toList">The list to which we move the item</param>
         private void MoveItemBetweenLists(ListBox fromList, ListBox toList) {
-            operationsWithControls.MoveModelBetweenLists(fromList, toList);
+            OperationsWithControls.MoveModelBetweenLists(fromList, toList);
             CheckRulesForAcceptParamters();
         }
 
@@ -70,7 +69,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="toList">The list to which we move the items</param>
         private void MoveAllItemsBetweenLists(ListBox fromList, ListBox toList) {
             if (fromList.Items.Count > 0) {
-                operationsWithControls.MoveAllItemsBetweenLists(fromList, toList);
+                OperationsWithControls.MoveAllItemsBetweenLists(fromList, toList);
                 CheckRulesForAcceptParamters();
             }
         }
