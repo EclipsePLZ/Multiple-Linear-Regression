@@ -1,10 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
 
 namespace Multiple_Linear_Regression {
     public static class OperationsWithModels {
+
+        /// <summary>
+        /// Set regressants and regressors for each model
+        /// </summary>
+        /// <param name="models">List of models</param>
+        /// <param name="regressants">Dictionary with regressants</param>
+        /// <param name="regressors">Dictionary with regressors</param>
+        public static void SetFactorForModels(List<Model> models, Dictionary<string, List<double>> regressants,
+                                               Dictionary<string, List<double>> regressors) {
+
+            foreach (var regressant in regressants) {
+                models.Add(new Model(regressant.Key, regressant.Value, regressors));
+            }
+        }
+
+        /// <summary>
+        /// Swap the factors that make up the combination of factors.
+        /// </summary>
+        /// <param name="factorName">Name of combination</param>
+        /// <returns>New combination name</returns>
+        public static string SwapPartsOfCombinedFactor(string factorName) {
+            string[] combinedFactors = factorName.Split(new string[] { " & " }, StringSplitOptions.None);
+            return combinedFactors[1] + " & " + combinedFactors[0];
+        }
+
         /// <summary>
         /// Calculate the predicted value for regressant of the model
         /// </summary>
@@ -39,6 +65,31 @@ namespace Multiple_Linear_Regression {
             }
 
             return allRegressorsNames;
+        }
+
+        /// <summary>
+        /// Get list of regressors in short form from model
+        /// </summary>
+        /// <param name="model">Model</param>
+        /// <param name="regressorsShortNames">Dictionary with regressors short names</param>
+        /// <returns>List of short-form regressors</returns>
+        public static List<string> GetRegressorsShortNamesFromModel(Model model, 
+                                                                    Dictionary<string, string> regressorsShortNames) {
+            List<string> shortRegressors = new List<string>();
+
+            // For each regressor in model we get its short form
+            foreach (var regressor in model.RegressorsNames) {
+                string nextRegressor = "";
+                if (regressorsShortNames.ContainsKey(regressor)) {
+                    nextRegressor = regressorsShortNames[regressor];
+                }
+                else if (regressor.Contains(" & ")) {
+                    nextRegressor = OperationsWithModels.SwapPartsOfCombinedFactor(regressor);
+                }
+                shortRegressors.Add(nextRegressor);
+            }
+
+            return shortRegressors;
         }
 
         /// <summary>
@@ -87,6 +138,102 @@ namespace Multiple_Linear_Regression {
                 }
             }
             return nonCombinedRegressors;
+        }
+
+        /// <summary>
+        /// Find the best model among the built models for regressant
+        /// </summary>
+        /// <param name="models">List of models</param>
+        /// <param name="regressant">Regressant name</param>
+        /// <returns>Best model for regressant</returns>
+        public static Model FindBestModel(List<Model> models, string regressant) {
+            // Check if there are significant models
+            List<Model> significantModels = GetSignificantModels(models);
+            if (significantModels.Count > 0) {
+                return FindAdequateModelInSignificantModels(significantModels, regressant);
+            }
+
+            // If there are no significant models, we will look for adequate models that are closest to the significance
+            return FindMostAdequateAndSignificantModel(models, regressant);
+        }
+
+        public static List<List<string>> GetErrorsOfModelsForPrediction(List<Model> models,
+                                         Dictionary<string, List<double>> regressorsValues,
+                                         Dictionary<string, Dictionary<string, List<double>>> modelsPredictionErrors) {
+
+            List<List<string>> allRows = new List<List<string>>();
+            int numOfValues = regressorsValues[regressorsValues.Keys.First()].Count;
+
+            foreach (var model in models) {
+                modelsPredictionErrors[model.RegressantName] = new Dictionary<string, List<double>>();
+                modelsPredictionErrors[model.RegressantName]["MAPE"] = new List<double>();
+                modelsPredictionErrors[model.RegressantName]["MinMax"] = new List<double>();
+                modelsPredictionErrors[model.RegressantName]["AbsError"] = new List<double>();
+                modelsPredictionErrors[model.RegressantName]["MaxError"] = new List<double>();
+                modelsPredictionErrors[model.RegressantName]["MinError"] = new List<double>();
+            }
+
+            // Find min and max in all models
+            Dictionary<string, (double, double)> minMaxModel = GetMinMaxValuesForRegressants(models);
+
+            // Fill real/predict values for all observations
+            for (int i = 0; i < numOfValues; i++) {
+                List<string> nextRow = new List<string>();
+
+                // Add regressors values to row
+                foreach (var regressor in regressorsValues) {
+                    nextRow.Add(Math.Round(regressor.Value[i], 2).ToString());
+                }
+
+                // Add regressant values to row
+                foreach (var model in models) {
+                    nextRow.Add(Math.Round(model.RegressantValues[i], 2).ToString());
+                    nextRow.Add(Math.Round(model.PredictedValues[i], 2).ToString());
+
+                    // Calc all errors for regressant
+                    double mapeError = Statistics.PredictError(model.RegressantValues[i], model.PredictedValues[i]);
+                    double minMaxError = Statistics.RangeError(model.RegressantValues[i], model.PredictedValues[i],
+                        minMaxModel[model.RegressantName].Item1, minMaxModel[model.RegressantName].Item2);
+                    double absoluteError = Statistics.AbsoluteError(model.RegressantValues[i], model.PredictedValues[i]);
+                    double maxPercentError = Statistics.MaxPercentError(model.RegressantValues[i], model.PredictedValues[i],
+                        minMaxModel[model.RegressantName].Item2);
+                    double minPercentError = Statistics.MinPercentError(model.RegressantValues[i], model.PredictedValues[i],
+                        minMaxModel[model.RegressantName].Item1);
+
+                    // Add all error to next row
+                    nextRow.Add(Math.Round(mapeError, 2).ToString());
+                    nextRow.Add(Math.Round(minMaxError, 2).ToString());
+                    nextRow.Add(Math.Round(absoluteError, 2).ToString());
+                    nextRow.Add(Math.Round(maxPercentError, 2).ToString());
+                    nextRow.Add(Math.Round(minPercentError, 2).ToString());
+
+                    modelsPredictionErrors[model.RegressantName]["MAPE"].Add(mapeError);
+                    modelsPredictionErrors[model.RegressantName]["MinMax"].Add(minMaxError);
+                    modelsPredictionErrors[model.RegressantName]["AbsError"].Add(absoluteError);
+                    modelsPredictionErrors[model.RegressantName]["MaxError"].Add(maxPercentError);
+                    modelsPredictionErrors[model.RegressantName]["MinError"].Add(minPercentError);
+                }
+
+                allRows.Add(nextRow);
+            }
+
+            return allRows;
+        }
+
+        /// <summary>
+        /// Get min and max values for each regressant in models
+        /// </summary>
+        /// <param name="models">List of models</param>
+        /// <returns>Dicitonary with min and max values</returns>
+        private static Dictionary<string, (double, double)> GetMinMaxValuesForRegressants(List<Model> models) {
+            Dictionary<string, (double, double)> minMaxModel = new Dictionary<string, (double, double)>();
+
+            // Find min and max values of regressant for each model
+            foreach (var model in models) {
+                minMaxModel[model.RegressantName] = (model.RegressantValues.Min(), model.RegressantValues.Max());
+            }
+
+            return minMaxModel;
         }
 
         /// <summary>

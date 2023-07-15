@@ -18,6 +18,10 @@ namespace Multiple_Linear_Regression {
         private BackgroundWorker resizeWorker = new BackgroundWorker();
         private bool isResizeNeeded = false;
 
+        LoadDataStep loadDataStep = new LoadDataStep();
+        RegressorsGrouping regressorsGrouping = new RegressorsGrouping();
+        FilterRegressors filterRegressors = new FilterRegressors();
+
         private Dictionary<string, int> RegressantsHeaders { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> RegressorsHeaders { get; set; } = new Dictionary<string, int>();
         private Dictionary<string, int> Headers { get; set; } = new Dictionary<string, int>();
@@ -248,17 +252,28 @@ namespace Multiple_Linear_Regression {
 
                 // Create pairwise combinations of factors if it's needed
                 if (checkPairwiseCombinations.Checked) {
-                    CreatePairwiseCombinationsOfFactors();
+                    loadDataStep.CreatePairwiseCombinationsOfFactors(BaseRegressors, RegressorsShortName);
                 }
 
                 ClearTabsAfterSelectedFactors();
 
                 // Change value factor if prediction task was choosen
                 if (radioPredictionTask.Checked) {
-                    ChangeFactorsValuesForPrediction();
+                    int valuesCount = BaseRegressants[BaseRegressants.Keys.First()].Count;
+
+                    // Show form for set paramters for prediction task
+                    PredictionParametersForm form = new PredictionParametersForm(valuesCount);
+                    form.ShowDialog();
+
+                    int numberOfValuesForDelete = form.LagValue * form.NumberObserInOneTimeInterval;
+                    int newNumberOfValues = valuesCount - numberOfValuesForDelete;
+
+                    loadDataStep.ShiftFactorValues(BaseRegressors, 0, newNumberOfValues);
+                    loadDataStep.ShiftFactorValues(BaseRegressants, numberOfValuesForDelete, newNumberOfValues);
+
                 }
 
-                FillRegressorsForModels();
+                OperationsWithModels.SetFactorForModels(Models, BaseRegressants, BaseRegressors);
 
                 // Will the automatic calculation be used
                 AllDefaultParameters autoCalcForm = new AllDefaultParameters();
@@ -347,7 +362,8 @@ namespace Multiple_Linear_Regression {
                 GetGroupsRegressors();
 
                 // Filtering of insignificant regressors by empirical way
-                EmpiricalWayToFilterRegressors();
+                filterRegressors.EmpiricalWayToFilterRegressors(Convert.ToDouble(valueEmpWayCorr.Value),
+                                                                        ModelsForRegressants.Values.ToList());
 
                 // Print grouped regressors for each regressant
                 PrintGroupedRegressors(onlyImportantFactorsDataGrid);
@@ -396,104 +412,13 @@ namespace Multiple_Linear_Regression {
 
             // Load regressants
             BaseRegressants = new Dictionary<string, List<double>>(
-                GetFactorsWithValues(RegressantsHeaders, AllValues)
+                loadDataStep.GetFactorsWithValues(RegressantsHeaders, AllValues)
                 );
 
             // Load regressors
             BaseRegressors = new Dictionary<string, List<double>>(
-                GetFactorsWithValues(RegressorsHeaders, AllValues)
+                loadDataStep.GetFactorsWithValues(RegressorsHeaders, AllValues)
                 );
-        }
-
-        /// <summary>
-        /// Get factors with it's values
-        /// </summary>
-        /// <param name="factors">Dictionary with name of factor and it's index</param>
-        /// <param name="values">Matrix with values of factors</param>
-        /// <returns>Dictionary with values for each factor</returns>
-        private Dictionary<string, List<double>> GetFactorsWithValues(Dictionary<string, int> factors, List<List<double>> values) {
-            Dictionary<string, List<double>> factorValues = new Dictionary<string, List<double>>();
-            
-            // Add values for each factor
-            foreach(var factor in factors) {
-                List<double> valuesForFactor = new List<double>();
-
-                // Collect all values for current factor
-                for (int row = 0; row < values.Count; row++) {
-                    valuesForFactor.Add(values[row][factor.Value]);
-                }
-                factorValues[factor.Key] = valuesForFactor;
-            }
-
-            return factorValues;
-        }
-
-        /// <summary>
-        /// Create pairwise combinations of factors as new factors
-        /// </summary>
-        private void CreatePairwiseCombinationsOfFactors() {
-            List<string> RegressorsKeys = BaseRegressors.Keys.ToList();
-
-            // Create new factor as pairwise combination of factors
-            for (int i = 0; i < RegressorsKeys.Count - 1; i++) {
-                for (int j = i + 1; j < RegressorsKeys.Count; j++) {
-                    List<double> newRegressorFactorValues = new List<double>();
-
-                    // The value of the new factor is obtained by multiplying the values of the two factors
-                    for (int elemNum = 0; elemNum < BaseRegressors[RegressorsKeys[i]].Count; elemNum++) {
-                        newRegressorFactorValues.Add(BaseRegressors[RegressorsKeys[i]][elemNum] * BaseRegressors[RegressorsKeys[j]][elemNum]);
-                    }
-                    string combinedName = RegressorsKeys[i] + " & " + RegressorsKeys[j];
-                    RegressorsShortName[combinedName] = $"{RegressorsShortName[RegressorsKeys[i]]}*{RegressorsShortName[RegressorsKeys[j]]}";
-                    BaseRegressors[combinedName] = newRegressorFactorValues;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Perform a time lag shift for the prediction task
-        /// </summary>
-        private void ChangeFactorsValuesForPrediction() {
-            int valuesCount = BaseRegressants[BaseRegressants.Keys.First()].Count;
-            // Show form for set parameters for prediction task
-            PredictionParametersForm form = new PredictionParametersForm(valuesCount);
-            form.ShowDialog();
-
-            int numberOfValuesForDelete = form.LagValue * form.NumberObserInOneTimeInterval;
-            int newNumberOfValues = valuesCount - numberOfValuesForDelete;
-            List<string> regressorsNames = new List<string>(BaseRegressors.Keys);
-            List<string> regressantsName = new List<string>(BaseRegressants.Keys);
-
-            // Perform a shift of the defining indicators
-            ShiftFactorValues(BaseRegressors, 0, newNumberOfValues, regressorsNames);
-
-            // Perform a shift of the forecast indicators
-            ShiftFactorValues(BaseRegressants, numberOfValuesForDelete, newNumberOfValues, regressantsName);
-        }
-
-        /// <summary>
-        /// A method for performing a shift in factor values from a dictionary.
-        /// </summary>
-        /// <param name="factors">Dictionary of factors</param>
-        /// <param name="startPosition">Start position for shifting</param>
-        /// <param name="numberOfValues">Number of values for shift</param>
-        /// <param name="factorsNames">Names of factors for shifting</param>
-        private void ShiftFactorValues(Dictionary<string, List<double>> factors, 
-            int startPosition, int numberOfValues, List<string> factorsNames) {
-
-            foreach (var factorName in factorsNames) {
-                factors[factorName] = factors[factorName].GetRange(startPosition, numberOfValues);
-            }
-        }
-
-        /// <summary>
-        /// Set regressors and regressors names for each model
-        /// </summary>
-        private void FillRegressorsForModels() {
-            Models.Clear();
-            foreach (var regressant in BaseRegressants) {
-                Models.Add(new Model(regressant.Key, regressant.Value, BaseRegressors));
-            }
         }
 
         /// <summary>
@@ -613,13 +538,15 @@ namespace Multiple_Linear_Regression {
 
             // Get all possible combinations
             List<List<string>> combinationsOfRegressors = new List<List<string>>();
-            GetCombinations(GetCorrelatedRegressors(thresholdCorrCoef), 0, new List<string>(), combinationsOfRegressors);
+            regressorsGrouping.GetRegressorsCombinations(regressorsGrouping.GetCorrelatedRegressors(thresholdCorrCoef, BaseRegressors),
+                                                         0, new List<string>(), combinationsOfRegressors);
+
             if (checkPairwiseCombinations.Checked) {
-                AddPairwiseCombinationsOfFactors(combinationsOfRegressors);
+                regressorsGrouping.AddPairwiseCombinationsOfFactors(combinationsOfRegressors);
             }
 
             // Fill all possible combinations for each model
-            ModelsForRegressants = CreateGroupsOfModels(combinationsOfRegressors);
+            ModelsForRegressants = regressorsGrouping.CreateGroupsOfModels(combinationsOfRegressors, Models);
 
             // Print regressors from all models for each regressant
             PrintGroupedRegressors(groupedRegressorsDataGrid);
@@ -627,133 +554,6 @@ namespace Multiple_Linear_Regression {
 
             // Enable accept button for grouping of regressors
             groupedRegressorsButton.Invoke(new Action<bool>((b) => groupedRegressorsButton.Enabled = b), true);
-        }
-
-        /// <summary>
-        /// Get all combinations of regressors
-        /// </summary>
-        /// <param name="groupedRegressors">List of group of regressors</param>
-        /// <param name="index">Index of group</param>
-        /// <param name="state">List for keeping combination</param>
-        /// <param name="result">Result that contains all possible combinations</param>
-        private void GetCombinations(List<List<string>> groupedRegressors, int index, List<string> state,
-            List<List<string>> result) {
-
-            if (index >= groupedRegressors.Count) {
-                result.Add(new List<string>(state));
-                return;
-            }
-            foreach(var item in groupedRegressors[index]) {
-                state.Add(item);
-                GetCombinations(groupedRegressors, index + 1, state, result);
-                state.RemoveAt(state.Count - 1);
-            }
-        }
-
-        /// <summary>
-        /// Find correlated regressors
-        /// </summary>
-        /// <param name="thresholdCorr">Threshold value for check correlation</param>
-        /// <returns>List with groups of correlated regressors</returns>
-        private List<List<string>> GetCorrelatedRegressors(double thresholdCorr) {
-            List<List<string>> corrRegressors = new List<List<string>>();
-            List<string> nonCombinedRegressors = OperationsWithModels.GetNonCombinedRegressors(BaseRegressors.Keys.ToList());
-            List<string> usedRegressors = new List<string>();
-
-            // Find groups of correlated regressors
-            for (int i = 0; i < nonCombinedRegressors.Count; i++) {
-                if (!usedRegressors.Contains(nonCombinedRegressors[i])) {
-                    List<string> corrRegressorsWithMain = new List<string>();
-                    corrRegressorsWithMain.Add(nonCombinedRegressors[i]);
-                    usedRegressors.Add(nonCombinedRegressors[i]);
-
-                    // Find regressors that correlate with main regressor
-                    for (int j = i + 1; j < nonCombinedRegressors.Count; j++) {
-                        if (Math.Abs(Statistics.PearsonCorrelationCoefficient(BaseRegressors[nonCombinedRegressors[i]],
-                            BaseRegressors[nonCombinedRegressors[j]])) > thresholdCorr) {
-
-                            usedRegressors.Add(nonCombinedRegressors[j]);
-                            corrRegressorsWithMain.Add(nonCombinedRegressors[j]);
-                        }
-                    }
-                    corrRegressors.Add(corrRegressorsWithMain);
-                }
-            }
-            return corrRegressors;
-        }
-
-        /// <summary>
-        /// Add pairwise combinations to every formed combination
-        /// </summary>
-        /// <param name="factorCombinations">Formed combinations</param>
-        private void AddPairwiseCombinationsOfFactors(List<List<string>> factorCombinations) {
-            // Get number of factors without pairwise combinations
-            int startFactorsNumber = factorCombinations[0].Count;
-
-            for (int combNum = 0; combNum < factorCombinations.Count; combNum++){
-                for (int i = 0; i < startFactorsNumber - 1; i++) {
-                    for (int j = i + 1; j < startFactorsNumber; j++) {
-                        factorCombinations[combNum].Add(factorCombinations[combNum][i] + " & "
-                            + factorCombinations[combNum][j]);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Create all possible models for each regressant
-        /// </summary>
-        /// <param name="combinationsOfRegressors">Combinations of regressors with values</param>
-        /// <returns>All possible models for each regressant</returns>
-        private Dictionary<string, List<Model>> CreateGroupsOfModels(List<List<string>> combinationsOfRegressors) {
-            Dictionary<string, List<Model>> groupsOfModels = new Dictionary<string, List<Model>>();
-
-            foreach (var model in Models) {
-                List<Model> variationOfRegressorsForRegressant = new List<Model>();
-
-                foreach (var combination in combinationsOfRegressors) {
-                    Model nextModel = new Model(model);
-                    nextModel.SetNewRegressors(GetRegressorsWithValues(model, combination));
-                    variationOfRegressorsForRegressant.Add(nextModel);
-                }
-                groupsOfModels[model.RegressantName] = variationOfRegressorsForRegressant;
-            }
-
-            return groupsOfModels;
-        }
-
-        /// <summary>
-        /// Get list of regressors from model with values
-        /// </summary>
-        /// <param name="model">Model</param>
-        /// <param name="regressors">List of regressors</param>
-        /// <returns>Regressors with values</returns>
-        private Dictionary<string, List<double>> GetRegressorsWithValues(Model model, List<string> regressors) {
-            Dictionary<string, List<double>> regressorsWithValues = new Dictionary<string, List<double>>();
-
-            foreach (var regressor in regressors) {
-
-                // Check if regressor name in models regressors else we switch parts of combine regressor
-                if (model.Regressors.ContainsKey(regressor)) {
-                    regressorsWithValues[regressor] = new List<double>(model.Regressors[regressor]);
-                }
-                else if (regressor.Contains(" & ")) {
-                    string regressorName = SwapPartsOfCombinedFactor(regressor);
-                    regressorsWithValues[regressorName] = new List<double>(model.Regressors[regressorName]);
-                }
-            }
-
-            return regressorsWithValues;
-        }
-
-        /// <summary>
-        /// Swap the factors that make up the combination of factors.
-        /// </summary>
-        /// <param name="factorName">Name of combination</param>
-        /// <returns>New combination name</returns>
-        private string SwapPartsOfCombinedFactor(string factorName) {
-            string[] combinedFactors = factorName.Split(new string[] { " & " }, StringSplitOptions.None);
-            return combinedFactors[1] + " & " + combinedFactors[0];
         }
 
         /// <summary>
@@ -767,32 +567,10 @@ namespace Multiple_Linear_Regression {
             foreach(var item in ModelsForRegressants) {
                 foreach(var model in item.Value) {
                     dataGrid.Invoke(new Action<List<string>>((row) => dataGrid.Rows.Add(row.ToArray())),
-                        new List<string>() { item.Key, String.Join(", ", GetRegressorsShortNamesFromModel(model).ToArray()) });
+                        new List<string>() { item.Key, 
+                                             String.Join(", ", OperationsWithModels.GetRegressorsShortNamesFromModel(model, RegressorsShortName).ToArray()) });
                 }
             }
-        }
-
-        /// <summary>
-        /// Get list of regressors in short form from model
-        /// </summary>
-        /// <param name="model">Model</param>
-        /// <returns>List of short-form regressors</returns>
-        private List<string> GetRegressorsShortNamesFromModel(Model model) {
-            List<string> shortRegressors = new List<string>();
-
-            // For each regressor in model we get its short form
-            foreach (var regressor in model.RegressorsNames) {
-                string nextRegressor = "";
-                if (RegressorsShortName.ContainsKey(regressor)) {
-                    nextRegressor = RegressorsShortName[regressor];
-                }
-                else if (regressor.Contains(" & ")) {
-                    nextRegressor = SwapPartsOfCombinedFactor(regressor);
-                }
-                shortRegressors.Add(nextRegressor);
-            }
-
-            return shortRegressors;
         }
 
         private void doFunctionalProcessGusevButton_Click(object sender, EventArgs e) {
@@ -970,10 +748,11 @@ namespace Multiple_Linear_Regression {
             else {
                 try {
                     if (classicWayRadio.Checked) {
-                        ClassicWayToFilterRegressors();
+                        filterRegressors.ClassicWayToFilterRegressors(ModelsForRegressants.Values.ToList());
                     }
                     else if (empWayRadio.Checked) {
-                        EmpiricalWayToFilterRegressors();
+                        filterRegressors.EmpiricalWayToFilterRegressors(Convert.ToDouble(valueEmpWayCorr.Value),
+                                                                        ModelsForRegressants.Values.ToList());
                     }
 
                     // Print grouped regressors for each regressant
@@ -989,35 +768,9 @@ namespace Multiple_Linear_Regression {
             }
         }
 
-        /// <summary>
-        /// Filter unimportant regressors by classic way
-        /// </summary>
-        private void ClassicWayToFilterRegressors() {
-            foreach (var listModels in ModelsForRegressants.Values) {
-                foreach (var model in listModels) {
-                    model.ClassicWayFilterRegressors();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Filter unimportant regressors by empirical way
-        /// </summary>
-        private void EmpiricalWayToFilterRegressors() {
-            double thresholdValueCorr = Convert.ToDouble(valueEmpWayCorr.Value);
-
-            foreach (var listModels in ModelsForRegressants.Values) {
-                foreach (var model in listModels) {
-                    model.EmpiricalWayFilterRegressors(thresholdValueCorr);
-                }
-            }
-        }
-
         private void cancelFilterFactorsButton_Click(object sender, EventArgs e) {
             // Restore non-filter regressors for each model for each regressant
-            foreach (var listModels in ModelsForRegressants.Values) {
-                listModels.ForEach(model => model.RestoreNonFilterRegressors());
-            }
+            filterRegressors.CancelFilteringRegressors(ModelsForRegressants.Values.ToList());
             cancelFilterFactorsButton.Enabled = false;
 
             // Print grouped regressors for each regressant
@@ -1095,7 +848,7 @@ namespace Multiple_Linear_Regression {
             foreach (var regressant in ModelsForRegressants.Keys) {
                 ModelsForRegressants[regressant].ForEach(model => model.BuildEquation(RegressorsShortName));
 
-                Model nextBestModel = FindBestModel(regressant);
+                Model nextBestModel = OperationsWithModels.FindBestModel(ModelsForRegressants[regressant], regressant);
 
                 BestModels.Add(nextBestModel);
 
@@ -1113,25 +866,6 @@ namespace Multiple_Linear_Regression {
                 // Fill prediction tab
                 FillPredictionTab();
             }
-        }
-
-        /// <summary>
-        /// Find the best model among the built models for regressant
-        /// </summary>
-        /// <param name="regressant">Regressant name</param>
-        /// <returns>Best model for regressant</returns>
-        private Model FindBestModel(string regressant) {
-            // Get list of built models for regressant
-            List<Model> listOfModels = new List<Model>(ModelsForRegressants[regressant]);
-
-            // Check if there are significant models
-            List<Model> significantModels = OperationsWithModels.GetSignificantModels(listOfModels);
-            if (significantModels.Count > 0) {
-                return OperationsWithModels.FindAdequateModelInSignificantModels(significantModels, regressant);
-            }
-
-            // If there are no significant models, we will look for adequate models that are closest to the significance
-            return OperationsWithModels.FindMostAdequateAndSignificantModel(listOfModels, regressant);
         }
 
         /// <summary>
@@ -1193,58 +927,10 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="regressorsValues">Dict with values for regressors</param>
         private void FillValuesInPredictTab(Dictionary<string, List<double>> regressorsValues) {
-            int numOfValues = regressorsValues[AllNotCombinedRegressorsNamesFromModels[0]].Count;
-
             Dictionary<string, Dictionary<string, List<double>>> modelsPredictionErrors = new Dictionary<string, Dictionary<string, List<double>>>();
-            foreach (var model in BestModels) {
-                modelsPredictionErrors[model.RegressantName] = new Dictionary<string, List<double>>();
-                modelsPredictionErrors[model.RegressantName]["MAPE"] = new List<double>();
-                modelsPredictionErrors[model.RegressantName]["MinMax"] = new List<double>();
-                modelsPredictionErrors[model.RegressantName]["AbsError"] = new List<double>();
-                modelsPredictionErrors[model.RegressantName]["MaxError"] = new List<double>();
-                modelsPredictionErrors[model.RegressantName]["MinError"] = new List<double>();
-            }
+            List<List<string>> allRows = OperationsWithModels.GetErrorsOfModelsForPrediction(BestModels, regressorsValues, modelsPredictionErrors);
 
-            // Find min and max in all models
-            Dictionary<string, (double, double)> minMaxModel = GetMinMaxValuesForRegressants(BestModels);
-
-            // Fill real/predict values in data grid view
-            for (int i = 0; i < numOfValues; i++) {
-                List<string> nextRow = new List<string>();
-                
-                // Add regressors values to row
-                foreach(var regressor in regressorsValues) {
-                    nextRow.Add(Math.Round(regressor.Value[i], 2).ToString());
-                }
-
-                // Add regressant values to row
-                foreach (var model in BestModels) {
-                    nextRow.Add(Math.Round(model.RegressantValues[i], 2).ToString());
-                    nextRow.Add(Math.Round(model.PredictedValues[i], 2).ToString());
-
-                    // Calc all errors for regressant
-                    double mapeError = Statistics.PredictError(model.RegressantValues[i], model.PredictedValues[i]);
-                    double minMaxError = Statistics.RangeError(model.RegressantValues[i], model.PredictedValues[i],
-                        minMaxModel[model.RegressantName].Item1, minMaxModel[model.RegressantName].Item2);
-                    double absoluteError = Statistics.AbsoluteError(model.RegressantValues[i], model.PredictedValues[i]);
-                    double maxPercentError = Statistics.MaxPercentError(model.RegressantValues[i], model.PredictedValues[i],
-                        minMaxModel[model.RegressantName].Item2);
-                    double minPercentError = Statistics.MinPercentError(model.RegressantValues[i], model.PredictedValues[i],
-                        minMaxModel[model.RegressantName].Item1);
-
-                    // Add all error to next row
-                    nextRow.Add(Math.Round(mapeError, 2).ToString());
-                    nextRow.Add(Math.Round(minMaxError, 2).ToString());
-                    nextRow.Add(Math.Round(absoluteError, 2).ToString());
-                    nextRow.Add(Math.Round(maxPercentError, 2).ToString());
-                    nextRow.Add(Math.Round(minPercentError, 2).ToString());
-
-                    modelsPredictionErrors[model.RegressantName]["MAPE"].Add(mapeError);
-                    modelsPredictionErrors[model.RegressantName]["MinMax"].Add(minMaxError);
-                    modelsPredictionErrors[model.RegressantName]["AbsError"].Add(absoluteError);
-                    modelsPredictionErrors[model.RegressantName]["MaxError"].Add(maxPercentError);
-                    modelsPredictionErrors[model.RegressantName]["MinError"].Add(minPercentError);
-                }
+            foreach (var nextRow in allRows) {
                 realPredictValuesDataGrid.Invoke(new Action<List<string>>((row) => realPredictValuesDataGrid.Rows.Add(row.ToArray())),
                     nextRow);
             }
@@ -1261,22 +947,6 @@ namespace Multiple_Linear_Regression {
                         Math.Round(regressantErrors.Value["MinError"].Average(), 2).ToString()
                     });
             }
-        }
-
-        /// <summary>
-        /// Get min and max values for each regressant in models
-        /// </summary>
-        /// <param name="models">List of models</param>
-        /// <returns>Dicitonary with min and max values</returns>
-        private Dictionary<string, (double, double)> GetMinMaxValuesForRegressants(List<Model> models) {
-            Dictionary<string, (double, double)> minMaxModel = new Dictionary<string, (double, double)>();
-
-            // Find min and max values of regressant for each model
-            foreach (var model in models) {
-                minMaxModel[model.RegressantName] = (model.RegressantValues.Min(), model.RegressantValues.Max());
-            }
-
-            return minMaxModel;
         }
 
         private void acceptControlsParametersButton_Click(object sender, EventArgs e) {
@@ -1341,8 +1011,6 @@ namespace Multiple_Linear_Regression {
                     FileRegressors fileRegressorsForm = new FileRegressors(AllRegressorsNamesFromModels, BestModels,
                         allRows, "Прогнозирование", StepsInfo.PredictRegressorsFromFile);
                     fileRegressorsForm.ShowDialog();
-
-                    //LoadFactorsForPredict();
                 }
             }
             catch (Exception ex) {

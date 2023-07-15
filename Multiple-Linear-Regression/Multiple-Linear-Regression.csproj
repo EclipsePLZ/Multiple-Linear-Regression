@@ -110,12 +110,15 @@
     <Compile Include="Forms\FileRegressors.Designer.cs">
       <DependentUpon>FileRegressors.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FilterRegressors.cs" />
+    <Compile Include="Forms\LoadDataStep.cs" />
     <Compile Include="Forms\PredictionParametersForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\PredictionParametersForm.Designer.cs">
       <DependentUpon>PredictionParametersForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\RegressorsGrouping.cs" />
     <Compile Include="Mathematic\Algebra.cs" />
     <Compile Include="Forms\ExitForm.cs">
       <SubType>Form</SubType>
@@ -144,7 +147,7 @@
       <DependentUpon>SelectParametersForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Operations\OperationsWithModels.cs" />
-    <Compile Include="SimulationControl.cs" />
+    <Compile Include="Forms\SimulationControl.cs" />
     <Compile Include="Work-With-Files\DefaultDialogService.cs" />
     <Compile Include="Work-With-Files\ExcelFileService.cs" />
     <Compile Include="Forms\Form1.cs">

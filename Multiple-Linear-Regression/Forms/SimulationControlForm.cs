@@ -24,8 +24,6 @@ namespace Multiple_Linear_Regression.Forms {
 
         private Dictionary<string, double> AllRegressors { get; set; }
 
-        private Dictionary<string, double> StartRegressors { get; set; }
-
         private Dictionary<string, List<double>> SelectedStartRegressors { get; set; }
 
         private Dictionary<string, Dictionary<string, Dictionary<string, double>>> RegressorsImpact { get; set; }
@@ -96,8 +94,6 @@ namespace Multiple_Linear_Regression.Forms {
 
             helpImitationContorl.ToolTipText = StepsInfo.ImitationOfControlForm;
             loadDataFileMenu.ToolTipText = StepsInfo.ImitationRegressorControlOpenFile;
-
-            StartRegressors = new Dictionary<string, double>(AllRegressors);
 
             if (NumberGroupOfCorrelatedRegressors == 0) {
                 NumberGroupOfCorrelatedRegressors = simulationControl.CalcNumberGroupOfCorrelatedRegressors(AllRegressors.Count);
