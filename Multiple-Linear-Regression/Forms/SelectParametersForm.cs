@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Multiple_Linear_Regression {
@@ -53,20 +50,8 @@ namespace Multiple_Linear_Regression {
         /// <param name="fromList">The list from which we move the item</param>
         /// <param name="toList">The list to which we move the item</param>
         private void MoveItemBetweenLists(ListBox fromList, ListBox toList) {
-            if (fromList.SelectedItems.Count == 1) {
-                int selectedIndex = fromList.SelectedIndex;
-                toList.Items.Add(fromList.SelectedItem);
-                fromList.Items.Remove(fromList.SelectedItem);
-                if (fromList.Items.Count > 0) {
-                    if (selectedIndex < fromList.Items.Count) {
-                        fromList.SelectedIndex = selectedIndex;
-                    }
-                    else {
-                        fromList.SelectedIndex = selectedIndex - 1;
-                    }
-                }
-                CheckRulesForAcceptParamters();
-            }
+            OperationsWithControls.MoveModelBetweenLists(fromList, toList);
+            CheckRulesForAcceptParamters();
         }
 
         private void allToSelectList_Click(object sender, EventArgs e) {
@@ -84,8 +69,7 @@ namespace Multiple_Linear_Regression {
         /// <param name="toList">The list to which we move the items</param>
         private void MoveAllItemsBetweenLists(ListBox fromList, ListBox toList) {
             if (fromList.Items.Count > 0) {
-                toList.Items.AddRange(fromList.Items);
-                fromList.Items.Clear();
+                OperationsWithControls.MoveAllItemsBetweenLists(fromList, toList);
                 CheckRulesForAcceptParamters();
             }
         }

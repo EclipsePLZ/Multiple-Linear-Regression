@@ -31,6 +31,8 @@
             this.helpAllSteps = new System.Windows.Forms.ToolStripMenuItem();
             this.allTabs = new System.Windows.Forms.TabControl();
             this.loadDataTab = new System.Windows.Forms.TabPage();
+            this.labelFindingBestModelEnd = new System.Windows.Forms.Label();
+            this.labelFindingBestModel = new System.Windows.Forms.Label();
             this.groupTaskType = new System.Windows.Forms.GroupBox();
             this.radioPredictionTask = new System.Windows.Forms.RadioButton();
             this.radioControlTask = new System.Windows.Forms.RadioButton();
@@ -116,8 +118,6 @@
             this.toolTipSymbiosis = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipAutoProportion = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipPercentAreaExpansion = new System.Windows.Forms.ToolTip(this.components);
-            this.labelFindingBestModelEnd = new System.Windows.Forms.Label();
-            this.labelFindingBestModel = new System.Windows.Forms.Label();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             this.groupTaskType.SuspendLayout();
@@ -210,6 +210,26 @@
             this.loadDataTab.TabIndex = 0;
             this.loadDataTab.Text = "Загрузка данных";
             this.loadDataTab.UseVisualStyleBackColor = true;
+            // 
+            // labelFindingBestModelEnd
+            // 
+            this.labelFindingBestModelEnd.AutoSize = true;
+            this.labelFindingBestModelEnd.Location = new System.Drawing.Point(652, 370);
+            this.labelFindingBestModelEnd.Name = "labelFindingBestModelEnd";
+            this.labelFindingBestModelEnd.Size = new System.Drawing.Size(133, 13);
+            this.labelFindingBestModelEnd.TabIndex = 19;
+            this.labelFindingBestModelEnd.Text = "Лучшие модели найдены";
+            this.labelFindingBestModelEnd.Visible = false;
+            // 
+            // labelFindingBestModel
+            // 
+            this.labelFindingBestModel.AutoSize = true;
+            this.labelFindingBestModel.Location = new System.Drawing.Point(651, 370);
+            this.labelFindingBestModel.Name = "labelFindingBestModel";
+            this.labelFindingBestModel.Size = new System.Drawing.Size(155, 13);
+            this.labelFindingBestModel.TabIndex = 18;
+            this.labelFindingBestModel.Text = "Нахождение лучших моделей";
+            this.labelFindingBestModel.Visible = false;
             // 
             // groupTaskType
             // 
@@ -1185,26 +1205,6 @@
             this.labelRegressorsList.Size = new System.Drawing.Size(131, 13);
             this.labelRegressorsList.TabIndex = 8;
             this.labelRegressorsList.Text = "Управляющие факторы:";
-            // 
-            // labelFindingBestModelEnd
-            // 
-            this.labelFindingBestModelEnd.AutoSize = true;
-            this.labelFindingBestModelEnd.Location = new System.Drawing.Point(652, 370);
-            this.labelFindingBestModelEnd.Name = "labelFindingBestModelEnd";
-            this.labelFindingBestModelEnd.Size = new System.Drawing.Size(133, 13);
-            this.labelFindingBestModelEnd.TabIndex = 19;
-            this.labelFindingBestModelEnd.Text = "Лучшие модели найдены";
-            this.labelFindingBestModelEnd.Visible = false;
-            // 
-            // labelFindingBestModel
-            // 
-            this.labelFindingBestModel.AutoSize = true;
-            this.labelFindingBestModel.Location = new System.Drawing.Point(651, 370);
-            this.labelFindingBestModel.Name = "labelFindingBestModel";
-            this.labelFindingBestModel.Size = new System.Drawing.Size(155, 13);
-            this.labelFindingBestModel.TabIndex = 18;
-            this.labelFindingBestModel.Text = "Нахождение лучших моделей";
-            this.labelFindingBestModel.Visible = false;
             // 
             // MainForm
             // 

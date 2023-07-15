@@ -3,11 +3,7 @@ using Multiple_Linear_Regression.Work_WIth_Files.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Multiple_Linear_Regression.Forms {
@@ -15,7 +11,9 @@ namespace Multiple_Linear_Regression.Forms {
         IFileService fileService;
         IDialogService dialogService;
 
-        private List<List<string>> AllRows { get; set; }
+        private List<List<string>> AllRows { get; }
+        private List<string> RegressorsNames { get; }
+        private List<Model> Models { get; }
 
         private BackgroundWorker resizeWorker = new BackgroundWorker();
 
@@ -27,8 +25,12 @@ namespace Multiple_Linear_Regression.Forms {
 
         private const int SIZE_DIFF_GV_FORM_HEIGHT = 99;
 
-        public FileRegressors(List<List<string>> rows, string formName, string infoForForm) {
-            AllRows = new List<List<string>>(rows);
+        public FileRegressors(List<string> regressorsNames, List<Model> models, List<List<string>> allRows,
+                              string formName, string infoForForm) {
+
+            RegressorsNames = new List<string>(regressorsNames);
+            Models = new List<Model>(models);
+            AllRows = new List<List<string>>(allRows);
 
             fileService = new ExcelFileService();
             dialogService = new DefaultDialogService();
@@ -49,48 +51,64 @@ namespace Multiple_Linear_Regression.Forms {
         }
 
         /// <summary>
-        /// Set rows into data grid
+        /// Set predicted values for regressors into the data grid
         /// </summary>
         private void StartSetRows() {
+            // Create headers row
+            List<string> headers = new List<string>(RegressorsNames);
+            foreach (var model in Models) {
+                headers.Add(model.RegressantName);
+            }
+
             // Set header
-            SetDataGVColumnHeaders(AllRows[0], regressorsFromFileDataGrid, false);
+            OperationsWithControls.SetDataGVColumnHeaders(headers, regressorsFromFileDataGrid, false);
 
-            // Set all other rows
-            for (int i = 1; i < AllRows.Count; i++) { 
-                regressorsFromFileDataGrid.Rows.Add(AllRows[i].ToArray());
-            }
-        }
+            Dictionary<string, List<double>> allRegressors = new Dictionary<string, List<double>>();
 
-        /// <summary>
-        /// Set column headers and column settings to dataGV
-        /// </summary>
-        /// <param name="headers">List of column headers</param>
-        /// <param name="dataGV">DataGridView</param>
-        /// <param name="autoSize">AutoSize column width</param>
-        /// <param name="indexOfSortableColumns">List of indexes of sortable columns</param>
-        /// <param name="indexOfModifiableColumns">List of indexes of modifiable columns</param>
-        private void SetDataGVColumnHeaders(List<string> headers, DataGridView dataGV, bool autoSize,
-            List<int> indexOfSortableColumns = null, List<int> indexOfModifiableColumns = null) {
-            dataGV.ColumnCount = headers.Count;
-            for (int i = 0; i < dataGV.Columns.Count; i++) {
-                dataGV.Columns[i].HeaderText = headers[i];
-                dataGV.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGV.Columns[i].ReadOnly = true;
-                if (autoSize) {
-                    dataGV.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            // Fill all regressors values from input data
+            for (int col = 0; col < AllRows[0].Count; col++) {
+                string regressorName = AllRows[0][col];
+                allRegressors.Add(regressorName, new List<double>());
+
+                for (int row = 1; row < AllRows.Count; row++) {
+                    allRegressors[regressorName].Add(Convert.ToDouble(AllRows[row][col]));
                 }
             }
-            if (indexOfSortableColumns != null) {
-                foreach (var index in indexOfSortableColumns) {
-                    dataGV.Columns[index].SortMode = DataGridViewColumnSortMode.Automatic;
+
+            // Find predict for each row of regressors from file
+            for (int row = 0; row < AllRows.Count - 1; row++) {
+                List<string> nextRow = new List<string>();
+                Dictionary<string, double> regressorsRowValues = new Dictionary<string, double>();
+
+                foreach (var regressorName in RegressorsNames) {
+                    double value = 0;
+
+                    // If it's pairwise factor the multiply the factors
+                    if (regressorName.Contains(" & ")) {
+                        string[] pairwiseRegressors = regressorName.Split(new string[] { " & " }, StringSplitOptions.None);
+                        double factor1 = allRegressors[pairwiseRegressors[0]][row];
+                        double factor2 = allRegressors[pairwiseRegressors[1]][row];
+                        value = factor1 * factor2;
+                    }
+                    else {
+                        value = allRegressors[regressorName][row];
+                    }
+
+                    regressorsRowValues.Add(regressorName, value);
                 }
-            }
-            if (indexOfModifiableColumns != null) {
-                foreach (var index in indexOfModifiableColumns) {
-                    dataGV.Columns[index].ReadOnly = false;
+
+                // Add regressors value to the next row
+                foreach (var regressorValue in regressorsRowValues.Values) {
+                    nextRow.Add(Math.Round(regressorValue, 2).ToString());
                 }
+
+                // For each model add regressant value to the next row
+                foreach (var model in Models) {
+                    nextRow.Add(Math.Round(OperationsWithModels.CalcModelValue(model, regressorsRowValues), 2).ToString());
+                }
+
+                regressorsFromFileDataGrid.Rows.Add(nextRow.ToArray());
             }
-            dataGV.ColumnHeadersVisible = true;
         }
 
         private void saveAsDataFileMenu_Click(object sender, EventArgs e) {
