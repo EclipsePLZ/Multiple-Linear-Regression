@@ -30,7 +30,7 @@ This step uses the functions proposed by Okunev in his dissertation.
 ![Обработка_статистических_данных_Окунев](https://github.com/EclipsePLZ/Multiple-Linear-Regression/assets/84061271/2067c307-4d2a-40c9-93fc-8434376332b5)
 
 ## Forming sets of control factors
-This step is optional.
+This step is mandatory.
 At this step, the regressors whose correlation coefficient exceeds the threshold (set programmatically) are divided into groups. Next, all possible groups of uncorrelated regressors are formed from these groups and then the most appropriate group of control variables is selected for each regressant (selection is based on the calculation of the adjusted coefficient of determination).
 
 ![Формирование_наборов_управляющих_факторов](https://github.com/EclipsePLZ/Multiple-Linear-Regression/assets/84061271/6115650d-527c-476d-b676-55ebc9b42c45)
