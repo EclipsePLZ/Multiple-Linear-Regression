@@ -7,6 +7,8 @@ namespace Multiple_Linear_Regression.Forms {
 
         public UserWarningForm(string message) {
             InitializeComponent();
+            labelWarning.Anchor = AnchorStyles.Top;
+            labelWarning.Margin = new Padding(20, 5, 5, 5);
             labelWarning.Text = message;
             this.CenterToScreen();
         }

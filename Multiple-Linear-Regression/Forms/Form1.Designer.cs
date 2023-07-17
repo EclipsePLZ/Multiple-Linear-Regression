@@ -38,7 +38,6 @@
             this.toolTipAutoProportion = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipPercentAreaExpansion = new System.Windows.Forms.ToolTip(this.components);
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.regressantsList = new System.Windows.Forms.ListBox();
             this.labelregressantsList = new System.Windows.Forms.Label();
             this.regressorsList = new System.Windows.Forms.ListBox();
@@ -131,12 +130,16 @@
             this.tableLayoutPanel15 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel16 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel17 = new System.Windows.Forms.TableLayoutPanel();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.tableLayoutPanel18 = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanel19 = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanel20 = new System.Windows.Forms.TableLayoutPanel();
+            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.menuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            this.tableLayoutPanel5.SuspendLayout();
             this.allTabs.SuspendLayout();
             this.loadDataTab.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -181,6 +184,17 @@
             this.tableLayoutPanel15.SuspendLayout();
             this.tableLayoutPanel16.SuspendLayout();
             this.tableLayoutPanel17.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
+            this.tableLayoutPanel18.SuspendLayout();
+            this.tableLayoutPanel19.SuspendLayout();
+            this.tableLayoutPanel20.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
+            this.splitContainer3.Panel1.SuspendLayout();
+            this.splitContainer3.Panel2.SuspendLayout();
+            this.splitContainer3.SuspendLayout();
             this.SuspendLayout();
             // 
             // WorkFileMenuItem
@@ -259,50 +273,31 @@
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.tableLayoutPanel5);
+            this.splitContainer1.Panel1.Controls.Add(this.splitContainer3);
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.allTabs);
             this.splitContainer1.Size = new System.Drawing.Size(1124, 550);
             this.splitContainer1.SplitterDistance = 202;
-            this.splitContainer1.SplitterWidth = 10;
+            this.splitContainer1.SplitterWidth = 8;
             this.splitContainer1.TabIndex = 10;
-            // 
-            // tableLayoutPanel5
-            // 
-            this.tableLayoutPanel5.ColumnCount = 1;
-            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel5.Controls.Add(this.regressantsList, 0, 1);
-            this.tableLayoutPanel5.Controls.Add(this.labelregressantsList, 0, 0);
-            this.tableLayoutPanel5.Controls.Add(this.regressorsList, 0, 3);
-            this.tableLayoutPanel5.Controls.Add(this.labelRegressorsList, 0, 2);
-            this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel5.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel5.Name = "tableLayoutPanel5";
-            this.tableLayoutPanel5.RowCount = 4;
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel5.Size = new System.Drawing.Size(202, 550);
-            this.tableLayoutPanel5.TabIndex = 11;
             // 
             // regressantsList
             // 
-            this.regressantsList.Dock = System.Windows.Forms.DockStyle.Top;
+            this.regressantsList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.regressantsList.FormattingEnabled = true;
             this.regressantsList.HorizontalScrollbar = true;
-            this.regressantsList.Location = new System.Drawing.Point(3, 33);
+            this.regressantsList.Location = new System.Drawing.Point(3, 23);
             this.regressantsList.Name = "regressantsList";
-            this.regressantsList.Size = new System.Drawing.Size(198, 108);
+            this.regressantsList.Size = new System.Drawing.Size(196, 86);
             this.regressantsList.TabIndex = 5;
             // 
             // labelregressantsList
             // 
             this.labelregressantsList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.labelregressantsList.AutoSize = true;
-            this.labelregressantsList.Location = new System.Drawing.Point(3, 17);
+            this.labelregressantsList.Location = new System.Drawing.Point(3, 7);
             this.labelregressantsList.Name = "labelregressantsList";
             this.labelregressantsList.Size = new System.Drawing.Size(130, 13);
             this.labelregressantsList.TabIndex = 6;
@@ -313,16 +308,17 @@
             this.regressorsList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.regressorsList.FormattingEnabled = true;
             this.regressorsList.HorizontalScrollbar = true;
-            this.regressorsList.Location = new System.Drawing.Point(3, 177);
+            this.regressorsList.Location = new System.Drawing.Point(3, 23);
+            this.regressorsList.Margin = new System.Windows.Forms.Padding(3, 3, 3, 30);
             this.regressorsList.Name = "regressorsList";
-            this.regressorsList.Size = new System.Drawing.Size(198, 370);
+            this.regressorsList.Size = new System.Drawing.Size(198, 377);
             this.regressorsList.TabIndex = 7;
             // 
             // labelRegressorsList
             // 
             this.labelRegressorsList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.labelRegressorsList.AutoSize = true;
-            this.labelRegressorsList.Location = new System.Drawing.Point(3, 161);
+            this.labelRegressorsList.Location = new System.Drawing.Point(3, 7);
             this.labelRegressorsList.Name = "labelRegressorsList";
             this.labelRegressorsList.Size = new System.Drawing.Size(131, 13);
             this.labelRegressorsList.TabIndex = 8;
@@ -342,7 +338,7 @@
             this.allTabs.Location = new System.Drawing.Point(0, 0);
             this.allTabs.Name = "allTabs";
             this.allTabs.SelectedIndex = 0;
-            this.allTabs.Size = new System.Drawing.Size(912, 550);
+            this.allTabs.Size = new System.Drawing.Size(914, 550);
             this.allTabs.TabIndex = 4;
             // 
             // loadDataTab
@@ -991,7 +987,7 @@
             this.controlSimulationTab.Controls.Add(this.tableLayoutPanel17);
             this.controlSimulationTab.Location = new System.Drawing.Point(4, 22);
             this.controlSimulationTab.Name = "controlSimulationTab";
-            this.controlSimulationTab.Size = new System.Drawing.Size(904, 524);
+            this.controlSimulationTab.Size = new System.Drawing.Size(909, 524);
             this.controlSimulationTab.TabIndex = 4;
             this.controlSimulationTab.Text = "Имитация управления";
             this.controlSimulationTab.UseVisualStyleBackColor = true;
@@ -1287,25 +1283,26 @@
             // 
             // predictionTab
             // 
-            this.predictionTab.Controls.Add(this.loadDataForPredictButton);
-            this.predictionTab.Controls.Add(this.predictionMetricsDataGrid);
-            this.predictionTab.Controls.Add(this.realPredictValuesDataGrid);
+            this.predictionTab.Controls.Add(this.tableLayoutPanel18);
             this.predictionTab.Location = new System.Drawing.Point(4, 22);
             this.predictionTab.Name = "predictionTab";
-            this.predictionTab.Size = new System.Drawing.Size(904, 524);
+            this.predictionTab.Size = new System.Drawing.Size(906, 524);
             this.predictionTab.TabIndex = 7;
             this.predictionTab.Text = "Прогнозирование";
             this.predictionTab.UseVisualStyleBackColor = true;
             // 
             // loadDataForPredictButton
             // 
+            this.loadDataForPredictButton.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.loadDataForPredictButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.loadDataForPredictButton.Location = new System.Drawing.Point(669, 55);
+            this.loadDataForPredictButton.Location = new System.Drawing.Point(752, 50);
+            this.loadDataForPredictButton.Margin = new System.Windows.Forms.Padding(30, 50, 30, 3);
             this.loadDataForPredictButton.Name = "loadDataForPredictButton";
             this.loadDataForPredictButton.Size = new System.Drawing.Size(124, 66);
             this.loadDataForPredictButton.TabIndex = 15;
             this.loadDataForPredictButton.Text = "Загрузить данные для прогноза";
             this.loadDataForPredictButton.UseVisualStyleBackColor = true;
+            this.loadDataForPredictButton.Click += new System.EventHandler(this.loadDataForPredictButton_Click);
             // 
             // predictionMetricsDataGrid
             // 
@@ -1313,11 +1310,12 @@
             this.predictionMetricsDataGrid.AllowUserToDeleteRows = false;
             this.predictionMetricsDataGrid.AllowUserToResizeRows = false;
             this.predictionMetricsDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.predictionMetricsDataGrid.Location = new System.Drawing.Point(3, 236);
+            this.predictionMetricsDataGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.predictionMetricsDataGrid.Location = new System.Drawing.Point(0, 0);
             this.predictionMetricsDataGrid.Name = "predictionMetricsDataGrid";
             this.predictionMetricsDataGrid.ReadOnly = true;
             this.predictionMetricsDataGrid.RowHeadersWidth = 51;
-            this.predictionMetricsDataGrid.Size = new System.Drawing.Size(632, 151);
+            this.predictionMetricsDataGrid.Size = new System.Drawing.Size(716, 152);
             this.predictionMetricsDataGrid.TabIndex = 14;
             // 
             // realPredictValuesDataGrid
@@ -1326,11 +1324,12 @@
             this.realPredictValuesDataGrid.AllowUserToDeleteRows = false;
             this.realPredictValuesDataGrid.AllowUserToResizeRows = false;
             this.realPredictValuesDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.realPredictValuesDataGrid.Location = new System.Drawing.Point(3, 3);
+            this.realPredictValuesDataGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.realPredictValuesDataGrid.Location = new System.Drawing.Point(0, 0);
             this.realPredictValuesDataGrid.Name = "realPredictValuesDataGrid";
             this.realPredictValuesDataGrid.ReadOnly = true;
             this.realPredictValuesDataGrid.RowHeadersWidth = 51;
-            this.realPredictValuesDataGrid.Size = new System.Drawing.Size(632, 227);
+            this.realPredictValuesDataGrid.Size = new System.Drawing.Size(716, 358);
             this.realPredictValuesDataGrid.TabIndex = 13;
             // 
             // tableLayoutPanel3
@@ -1499,8 +1498,91 @@
             this.tableLayoutPanel17.RowCount = 2;
             this.tableLayoutPanel17.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel17.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel17.Size = new System.Drawing.Size(904, 524);
+            this.tableLayoutPanel17.Size = new System.Drawing.Size(909, 524);
             this.tableLayoutPanel17.TabIndex = 27;
+            // 
+            // splitContainer2
+            // 
+            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer2.Location = new System.Drawing.Point(3, 3);
+            this.splitContainer2.Name = "splitContainer2";
+            this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.realPredictValuesDataGrid);
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.predictionMetricsDataGrid);
+            this.splitContainer2.Size = new System.Drawing.Size(716, 518);
+            this.splitContainer2.SplitterDistance = 358;
+            this.splitContainer2.SplitterWidth = 8;
+            this.splitContainer2.TabIndex = 16;
+            // 
+            // tableLayoutPanel18
+            // 
+            this.tableLayoutPanel18.ColumnCount = 2;
+            this.tableLayoutPanel18.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel18.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel18.Controls.Add(this.splitContainer2, 0, 0);
+            this.tableLayoutPanel18.Controls.Add(this.loadDataForPredictButton, 1, 0);
+            this.tableLayoutPanel18.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel18.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel18.Name = "tableLayoutPanel18";
+            this.tableLayoutPanel18.RowCount = 1;
+            this.tableLayoutPanel18.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel18.Size = new System.Drawing.Size(906, 524);
+            this.tableLayoutPanel18.TabIndex = 17;
+            // 
+            // tableLayoutPanel19
+            // 
+            this.tableLayoutPanel19.ColumnCount = 1;
+            this.tableLayoutPanel19.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel19.Controls.Add(this.regressantsList, 0, 1);
+            this.tableLayoutPanel19.Controls.Add(this.labelregressantsList, 0, 0);
+            this.tableLayoutPanel19.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel19.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel19.Name = "tableLayoutPanel19";
+            this.tableLayoutPanel19.RowCount = 2;
+            this.tableLayoutPanel19.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel19.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel19.Size = new System.Drawing.Size(202, 112);
+            this.tableLayoutPanel19.TabIndex = 14;
+            // 
+            // tableLayoutPanel20
+            // 
+            this.tableLayoutPanel20.ColumnCount = 1;
+            this.tableLayoutPanel20.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel20.Controls.Add(this.regressorsList, 0, 1);
+            this.tableLayoutPanel20.Controls.Add(this.labelRegressorsList, 0, 0);
+            this.tableLayoutPanel20.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel20.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel20.Name = "tableLayoutPanel20";
+            this.tableLayoutPanel20.RowCount = 2;
+            this.tableLayoutPanel20.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel20.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel20.Size = new System.Drawing.Size(202, 430);
+            this.tableLayoutPanel20.TabIndex = 15;
+            // 
+            // splitContainer3
+            // 
+            this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer3.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer3.Name = "splitContainer3";
+            this.splitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer3.Panel1
+            // 
+            this.splitContainer3.Panel1.Controls.Add(this.tableLayoutPanel19);
+            // 
+            // splitContainer3.Panel2
+            // 
+            this.splitContainer3.Panel2.Controls.Add(this.tableLayoutPanel20);
+            this.splitContainer3.Size = new System.Drawing.Size(202, 550);
+            this.splitContainer3.SplitterDistance = 112;
+            this.splitContainer3.SplitterWidth = 8;
+            this.splitContainer3.TabIndex = 0;
             // 
             // MainForm
             // 
@@ -1519,8 +1601,6 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            this.tableLayoutPanel5.ResumeLayout(false);
-            this.tableLayoutPanel5.PerformLayout();
             this.allTabs.ResumeLayout(false);
             this.loadDataTab.ResumeLayout(false);
             this.loadDataTab.PerformLayout();
@@ -1581,6 +1661,19 @@
             this.tableLayoutPanel16.ResumeLayout(false);
             this.tableLayoutPanel17.ResumeLayout(false);
             this.tableLayoutPanel17.PerformLayout();
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
+            this.tableLayoutPanel18.ResumeLayout(false);
+            this.tableLayoutPanel19.ResumeLayout(false);
+            this.tableLayoutPanel19.PerformLayout();
+            this.tableLayoutPanel20.ResumeLayout(false);
+            this.tableLayoutPanel20.PerformLayout();
+            this.splitContainer3.Panel1.ResumeLayout(false);
+            this.splitContainer3.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
+            this.splitContainer3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1600,7 +1693,6 @@
         private System.Windows.Forms.ToolTip toolTipAutoProportion;
         private System.Windows.Forms.ToolTip toolTipPercentAreaExpansion;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
         private System.Windows.Forms.ListBox regressantsList;
         private System.Windows.Forms.Label labelregressantsList;
         private System.Windows.Forms.ListBox regressorsList;
@@ -1693,6 +1785,11 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel14;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel15;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel16;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel18;
+        private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.SplitContainer splitContainer3;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel19;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel20;
     }
 }
 

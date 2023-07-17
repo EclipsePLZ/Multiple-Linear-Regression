@@ -15,15 +15,7 @@ namespace Multiple_Linear_Regression.Forms {
         private List<string> RegressorsNames { get; }
         private List<Model> Models { get; }
 
-        private BackgroundWorker resizeWorker = new BackgroundWorker();
-
-        private bool isResizeNeeded = false;
-
         private bool isSaved = false;
-
-        private const int SIZE_DIFF_GV_FORM_WIDTH = 42;
-
-        private const int SIZE_DIFF_GV_FORM_HEIGHT = 99;
 
         public FileRegressors(List<string> regressorsNames, List<Model> models, List<List<string>> allRows,
                               string formName, string infoForForm) {
@@ -43,11 +35,6 @@ namespace Multiple_Linear_Regression.Forms {
             StartSetRows();
             helpImitationContorl.ToolTipText = infoForForm;
             saveAsDataFileMenu.ToolTipText = StepsInfo.SaveImitationResults;
-
-            // Run background worker for resizing components on form
-            resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
-            resizeWorker.WorkerSupportsCancellation = true;
-            resizeWorker.RunWorkerAsync();
         }
 
         /// <summary>
@@ -129,53 +116,18 @@ namespace Multiple_Linear_Regression.Forms {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void FileRegressors_FormClosing(object sender, FormClosingEventArgs e) {
-            if (isSaved) {
-                resizeWorker.CancelAsync();
-            }
-            else {
+            if (!isSaved) {
                 UserWarningForm acceptForm = new UserWarningForm(StepsInfo.UserWarningFormClosingRegressorsFromFile);
                 acceptForm.ShowDialog();
 
-                if (acceptForm.AcceptAction) {
-                    resizeWorker.CancelAsync();
-                }
-                else {
+                if (!acceptForm.AcceptAction) {
                     e.Cancel = true;
                 }
             }
         }
 
-        private void FileRegressors_Resize(object sender, EventArgs e) {
-            isResizeNeeded = true;
-        }
-
         private void exitFormMenuItem_Click(object sender, EventArgs e) {
             this.Close();
-        }
-
-        /// <summary>
-        /// Resize all form components
-        /// </summary>
-        private void DoResizeComponents(object sender, DoWorkEventArgs e) {
-            // Check if resizeWorker has been stopped
-            if (resizeWorker.CancellationPending) {
-                e.Cancel = true;
-            }
-            else {
-                while (true) {
-                    System.Threading.Thread.Sleep(50);
-                    if (isResizeNeeded) {
-                        int formWidth = this.Width;
-                        int formHeight = this.Height;
-
-                        regressorsFromFileDataGrid.Invoke(new Action<Size>((size) => regressorsFromFileDataGrid.Size = size),
-                            new Size(formWidth - SIZE_DIFF_GV_FORM_WIDTH, formHeight - SIZE_DIFF_GV_FORM_HEIGHT));
-
-
-                        isResizeNeeded = false;
-                    }
-                }
-            }
         }
     }
 }
