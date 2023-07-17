@@ -349,7 +349,7 @@
             this.loadDataTab.Location = new System.Drawing.Point(4, 22);
             this.loadDataTab.Name = "loadDataTab";
             this.loadDataTab.Padding = new System.Windows.Forms.Padding(3);
-            this.loadDataTab.Size = new System.Drawing.Size(904, 524);
+            this.loadDataTab.Size = new System.Drawing.Size(906, 524);
             this.loadDataTab.TabIndex = 0;
             this.loadDataTab.Text = "Загрузка данных";
             this.loadDataTab.UseVisualStyleBackColor = true;
@@ -368,7 +368,7 @@
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(898, 518);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(900, 518);
             this.tableLayoutPanel1.TabIndex = 20;
             // 
             // factorsData
@@ -382,7 +382,7 @@
             this.factorsData.Name = "factorsData";
             this.factorsData.ReadOnly = true;
             this.factorsData.RowHeadersWidth = 51;
-            this.factorsData.Size = new System.Drawing.Size(711, 490);
+            this.factorsData.Size = new System.Drawing.Size(713, 490);
             this.factorsData.TabIndex = 9;
             // 
             // progressBarDataLoad
@@ -391,7 +391,7 @@
             this.progressBarDataLoad.Location = new System.Drawing.Point(2, 498);
             this.progressBarDataLoad.Margin = new System.Windows.Forms.Padding(2);
             this.progressBarDataLoad.Name = "progressBarDataLoad";
-            this.progressBarDataLoad.Size = new System.Drawing.Size(713, 18);
+            this.progressBarDataLoad.Size = new System.Drawing.Size(715, 18);
             this.progressBarDataLoad.TabIndex = 10;
             this.progressBarDataLoad.Visible = false;
             // 
@@ -407,7 +407,7 @@
             this.tableLayoutPanel2.Controls.Add(this.checkPairwiseCombinations, 0, 4);
             this.tableLayoutPanel2.Controls.Add(this.selectRegressantsButton, 0, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(720, 3);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(722, 3);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 7;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 58F));
