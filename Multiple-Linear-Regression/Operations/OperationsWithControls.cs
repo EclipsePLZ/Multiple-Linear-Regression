@@ -43,35 +43,35 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         /// <param name="bgWorker">Background worker</param>
         /// <param name="mainBgWorker">Main background worker</param>
-        /// <param name="loadLabel">Loading label</param>
-        /// <param name="finishLabel">Label for finish</param>
+        /// <param name="infoLabel">Label for showing loading text</param>
+        /// <param name="startLabel">Text for start the load</param>
+        /// <param name="finishLabel">Text for finish the load</param>
         public static void ShowLoadingLogo(object sender, DoWorkEventArgs e, BackgroundWorker bgWorker,
-            BackgroundWorker mainBgWorker, Label loadLabel, Label finishLabel) {
+            BackgroundWorker mainBgWorker, Label infoLabel, string startLabel, string finishLabel) {
             // Check if bgworker has been stopped
             if (bgWorker.CancellationPending) {
                 e.Cancel = true;
             }
             else {
-                loadLabel.Invoke(new Action<bool>((vis) => loadLabel.Visible = vis), true);
+                infoLabel.Invoke(new Action<string>((text) => infoLabel.Text = text), startLabel);
+                infoLabel.Invoke(new Action<bool>((vis) => infoLabel.Visible = vis), true);
 
                 // While mainBgWorker is busy, we will update the load indicator
                 while (mainBgWorker.IsBusy == true) {
-                    if (loadLabel.Text.Count(symb => symb == '.') < 3) {
-                        loadLabel.Invoke(new Action<string>((load) => loadLabel.Text = load),
-                            loadLabel.Text + ".");
+                    if (infoLabel.Text.Count(symb => symb == '.') < 3) {
+                        infoLabel.Invoke(new Action<string>((load) => infoLabel.Text = load),
+                            infoLabel.Text + ".");
                     }
                     else {
-                        loadLabel.Invoke(new Action<string>((load) => loadLabel.Text = load),
-                            loadLabel.Text.Replace(".", ""));
+                        infoLabel.Invoke(new Action<string>((load) => infoLabel.Text = load),
+                            infoLabel.Text.Replace(".", ""));
                     }
                     System.Threading.Thread.Sleep(500);
                 }
 
-                // Hide loadLabel
-                loadLabel.Invoke(new Action<bool>((vis) => loadLabel.Visible = vis), false);
-
-                // Showing finish label
-                finishLabel.Invoke(new Action<bool>((vis) => finishLabel.Visible = vis), true);
+                // Show text for finish load
+                infoLabel.Invoke(new Action<string>((text) => infoLabel.Text = text), finishLabel);
+                
                 bgWorker.CancelAsync();
             }
         }

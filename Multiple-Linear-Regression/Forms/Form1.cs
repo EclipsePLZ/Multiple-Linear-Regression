@@ -15,9 +15,6 @@ namespace Multiple_Linear_Regression {
         private IFileService fileService;
         private IDialogService dialogService = new DefaultDialogService();
 
-        private BackgroundWorker resizeWorker = new BackgroundWorker();
-        private bool isResizeNeeded = false;
-
         LoadDataStep loadDataStep = new LoadDataStep();
         RegressorsGrouping regressorsGrouping = new RegressorsGrouping();
         FilterRegressors filterRegressors = new FilterRegressors();
@@ -45,11 +42,6 @@ namespace Multiple_Linear_Regression {
             this.CenterToScreen();
 
             SetStartParameters();
-
-            // Run background worker for resizing components on form
-            resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
-            resizeWorker.WorkerSupportsCancellation = true;
-            resizeWorker.RunWorkerAsync();
         }
 
         /// <summary>
@@ -238,13 +230,10 @@ namespace Multiple_Linear_Regression {
             regressantsList.Items.Clear();
             RegressantsHeaders.Clear();
             RegressorsHeaders.Clear();
-            labelResultDataLoad.Visible = false;
         }
 
         private void acceptFactorsButton_Click(object sender, EventArgs e) {
             if (RegressorsHeaders.Count > 0 && RegressantsHeaders.Count > 0 && (radioPredictionTask.Checked || radioControlTask.Checked)) {
-                labelResultDataLoad.Visible = false;
-
                 LoadValuesForFactors();
 
                 IsControlTask = radioControlTask.Checked;
@@ -290,13 +279,15 @@ namespace Multiple_Linear_Regression {
                     BackgroundWorker bgWorkerLabel = new BackgroundWorker();
                     bgWorkerLabel.DoWork += new DoWorkEventHandler((senderNew, eNew) =>
                         OperationsWithControls.ShowLoadingLogo(senderNew, eNew, bgWorkerLabel,
-                                                               bgWorkerFunc, labelFindingBestModel, labelFindingBestModelEnd));
+                                                               bgWorkerFunc, labelInfoLoadTab, 
+                                                               StepsInfo.LabelStartSearchBestModels, 
+                                                               StepsInfo.LabelFinishSearchBestModels));
                     bgWorkerLabel.WorkerSupportsCancellation = true;
                     bgWorkerLabel.RunWorkerAsync();
                 }
                 else {
-                    labelFindingBestModelEnd.Visible = false;
-                    labelResultDataLoad.Visible = true;
+                    labelInfoLoadTab.Text = "Факторы успешно выбраны";
+                    labelInfoLoadTab.Visible = true;
                     processingStatDataTabGusev.Enabled = true;
                     processingStatDataTabOkunev.Enabled = true;
                     removeUnimportantFactorsTab.Enabled = false;
@@ -478,8 +469,10 @@ namespace Multiple_Linear_Regression {
             // Background worker for loading label
             BackgroundWorker bgWorkerLoad = new BackgroundWorker();
             bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
-                OperationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorker, labelGroupingRegressors,
-                labelGroupingRegressorsEnd));
+                OperationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLoad, 
+                                                       bgWorker, labelGroupingRegressors, 
+                                                       StepsInfo.LabelStartGroupingFactors,
+                                                       StepsInfo.LabelFinishGroupingFactors));
             bgWorkerLoad.WorkerSupportsCancellation = true;
             bgWorkerLoad.RunWorkerAsync();
         }
@@ -602,8 +595,10 @@ namespace Multiple_Linear_Regression {
             // Backgound worker for loading label
             BackgroundWorker bgWorkerLabel = new BackgroundWorker();
             bgWorkerLabel.DoWork += new DoWorkEventHandler((sender, e) =>
-                                    OperationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLabel, bgWorkerFunc, 
-                                                                           labelFuncPreprocessGusev, labelPreprocessingGusevFinish));
+                                    OperationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLabel, 
+                                                                           bgWorkerFunc, labelFuncPreprocessGusev, 
+                                                                           StepsInfo.LabelStartPreprocessing,
+                                                                           StepsInfo.LabelFinishPreprocessing));
             bgWorkerLabel.WorkerSupportsCancellation = true;
             bgWorkerLabel.RunWorkerAsync();
         }
@@ -664,8 +659,9 @@ namespace Multiple_Linear_Regression {
         /// </summary>
         private void RunBackgroundFunctionalProcessOkunevData() {
             OperationsWithControls.SetDataGVColumnHeaders(new List<string>() { "Регрессант", "Регрессор", "Функции предобработки", 
-                                                                        "Модуль коэффициента корреляции" },
-                                                    functionsForProcessingOkunevDataGrid, true, new List<int>() { 3 });
+                                                                               "Модуль коэффициента корреляции" },
+                                                                               functionsForProcessingOkunevDataGrid, 
+                                                                               true, new List<int>() { 3 });
 
             // Background worker for function preprocessing
             BackgroundWorker bgWorkerFunc = new BackgroundWorker();
@@ -676,8 +672,10 @@ namespace Multiple_Linear_Regression {
             // Backgound worker for loading label
             BackgroundWorker bgWorkerLabel = new BackgroundWorker();
             bgWorkerLabel.DoWork += new DoWorkEventHandler((sender, e) =>
-                                        OperationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLabel, bgWorkerFunc, 
-                                                                               labelFuncPreprocessOkunev, labelPreprocessingOkunevFinish));
+                                        OperationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLabel, 
+                                                                               bgWorkerFunc, labelFuncPreprocessOkunev,
+                                                                               StepsInfo.LabelStartPreprocessing,
+                                                                               StepsInfo.LabelFinishPreprocessing));
             bgWorkerLabel.WorkerSupportsCancellation = true;
             bgWorkerLabel.RunWorkerAsync();
         }
@@ -735,7 +733,10 @@ namespace Multiple_Linear_Regression {
             // Background worker for loading label
             BackgroundWorker bgWorkerLoad = new BackgroundWorker();
             bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
-                OperationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorker, labelFilterLoad, labelFilterFinish));
+                OperationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLoad, 
+                                                       bgWorker, labelFilterLoad,
+                                                       StepsInfo.LabelStartFiltering,
+                                                       StepsInfo.LabelFinishFiltering));
             bgWorkerLoad.WorkerSupportsCancellation = true;
             bgWorkerLoad.RunWorkerAsync();
         }
@@ -772,6 +773,7 @@ namespace Multiple_Linear_Regression {
             // Restore non-filter regressors for each model for each regressant
             filterRegressors.CancelFilteringRegressors(ModelsForRegressants.Values.ToList());
             cancelFilterFactorsButton.Enabled = false;
+            labelFilterLoad.Visible = false;
 
             // Print grouped regressors for each regressant
             PrintGroupedRegressors(onlyImportantFactorsDataGrid);
@@ -806,7 +808,10 @@ namespace Multiple_Linear_Regression {
             // Background worker for loading label
             BackgroundWorker bgWorkerLoad = new BackgroundWorker();
             bgWorkerLoad.DoWork += new DoWorkEventHandler((sender, e) =>
-                OperationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLoad, bgWorkerEq, labelBuildingLoad, labelBuildingFinish));
+                OperationsWithControls.ShowLoadingLogo(sender, e, bgWorkerLoad, 
+                                                       bgWorkerEq, labelBuildingLoad,
+                                                       StepsInfo.LabelStartSearchBestModels,
+                                                       StepsInfo.LabelFinishSearchBestModels));
             bgWorkerLoad.WorkerSupportsCancellation = true;
             bgWorkerLoad.RunWorkerAsync();
         }
@@ -1211,9 +1216,7 @@ namespace Multiple_Linear_Regression {
             clearSelectedFactorsButton.Enabled = false;
             regressantsList.Items.Clear();
             regressorsList.Items.Clear();
-            labelResultDataLoad.Visible = false;
-            labelFindingBestModel.Visible = false;
-            labelFindingBestModelEnd.Visible = false;
+            labelInfoLoadTab.Visible = false;
             radioControlTask.Checked = true;
             radioPredictionTask.Checked = false;
 
@@ -1232,7 +1235,6 @@ namespace Multiple_Linear_Regression {
             maxCorrelBtwRegressors.Value = Convert.ToDecimal(0.7);
             maxCorrelBtwRegressors.Enabled = true;
             labelGroupingRegressors.Visible = false;
-            labelGroupingRegressorsEnd.Visible = false;
         }
 
         /// <summary>
@@ -1242,7 +1244,6 @@ namespace Multiple_Linear_Regression {
             ClearDataGV(functionsForProcessingGusevDataGrid);
             doFunctionalProcessGusevButton.Enabled = false;
             labelFuncPreprocessGusev.Visible = false;
-            labelPreprocessingGusevFinish.Visible = false;
         }
 
         /// <summary>
@@ -1252,7 +1253,6 @@ namespace Multiple_Linear_Regression {
             ClearDataGV(functionsForProcessingOkunevDataGrid);
             doFunctionalProcessOkunevButton.Enabled = false;
             labelFuncPreprocessOkunev.Visible = false;
-            labelPreprocessingOkunevFinish.Visible = false;
         }
 
         /// <summary>
@@ -1267,7 +1267,6 @@ namespace Multiple_Linear_Regression {
             valueEmpWayCorr.Value = Convert.ToDecimal(0.1);
             valueEmpWayCorr.Enabled = false;
             labelFilterLoad.Visible = false;
-            labelFilterFinish.Visible = false;
             acceptFilterFactorsButton.Enabled = false;
             cancelFilterFactorsButton.Enabled = false;
         }
@@ -1278,7 +1277,6 @@ namespace Multiple_Linear_Regression {
         private void ClearControlsBuildEquations() {
             ClearDataGV(equationsDataGrid);
             labelBuildingLoad.Visible = false;
-            labelBuildingFinish.Visible = false;
             ClearControlsImitationParameters();
         }
 
@@ -1376,232 +1374,6 @@ namespace Multiple_Linear_Regression {
                 case 7:
                     helpAllStepsMenu.ToolTipText = StepsInfo.StepPredictValues;
                     break;
-            }
-        }
-
-        private void MainForm_Resize(object sender, EventArgs e) {
-            isResizeNeeded = true;
-        }
-
-        private void MainForm_ResizeEnd(object sender, EventArgs e) {
-            isResizeNeeded = true;
-        }
-
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
-            resizeWorker.CancelAsync();
-        }
-
-        /// <summary>
-        /// Resize all main form components
-        /// </summary>
-        private void DoResizeComponents(object sender, DoWorkEventArgs e) {
-            // Check if resizeWorker has been stopped
-            if (resizeWorker.CancellationPending) {
-                e.Cancel = true;
-            }
-            else {
-                while (true) {
-                    System.Threading.Thread.Sleep(50);
-                    if (isResizeNeeded) {
-                        int newWidth = this.Width - 196;
-                        int newHeight = this.Height - 67;
-                        int widthDiff = newWidth - allTabs.Width;
-                        int heightDiff = newHeight - allTabs.Height;
-                        allTabs.Invoke(new Action<Size>((size) => allTabs.Size = size), new Size(newWidth, newHeight));
-
-                        // Left Menu
-                        regressorsList.Invoke(new Action<Point>((loc) => regressorsList.Location = loc),
-                            new Point(regressorsList.Location.X, this.Height / 2 - 33));
-
-                        regressorsList.Invoke(new Action<Size>((size) => regressorsList.Size = size),
-                            new Size(regressorsList.Width, this.Height - regressorsList.Location.Y - 50));
-
-                        labelRegressorsList.Invoke(new Action<Point>((loc) => labelRegressorsList.Location = loc),
-                            new Point(labelRegressorsList.Location.X, regressorsList.Location.Y - 16));
-
-                        regressantsList.Invoke(new Action<Size>((size) => regressantsList.Size = size),
-                            new Size(regressantsList.Width, labelRegressorsList.Location.Y - regressantsList.Location.Y - 22));
-
-
-                        // Tab load data
-                        selectRegressantsButton.Invoke(new Action<Point>((loc) => selectRegressantsButton.Location = loc),
-                            new Point(selectRegressantsButton.Location.X + widthDiff, selectRegressantsButton.Location.Y));
-
-                        selectRegressorsButton.Invoke(new Action<Point>((loc) => selectRegressorsButton.Location = loc),
-                            new Point(selectRegressorsButton.Location.X + widthDiff, selectRegressorsButton.Location.Y));
-
-                        clearSelectedFactorsButton.Invoke(new Action<Point>((loc) => clearSelectedFactorsButton.Location = loc),
-                            new Point(clearSelectedFactorsButton.Location.X + widthDiff, clearSelectedFactorsButton.Location.Y));
-
-                        acceptFactorsButton.Invoke(new Action<Point>((loc) => acceptFactorsButton.Location = loc),
-                            new Point(acceptFactorsButton.Location.X + widthDiff, acceptFactorsButton.Location.Y));
-
-                        factorsData.Invoke(new Action<Size>((size) => factorsData.Size = size),
-                            new Size(factorsData.Width + widthDiff, factorsData.Height + heightDiff));
-
-                        progressBarDataLoad.Invoke(new Action<Point>((loc) => progressBarDataLoad.Location = loc),
-                            new Point(progressBarDataLoad.Location.X, progressBarDataLoad.Location.Y + heightDiff));
-
-                        progressBarDataLoad.Invoke(new Action<Size>((size) => progressBarDataLoad.Size = size),
-                            new Size(progressBarDataLoad.Width + widthDiff, progressBarDataLoad.Height));
-
-                        checkPairwiseCombinations.Invoke(new Action<Point>((loc) => checkPairwiseCombinations.Location = loc),
-                            new Point(checkPairwiseCombinations.Location.X + widthDiff, checkPairwiseCombinations.Location.Y));
-
-                        labelResultDataLoad.Invoke(new Action<Point>((loc) => labelResultDataLoad.Location = loc),
-                            new Point(labelResultDataLoad.Location.X + widthDiff, labelResultDataLoad.Location.Y + heightDiff));
-
-                        labelFindingBestModel.Invoke(new Action<Point>((loc) => labelFindingBestModel.Location = loc),
-                            new Point(labelFindingBestModel.Location.X + widthDiff, labelFindingBestModel.Location.Y + heightDiff));
-
-                        labelFindingBestModelEnd.Invoke(new Action<Point>((loc) => labelFindingBestModelEnd.Location = loc),
-                            new Point(labelFindingBestModelEnd.Location.X + widthDiff, labelFindingBestModelEnd.Location.Y + heightDiff));
-
-                        groupTaskType.Invoke(new Action<Point>((loc) => groupTaskType.Location = loc),
-                            new Point(groupTaskType.Location.X + widthDiff, groupTaskType.Location.Y));
-
-
-                        // Tab formation group of regressors
-                        groupedRegressorsDataGrid.Invoke(new Action<Size>((size) => groupedRegressorsDataGrid.Size = size),
-                           new Size(groupedRegressorsDataGrid.Width + widthDiff, groupedRegressorsDataGrid.Height + heightDiff));
-
-                        groupBoxGroupedRegressors.Invoke(new Action<Point>((loc) => groupBoxGroupedRegressors.Location = loc),
-                            new Point(groupBoxGroupedRegressors.Location.X + widthDiff, groupBoxGroupedRegressors.Location.Y));
-
-                        labelGroupingRegressors.Invoke(new Action<Point>((loc) => labelGroupingRegressors.Location = loc),
-                            new Point(labelGroupingRegressors.Location.X + widthDiff, labelGroupingRegressors.Location.Y + heightDiff));
-
-                        labelGroupingRegressorsEnd.Invoke(new Action<Point>((loc) => labelGroupingRegressorsEnd.Location = loc),
-                            new Point(labelGroupingRegressorsEnd.Location.X + widthDiff, labelGroupingRegressorsEnd.Location.Y + heightDiff));
-
-
-                        // Tab process data Gusev
-                        functionsForProcessingGusevDataGrid.Invoke(new Action<Size>((size) => functionsForProcessingGusevDataGrid.Size = size),
-                           new Size(functionsForProcessingGusevDataGrid.Width + widthDiff, functionsForProcessingGusevDataGrid.Height + heightDiff));
-
-                        doFunctionalProcessGusevButton.Invoke(new Action<Point>((loc) => doFunctionalProcessGusevButton.Location = loc),
-                            new Point(doFunctionalProcessGusevButton.Location.X + widthDiff, doFunctionalProcessGusevButton.Location.Y));
-
-                        labelPreprocessingGusevFinish.Invoke(new Action<Point>((loc) => labelPreprocessingGusevFinish.Location = loc),
-                            new Point(labelPreprocessingGusevFinish.Location.X + widthDiff, labelPreprocessingGusevFinish.Location.Y + heightDiff));
-
-                        labelFuncPreprocessGusev.Invoke(new Action<Point>((loc) => labelFuncPreprocessGusev.Location = loc),
-                            new Point(labelFuncPreprocessGusev.Location.X + widthDiff, labelFuncPreprocessGusev.Location.Y + heightDiff));
-
-
-                        // Tab process data Okunev
-                        functionsForProcessingOkunevDataGrid.Invoke(new Action<Size>((size) => functionsForProcessingOkunevDataGrid.Size = size),
-                           new Size(functionsForProcessingOkunevDataGrid.Width + widthDiff, functionsForProcessingOkunevDataGrid.Height + heightDiff));
-
-                        doFunctionalProcessOkunevButton.Invoke(new Action<Point>((loc) => doFunctionalProcessOkunevButton.Location = loc),
-                            new Point(doFunctionalProcessOkunevButton.Location.X + widthDiff, doFunctionalProcessOkunevButton.Location.Y));
-
-                        labelPreprocessingOkunevFinish.Invoke(new Action<Point>((loc) => labelPreprocessingOkunevFinish.Location = loc),
-                            new Point(labelPreprocessingOkunevFinish.Location.X + widthDiff, labelPreprocessingOkunevFinish.Location.Y + heightDiff));
-
-                        labelFuncPreprocessOkunev.Invoke(new Action<Point>((loc) => labelFuncPreprocessOkunev.Location = loc),
-                            new Point(labelFuncPreprocessOkunev.Location.X + widthDiff, labelFuncPreprocessOkunev.Location.Y + heightDiff));
-
-
-                        // Tab filter data
-                        onlyImportantFactorsDataGrid.Invoke(new Action<Size>((size) => onlyImportantFactorsDataGrid.Size = size),
-                           new Size(onlyImportantFactorsDataGrid.Width + widthDiff, onlyImportantFactorsDataGrid.Height + heightDiff));
-
-                        groupBoxFilterRegressors.Invoke(new Action<Point>((loc) => groupBoxFilterRegressors.Location = loc),
-                            new Point(groupBoxFilterRegressors.Location.X + widthDiff, groupBoxFilterRegressors.Location.Y));
-
-                        labelFilterLoad.Invoke(new Action<Point>((loc) => labelFilterLoad.Location = loc),
-                            new Point(labelFilterLoad.Location.X + widthDiff, labelFilterLoad.Location.Y + heightDiff));
-
-                        labelFilterFinish.Invoke(new Action<Point>((loc) => labelFilterFinish.Location = loc),
-                            new Point(labelFilterFinish.Location.X + widthDiff, labelFilterFinish.Location.Y + heightDiff));
-
-
-                        // Tab buid equations
-                        equationsDataGrid.Invoke(new Action<Size>((size) => equationsDataGrid.Size = size),
-                           new Size(equationsDataGrid.Width + widthDiff, equationsDataGrid.Height + heightDiff));
-
-                        buildEquationsButton.Invoke(new Action<Point>((loc) => buildEquationsButton.Location = loc),
-                            new Point(buildEquationsButton.Location.X + widthDiff, buildEquationsButton.Location.Y));
-
-                        labelBuildingLoad.Invoke(new Action<Point>((loc) => labelBuildingLoad.Location = loc),
-                            new Point(labelBuildingLoad.Location.X + widthDiff, labelBuildingLoad.Location.Y + heightDiff));
-
-                        labelBuildingFinish.Invoke(new Action<Point>((loc) => labelBuildingFinish.Location = loc),
-                            new Point(labelBuildingFinish.Location.X + widthDiff, labelBuildingFinish.Location.Y + heightDiff));
-
-
-                        // Tab select parameters for imitation control
-                        // The height of one element in the list is 13, so for a smooth drawing of the lists
-                        // will change their height to a multiple of 13
-                        int heightMainTab = allTabs.Height - 26;
-                        int widthMainTab = allTabs.Width - 8;
-                        int listsHeight = ((heightMainTab - 74 - 17) / 13) * 13 + 17;
-
-                        labelSelectDefAreaParams.Invoke(new Action<Point>((loc) => labelSelectDefAreaParams.Location = loc),
-                            new Point(widthMainTab / 8 * 5 + 20, labelSelectDefAreaParams.Location.Y));
-
-                        groupDefinitionAreaType.Invoke(new Action<Point>((loc) => groupDefinitionAreaType.Location = loc),
-                            new Point(labelSelectDefAreaParams.Location.X, groupDefinitionAreaType.Location.Y));
-
-                        groupPercentAreaExpansion.Invoke(new Action<Point>((loc) => groupPercentAreaExpansion.Location = loc),
-                            new Point(labelSelectDefAreaParams.Location.X, groupPercentAreaExpansion.Location.Y));
-
-                        groupProportionOfAreaExpansion.Invoke(new Action<Point>((loc) => groupProportionOfAreaExpansion.Location = loc),
-                            new Point(labelSelectDefAreaParams.Location.X, groupProportionOfAreaExpansion.Location.Y));
-
-                        groupNumberCorrelatedIntervals.Invoke(new Action<Point>((loc) => groupNumberCorrelatedIntervals.Location = loc),
-                            new Point(labelSelectDefAreaParams.Location.X, groupNumberCorrelatedIntervals.Location.Y));
-
-                        toSelectModelsList.Invoke(new Action<Point>((loc) => toSelectModelsList.Location = loc),
-                           new Point(widthMainTab / 4, toSelectModelsList.Location.Y));
-
-                        toAvailableModelsList.Invoke(new Action<Point>((loc) => toAvailableModelsList.Location = loc),
-                           new Point(widthMainTab / 4, toAvailableModelsList.Location.Y));
-
-                        allToAvailableModelsList.Invoke(new Action<Point>((loc) => allToAvailableModelsList.Location = loc),
-                           new Point(widthMainTab / 4, allToAvailableModelsList.Location.Y));
-
-                        allToSelectModelsList.Invoke(new Action<Point>((loc) => allToSelectModelsList.Location = loc),
-                           new Point(widthMainTab / 4, allToSelectModelsList.Location.Y));
-
-                        listSelectedModels.Invoke(new Action<Size>((size) => listSelectedModels.Size = size),
-                            new Size(toSelectModelsList.Location.X - 44, listsHeight));
-
-                        listAvailabelModels.Invoke(new Action<Point>((loc) => listAvailabelModels.Location = loc),
-                            new Point(toSelectModelsList.Location.X + 49, listAvailabelModels.Location.Y));
-
-                        labelAvailableModels.Invoke(new Action<Point>((loc) => labelAvailableModels.Location = loc),
-                            new Point(listAvailabelModels.Location.X - 3, labelAvailableModels.Location.Y));
-
-                        listAvailabelModels.Invoke(new Action<Size>((size) => listAvailabelModels.Size = size),
-                            new Size(listSelectedModels.Width, listsHeight));
-
-                        int acceptButtonSpace = (groupProportionOfAreaExpansion.Location.X - (listAvailabelModels.Location.X
-                            + listAvailabelModels.Width)) / 2 - acceptControlsParametersButton.Width / 2;
-
-                        acceptControlsParametersButton.Invoke(new Action<Point>((loc) => acceptControlsParametersButton.Location = loc),
-                            new Point(listAvailabelModels.Location.X + listAvailabelModels.Width + acceptButtonSpace,
-                            acceptControlsParametersButton.Location.Y));
-
-
-                        // Prediction tab
-                        realPredictValuesDataGrid.Invoke(new Action<Size>((size) => realPredictValuesDataGrid.Size = size),
-                           new Size(realPredictValuesDataGrid.Width + widthDiff, realPredictValuesDataGrid.Height + heightDiff));
-
-                        predictionMetricsDataGrid.Invoke(new Action<Size>((size) => predictionMetricsDataGrid.Size = size),
-                           new Size(predictionMetricsDataGrid.Width + widthDiff, predictionMetricsDataGrid.Height));
-
-                        predictionMetricsDataGrid.Invoke(new Action<Point>((loc) => predictionMetricsDataGrid.Location = loc),
-                            new Point(predictionMetricsDataGrid.Location.X, predictionMetricsDataGrid.Location.Y + heightDiff));
-
-                        loadDataForPredictButton.Invoke(new Action<Point>((loc) => loadDataForPredictButton.Location = loc),
-                            new Point(loadDataForPredictButton.Location.X + widthDiff, loadDataForPredictButton.Location.Y));
-
-
-                        isResizeNeeded = false;
-                    }
-                }
             }
         }
     }

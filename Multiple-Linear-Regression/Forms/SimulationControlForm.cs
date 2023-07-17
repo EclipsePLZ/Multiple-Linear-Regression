@@ -13,12 +13,9 @@ namespace Multiple_Linear_Regression.Forms {
         private IFileService fileService;
         private IDialogService dialogService = new DefaultDialogService();
 
-        private BackgroundWorker resizeWorker = new BackgroundWorker();
         SimulationControl simulationControl = new SimulationControl();
 
         private const int MODIFY_COLUMN = 1;
-
-        private bool isResizeNeeded = false;
 
         private List<Model> Models { get; set; }
 
@@ -48,11 +45,6 @@ namespace Multiple_Linear_Regression.Forms {
             this.CenterToScreen();
 
             SetStartParameters();
-
-            // Run background worker for resizing components on form
-            resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
-            resizeWorker.WorkerSupportsCancellation = true;
-            resizeWorker.RunWorkerAsync();
         }
 
         /// <summary>
@@ -266,57 +258,8 @@ namespace Multiple_Linear_Regression.Forms {
             UpdateModels(Models);
         }
 
-        private void SimulationControlForm_FormClosing(object sender, FormClosingEventArgs e) {
-            resizeWorker.CancelAsync();
-        }
-
-        private void SimulationControlForm_Resize(object sender, EventArgs e) {
-            isResizeNeeded = true;
-        }
-
-        private void SimulationControlForm_ResizeEnd(object sender, EventArgs e) {
-            isResizeNeeded = true;
-        }
-
         private void exitFormMenuItem_Click(object sender, EventArgs e) {
             this.Close();
-        }
-
-        /// <summary>
-        /// Resize all form components
-        /// </summary>
-        private void DoResizeComponents(object sender, DoWorkEventArgs e) {
-            // Check if resizeWorker has been stopped
-            if (resizeWorker.CancellationPending) {
-                e.Cancel = true;
-            }
-            else {
-                while (true) {
-                    System.Threading.Thread.Sleep(50);
-                    if (isResizeNeeded) {
-                        int formWidth = this.Width;
-                        int formHeight = this.Height;
-
-                        regressantsResultDataGrid.Invoke(new Action<Point>((loc) => regressantsResultDataGrid.Location = loc),
-                            new Point(formWidth / 2 + 58, regressantsResultDataGrid.Location.Y));
-
-                        labelRegressants.Invoke(new Action<Point>((loc) => labelRegressants.Location = loc),
-                            new Point(regressantsResultDataGrid.Location.X - 3, labelRegressants.Location.Y));
-
-                        regressantsResultDataGrid.Invoke(new Action<Size>((size) => regressantsResultDataGrid.Size = size),
-                            new Size(formWidth - regressantsResultDataGrid.Location.X - 28, formHeight - 97));
-
-                        regressorsSetDataGrid.Invoke(new Action<Size>((size) => regressorsSetDataGrid.Size = size),
-                            new Size(regressantsResultDataGrid.Location.X - 51 - regressorsSetDataGrid.Location.X, formHeight - 97));
-
-                        checkMutualImpactFactors.Invoke(new Action<Point>((loc) => checkMutualImpactFactors.Location = loc),
-                            new Point(regressorsSetDataGrid.Size.Width - 149, checkMutualImpactFactors.Location.Y));
-
-
-                        isResizeNeeded = false;
-                    }
-                }
-            }
         }
     }
 }

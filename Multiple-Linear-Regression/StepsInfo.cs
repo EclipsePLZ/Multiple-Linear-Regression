@@ -1,5 +1,21 @@
 ﻿namespace Multiple_Linear_Regression {
     internal static class StepsInfo {
+        public static string LabelStartSearchBestModels { get; } = "Поиск лучших моделей";
+
+        public static string LabelFinishSearchBestModels { get; } = "Лучшие модели найдены";
+
+        public static string LabelStartGroupingFactors { get; } = "Группировка";
+
+        public static string LabelFinishGroupingFactors { get; } = "Группировка выполнена";
+
+        public static string LabelStartPreprocessing { get; } = "Обработка";
+
+        public static string LabelFinishPreprocessing { get; } = "Предобработка выполнена";
+
+        public static string LabelStartFiltering { get; } = "Фильтрация";
+
+        public static string LabelFinishFiltering { get; } = "Фильтрация выполнена";
+
         public static string StepLoadData { get; } = "Загрузка данных из файла (excel, csv) и выбор показателей для построения моделей.";
 
         public static string StepProcessFactorsGusev { get; } = "Данный блок является необязательным.\n\n" +
