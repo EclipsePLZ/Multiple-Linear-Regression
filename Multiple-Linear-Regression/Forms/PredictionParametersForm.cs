@@ -16,11 +16,15 @@ namespace Multiple_Linear_Regression.Forms {
 
         private int TotalValuesCount { get; }
 
+        public bool SuccessParameters { get; private set; }
+
         public PredictionParametersForm(int valuesCount) {
             InitializeComponent();
             this.CenterToParent();
 
             FixFormSize();
+
+            SuccessParameters = false;
 
             TotalValuesCount = valuesCount;
             totalValuesCount.Text = valuesCount.ToString();
@@ -35,6 +39,7 @@ namespace Multiple_Linear_Regression.Forms {
             NumberObserInOneTimeInterval = (int)numberValuesInTimeInterval.Value;
 
             if (LagValue * NumberObserInOneTimeInterval < TotalValuesCount) {
+                SuccessParameters = true;
                 this.Close();
             }
             else {

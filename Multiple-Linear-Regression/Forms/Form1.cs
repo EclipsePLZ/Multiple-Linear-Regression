@@ -236,6 +236,8 @@ namespace Multiple_Linear_Regression {
             if (RegressorsHeaders.Count > 0 && RegressantsHeaders.Count > 0 && (radioPredictionTask.Checked || radioControlTask.Checked)) {
                 LoadValuesForFactors();
 
+                bool isReadyToContinue = true;
+
                 IsControlTask = radioControlTask.Checked;
                 IsPredictionTask = radioPredictionTask.Checked;
 
@@ -251,10 +253,11 @@ namespace Multiple_Linear_Regression {
                     int valuesCount = BaseRegressants[BaseRegressants.Keys.First()].Count;
 
                     // Show form for set paramters for prediction task
-                    PredictionParametersForm form = new PredictionParametersForm(valuesCount);
-                    form.ShowDialog();
+                    PredictionParametersForm parametersForm = new PredictionParametersForm(valuesCount);
+                    parametersForm.ShowDialog();
+                    isReadyToContinue = parametersForm.SuccessParameters;
 
-                    int numberOfValuesForDelete = form.LagValue * form.NumberObserInOneTimeInterval;
+                    int numberOfValuesForDelete = parametersForm.LagValue * parametersForm.NumberObserInOneTimeInterval;
                     int newNumberOfValues = valuesCount - numberOfValuesForDelete;
 
                     loadDataStep.ShiftFactorValues(BaseRegressors, 0, newNumberOfValues);
@@ -262,41 +265,44 @@ namespace Multiple_Linear_Regression {
 
                 }
 
-                OperationsWithModels.SetFactorForModels(Models, BaseRegressants, BaseRegressors);
+                if (isReadyToContinue) {
 
-                // Will the automatic calculation be used
-                AllDefaultParameters autoCalcForm = new AllDefaultParameters();
-                autoCalcForm.ShowDialog();
+                    OperationsWithModels.SetFactorForModels(Models, BaseRegressants, BaseRegressors);
 
-                if (autoCalcForm.UsingDefaultParameters) {
-                    // Background worker for function preprocessing
-                    BackgroundWorker bgWorkerFunc = new BackgroundWorker();
-                    bgWorkerFunc.DoWork += new DoWorkEventHandler((senderNew, eNew) => RunFullyAutoCalculation(senderNew, eNew, bgWorkerFunc));
-                    bgWorkerFunc.WorkerSupportsCancellation = true;
-                    bgWorkerFunc.RunWorkerAsync();
+                    // Will the automatic calculation be used
+                    AllDefaultParameters autoCalcForm = new AllDefaultParameters();
+                    autoCalcForm.ShowDialog();
 
-                    // Backgound worker for loading label
-                    BackgroundWorker bgWorkerLabel = new BackgroundWorker();
-                    bgWorkerLabel.DoWork += new DoWorkEventHandler((senderNew, eNew) =>
-                        OperationsWithControls.ShowLoadingLogo(senderNew, eNew, bgWorkerLabel,
-                                                               bgWorkerFunc, labelInfoLoadTab, 
-                                                               StepsInfo.LabelStartSearchBestModels, 
-                                                               StepsInfo.LabelFinishSearchBestModels));
-                    bgWorkerLabel.WorkerSupportsCancellation = true;
-                    bgWorkerLabel.RunWorkerAsync();
-                }
-                else {
-                    labelInfoLoadTab.Text = "Факторы успешно выбраны";
-                    labelInfoLoadTab.Visible = true;
-                    processingStatDataTabGusev.Enabled = true;
-                    processingStatDataTabOkunev.Enabled = true;
-                    removeUnimportantFactorsTab.Enabled = false;
-                    buildRegrEquationsTab.Enabled = false;
-                    doFunctionalProcessGusevButton.Enabled = true;
-                    doFunctionalProcessOkunevButton.Enabled = true;
-                    formationOfControlFactorSetsTab.Enabled = true;
-                    groupBoxFilterRegressors.Enabled = true;
-                    groupBoxGroupedRegressors.Enabled = true;
+                    if (autoCalcForm.UsingDefaultParameters) {
+                        // Background worker for function preprocessing
+                        BackgroundWorker bgWorkerFunc = new BackgroundWorker();
+                        bgWorkerFunc.DoWork += new DoWorkEventHandler((senderNew, eNew) => RunFullyAutoCalculation(senderNew, eNew, bgWorkerFunc));
+                        bgWorkerFunc.WorkerSupportsCancellation = true;
+                        bgWorkerFunc.RunWorkerAsync();
+
+                        // Backgound worker for loading label
+                        BackgroundWorker bgWorkerLabel = new BackgroundWorker();
+                        bgWorkerLabel.DoWork += new DoWorkEventHandler((senderNew, eNew) =>
+                            OperationsWithControls.ShowLoadingLogo(senderNew, eNew, bgWorkerLabel,
+                                                                   bgWorkerFunc, labelInfoLoadTab,
+                                                                   StepsInfo.LabelStartSearchBestModels,
+                                                                   StepsInfo.LabelFinishSearchBestModels));
+                        bgWorkerLabel.WorkerSupportsCancellation = true;
+                        bgWorkerLabel.RunWorkerAsync();
+                    }
+                    else {
+                        labelInfoLoadTab.Text = "Факторы успешно выбраны";
+                        labelInfoLoadTab.Visible = true;
+                        processingStatDataTabGusev.Enabled = true;
+                        processingStatDataTabOkunev.Enabled = true;
+                        removeUnimportantFactorsTab.Enabled = false;
+                        buildRegrEquationsTab.Enabled = false;
+                        doFunctionalProcessGusevButton.Enabled = true;
+                        doFunctionalProcessOkunevButton.Enabled = true;
+                        formationOfControlFactorSetsTab.Enabled = true;
+                        groupBoxFilterRegressors.Enabled = true;
+                        groupBoxGroupedRegressors.Enabled = true;
+                    }
                 }
             }
             else {
@@ -550,7 +556,7 @@ namespace Multiple_Linear_Regression {
         }
 
         /// <summary>
-        /// For each regressant print all models as regressors in short-form
+        /// For each regressant print all models as regressors in short-parametersForm
         /// </summary>
         /// <param name="dataGrid">DataGrid for printing grouped regressors</param>
         private void PrintGroupedRegressors(DataGridView dataGrid) {
@@ -567,7 +573,7 @@ namespace Multiple_Linear_Regression {
         }
 
         private void doFunctionalProcessGusevButton_Click(object sender, EventArgs e) {
-            // Show warinig form
+            // Show warinig parametersForm
             UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
             warningForm.ShowDialog();
             if (warningForm.AcceptAction) {
@@ -643,7 +649,7 @@ namespace Multiple_Linear_Regression {
         }
 
         private void doFunctionalProcessOkunevButton_Click(object sender, EventArgs e) {
-            // Show warinig form
+            // Show warinig parametersForm
             UserWarningForm warningForm = new UserWarningForm(StepsInfo.UserWarningFuncPreprocessing);
             warningForm.ShowDialog();
             if (warningForm.AcceptAction) {
