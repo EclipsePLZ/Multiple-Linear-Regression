@@ -22,6 +22,8 @@ namespace Multiple_Linear_Regression {
             listAvailabelFactors.Items.AddRange(availableFactors.ToArray());
             listSelectedFactors.Items.AddRange(selectedFactors.ToArray());
 
+            listAvailabelFactors.SelectedIndex = 0;
+
             // Run background worker for resizing components on form
             resizeWorker.DoWork += new DoWorkEventHandler(DoResizeComponents);
             resizeWorker.WorkerSupportsCancellation = true;
